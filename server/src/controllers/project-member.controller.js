@@ -8,6 +8,19 @@ import {
 	NotificationType,
 } from "../services/notification.service.js";
 
+// Resolve canonical project role id from key.
+// Returns null when no project-scoped role matches; caller decides 400 vs throw.
+async function resolveProjectRoleId(key) {
+	const { data, error } = await supabase
+		.from("roles")
+		.select("id")
+		.eq("scope", "project")
+		.eq("key", key)
+		.maybeSingle();
+	if (error) throw error;
+	return data?.id ?? null;
+}
+
 export async function listMembers(req, res, next) {
 	try {
 		const { projectId } = req.params;
@@ -44,12 +57,22 @@ export async function addMember(req, res, next) {
 			});
 		}
 
-			const { user_id, role = "member", role_id } = req.body;
+			const { user_id, role = "member" } = req.body;
 
-			const memberData = { project_id: projectId, user_id, role };
-			if (role_id) {
-				memberData.role_id = role_id;
+			const resolvedRoleId = await resolveProjectRoleId(role);
+			if (!resolvedRoleId) {
+				return res.status(400).json({
+					success: false,
+					message: `Unknown project role: ${role}.`,
+				});
 			}
+
+			const memberData = {
+				project_id: projectId,
+				user_id,
+				role,
+				role_id: resolvedRoleId,
+			};
 
 			const { data, error } = await supabase
 				.from("project_members")
@@ -103,9 +126,18 @@ export async function updateMemberRole(req, res, next) {
 			});
 		}
 
-			const updateData = {};
-			if (req.body.role !== undefined) updateData.role = req.body.role;
-			if (req.body.role_id !== undefined) updateData.role_id = req.body.role_id;
+			const resolvedRoleId = await resolveProjectRoleId(req.body.role);
+			if (!resolvedRoleId) {
+				return res.status(400).json({
+					success: false,
+					message: `Unknown project role: ${req.body.role}.`,
+				});
+			}
+
+			const updateData = {
+				role: req.body.role,
+				role_id: resolvedRoleId,
+			};
 
 			const { data, error } = await supabase
 				.from("project_members")
