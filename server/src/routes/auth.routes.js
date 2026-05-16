@@ -10,11 +10,12 @@ import {
 	googleSignInCallback,
 } from "../controllers/auth.controller.js";
 import { requireAuth } from "../middlewares/auth.middleware.js";
+import { sensitiveAuthLimiter } from "../middlewares/rate-limit.middleware.js";
 
 const router = express.Router();
 
-router.post("/register", register);
-router.post("/login", login);
+router.post("/register", sensitiveAuthLimiter, register);
+router.post("/login", sensitiveAuthLimiter, login);
 router.post("/refresh", refreshSession);
 router.post("/logout", requireAuth, logout);
 router.post("/complete-invite", requireAuth, completeInvite);

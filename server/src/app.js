@@ -36,6 +36,10 @@ import { Sentry } from "./config/sentry.js";
 
 const app = express();
 
+// Trust first proxy hop so req.ip reflects the real client IP behind a
+// load balancer / reverse proxy. Required for rate-limit keying.
+app.set("trust proxy", 1);
+
 app.use(helmet());
 app.use(
 	cors({
