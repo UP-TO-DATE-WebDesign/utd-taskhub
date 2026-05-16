@@ -114,36 +114,36 @@ export async function createTicket(req, res, next) {
 
 		const { title, description, type, status, priority, assigned_to, due_date, ticket_code } = req.body;
 
-		const code = ticket_code?.trim()
-			? ticket_code.trim().toUpperCase()
-			: await generateTicketCode(supabase, projectId);
+		const { data: newId, error: rpcError } = await supabase.rpc("create_ticket_atomic", {
+			p_project_id: projectId,
+			p_title: title.trim(),
+			p_description: description?.trim() || null,
+			p_type: type || "issue",
+			p_status: status || "open",
+			p_priority: priority || "medium",
+			p_assigned_to: assigned_to || null,
+			p_due_date: due_date || null,
+			p_created_by: req.profile.id,
+			p_ticket_code: ticket_code?.trim() ? ticket_code.trim().toUpperCase() : null,
+		});
 
-		const { data, error } = await supabase
-			.from("tickets")
-			.insert({
-				project_id: projectId,
-				ticket_code: code,
-				title: title.trim(),
-				description: description?.trim() || null,
-				type: type || "issue",
-				status: status || "open",
-				priority: priority || "medium",
-				assigned_to: assigned_to || null,
-				due_date: due_date || null,
-				created_by: req.profile.id,
-			})
-			.select(TICKET_SELECT)
-			.single();
-
-		if (error) {
-			if (error.code === "23505") {
+		if (rpcError) {
+			if (rpcError.code === "23505") {
 				return res.status(409).json({
 					success: false,
 					message: "Ticket code already exists in this project.",
 				});
 			}
-			throw error;
+			throw rpcError;
 		}
+
+		const { data, error } = await supabase
+			.from("tickets")
+			.select(TICKET_SELECT)
+			.eq("id", newId)
+			.single();
+
+		if (error) throw error;
 
 		res.status(201).json({
 			success: true,

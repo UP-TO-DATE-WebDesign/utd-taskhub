@@ -1,39 +1,18 @@
-// Generate next sequential ticket_code for a project: {KEY}-{NNN}
-// Scans existing codes matching `${KEY}-<digits>` and picks max+1, zero-padded.
+// Preview the next ticket_code for a project (preview only).
+// Uses the SQL `next_ticket_code` RPC so the computation matches the
+// atomic allocation done by `create_ticket_atomic` on insert.
+// NOTE: this value is advisory; the authoritative allocation happens
+// inside `create_ticket_atomic` under an advisory xact lock.
 export async function generateTicketCode(supabase, projectId) {
-	const { data: project, error: projectError } = await supabase
-		.from("projects")
-		.select("key")
-		.eq("id", projectId)
-		.maybeSingle();
+	const { data, error } = await supabase.rpc("next_ticket_code", {
+		p_project_id: projectId,
+	});
 
-	if (projectError) throw projectError;
-	if (!project?.key) {
+	if (error) throw error;
+	if (!data) {
 		throw new Error("Project key is missing; cannot generate ticket code.");
 	}
-
-	const prefix = project.key;
-
-	const { data: rows, error: rowsError } = await supabase
-		.from("tickets")
-		.select("ticket_code")
-		.eq("project_id", projectId)
-		.like("ticket_code", `${prefix}-%`);
-
-	if (rowsError) throw rowsError;
-
-	let max = 0;
-	for (const row of rows ?? []) {
-		const tail = row.ticket_code?.slice(prefix.length + 1);
-		if (tail && /^\d+$/.test(tail)) {
-			const n = parseInt(tail, 10);
-			if (n > max) max = n;
-		}
-	}
-
-	const next = max + 1;
-	const padded = String(next).padStart(3, "0");
-	return `${prefix}-${padded}`;
+	return data;
 }
 
 // Slugify project name into a candidate key. Caller picks unique suffix.
