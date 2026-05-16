@@ -7,6 +7,7 @@ import {
 	createNotifications,
 	NotificationType,
 } from "../services/notification.service.js";
+import { logActivity } from "../services/activity-log.service.js";
 
 // Resolve canonical project role id from key.
 // Returns null when no project-scoped role matches; caller decides 400 vs throw.
@@ -102,6 +103,19 @@ export async function addMember(req, res, next) {
 			}).catch((e) => console.error("[notif]", e));
 		}
 
+		logActivity({
+			projectId,
+			actorId: req.profile.id,
+			entityType: "project_member",
+			entityId: user_id,
+			action: "member.added",
+			metadata: {
+				target_user_id: user_id,
+				target_user_name: data?.profiles?.full_name ?? null,
+				role,
+			},
+		});
+
 		res.status(201).json({
 			success: true,
 			message: "Member added successfully.",
@@ -133,6 +147,13 @@ export async function updateMemberRole(req, res, next) {
 					message: `Unknown project role: ${req.body.role}.`,
 				});
 			}
+
+			const { data: existing } = await supabase
+				.from("project_members")
+				.select("role")
+				.eq("project_id", projectId)
+				.eq("user_id", userId)
+				.maybeSingle();
 
 			const updateData = {
 				role: req.body.role,
@@ -170,6 +191,20 @@ export async function updateMemberRole(req, res, next) {
 			}).catch((e) => console.error("[notif]", e));
 		}
 
+		logActivity({
+			projectId,
+			actorId: req.profile.id,
+			entityType: "project_member",
+			entityId: userId,
+			action: "member.role_changed",
+			metadata: {
+				target_user_id: userId,
+				target_user_name: data?.profiles?.full_name ?? null,
+				from_role: existing?.role ?? null,
+				to_role: data.role,
+			},
+		});
+
 		res.status(200).json({
 			success: true,
 			message: "Member role updated.",
@@ -186,7 +221,7 @@ export async function removeMember(req, res, next) {
 
 		const { data: existing, error: findError } = await supabase
 			.from("project_members")
-			.select("id")
+			.select("id, role, profiles(id, full_name)")
 			.eq("project_id", projectId)
 			.eq("user_id", userId)
 			.maybeSingle();
@@ -207,6 +242,19 @@ export async function removeMember(req, res, next) {
 			.eq("user_id", userId);
 
 		if (error) throw error;
+
+		logActivity({
+			projectId,
+			actorId: req.profile.id,
+			entityType: "project_member",
+			entityId: userId,
+			action: "member.removed",
+			metadata: {
+				target_user_id: userId,
+				target_user_name: existing.profiles?.full_name ?? null,
+				role: existing.role,
+			},
+		});
 
 		res.status(200).json({
 			success: true,

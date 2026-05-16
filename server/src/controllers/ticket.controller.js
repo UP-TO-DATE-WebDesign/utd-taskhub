@@ -8,6 +8,7 @@ import {
 import { validateCreateTask } from "../utils/task.validator.js";
 import { notifyTicketClosed } from "../services/ticket-notify.service.js";
 import { generateTicketCode } from "../utils/ticket-code.helper.js";
+import { logActivity } from "../services/activity-log.service.js";
 
 const TICKET_SELECT = `
 	id,
@@ -145,6 +146,21 @@ export async function createTicket(req, res, next) {
 
 		if (error) throw error;
 
+		logActivity({
+			projectId,
+			actorId: req.profile.id,
+			entityType: "ticket",
+			entityId: data.id,
+			action: "ticket.created",
+			metadata: {
+				title: data.title,
+				ticket_code: data.ticket_code,
+				type: data.type,
+				status: data.status,
+				priority: data.priority,
+			},
+		});
+
 		res.status(201).json({
 			success: true,
 			message: "Ticket created successfully.",
@@ -230,6 +246,29 @@ export async function updateTicket(req, res, next) {
 			}).catch((e) => console.error("[notif]", e));
 		}
 
+		const statusChanged =
+			"status" in updateData &&
+			existing &&
+			updateData.status !== existing.status;
+
+		logActivity({
+			projectId,
+			actorId: req.profile.id,
+			entityType: "ticket",
+			entityId: data.id,
+			action: statusChanged
+				? "ticket.status_changed"
+				: "ticket.updated",
+			metadata: {
+				title: data.title,
+				ticket_code: data.ticket_code,
+				changed_fields: Object.keys(updateData),
+				...(statusChanged
+					? { from: existing.status, to: updateData.status }
+					: {}),
+			},
+		});
+
 		res.status(200).json({
 			success: true,
 			message: "Ticket updated successfully.",
@@ -312,6 +351,19 @@ export async function closeTicket(req, res, next) {
 			actorId: req.profile.id,
 		}).catch((e) => console.error("[notif]", e));
 
+		logActivity({
+			projectId,
+			actorId: req.profile.id,
+			entityType: "ticket",
+			entityId: data.id,
+			action: "ticket.closed",
+			metadata: {
+				title: data.title,
+				ticket_code: data.ticket_code,
+				resolution: data.resolution ?? null,
+			},
+		});
+
 		res.status(200).json({
 			success: true,
 			message: "Ticket closed.",
@@ -328,7 +380,7 @@ export async function deleteTicket(req, res, next) {
 
 		const { data: existing, error: findError } = await supabase
 			.from("tickets")
-			.select("id")
+			.select("id, title, ticket_code")
 			.eq("id", ticketId)
 			.eq("project_id", projectId)
 			.maybeSingle();
@@ -349,6 +401,18 @@ export async function deleteTicket(req, res, next) {
 		});
 
 		if (error) throw error;
+
+		logActivity({
+			projectId,
+			actorId: req.profile.id,
+			entityType: "ticket",
+			entityId: ticketId,
+			action: "ticket.deleted",
+			metadata: {
+				title: existing.title,
+				ticket_code: existing.ticket_code,
+			},
+		});
 
 		res.status(200).json({
 			success: true,

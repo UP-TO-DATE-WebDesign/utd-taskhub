@@ -4,6 +4,7 @@ import {
 	validateUpdateProject,
 } from "../utils/project.validator.js";
 import { generateUniqueProjectKey } from "../utils/ticket-code.helper.js";
+import { logActivity } from "../services/activity-log.service.js";
 
 export async function getProjects(req, res, next) {
 	try {
@@ -144,6 +145,15 @@ export async function createProject(req, res, next) {
 
 		if (memberError) throw memberError;
 
+		logActivity({
+			projectId: data.id,
+			actorId: req.profile.id,
+			entityType: "project",
+			entityId: data.id,
+			action: "project.created",
+			metadata: { name: data.name, key: data.key },
+		});
+
 		res.status(201).json({
 			success: true,
 			message: "Project created successfully.",
@@ -240,6 +250,18 @@ export async function updateProject(req, res, next) {
 				message: "Project not found.",
 			});
 		}
+
+		logActivity({
+			projectId: id,
+			actorId: req.profile.id,
+			entityType: "project",
+			entityId: id,
+			action: "project.updated",
+			metadata: {
+				name: data.name,
+				changed_fields: Object.keys(updateData),
+			},
+		});
 
 		res.status(200).json({
 			success: true,

@@ -9,6 +9,7 @@ import {
 	createNotifications,
 	NotificationType,
 } from "../services/notification.service.js";
+import { logActivity } from "../services/activity-log.service.js";
 
 const TASK_SELECT = `
 	id,
@@ -213,6 +214,21 @@ export async function createTask(req, res, next) {
 			}).catch((e) => console.error("[notif]", e));
 		}
 
+		logActivity({
+			projectId: data.project_id,
+			actorId: req.profile.id,
+			entityType: "task",
+			entityId: data.id,
+			action: "task.created",
+			metadata: {
+				title: data.title,
+				status: data.status,
+				priority: data.priority,
+				assignee_id: data.assigned_to?.id ?? null,
+				assignee_name: data.assigned_to?.full_name ?? null,
+			},
+		});
+
 		res.status(201).json({
 			success: true,
 			message: "Task created successfully.",
@@ -369,6 +385,26 @@ export async function updateTask(req, res, next) {
 			}
 		}
 
+		const statusChanged =
+			"status" in updateData &&
+			existing &&
+			updateData.status !== existing.status;
+
+		logActivity({
+			projectId: data.project_id,
+			actorId: req.profile.id,
+			entityType: "task",
+			entityId: data.id,
+			action: statusChanged ? "task.status_changed" : "task.updated",
+			metadata: {
+				title: data.title,
+				changed_fields: Object.keys(updateData),
+				...(statusChanged
+					? { from: existing.status, to: updateData.status }
+					: {}),
+			},
+		});
+
 		res.status(200).json({
 			success: true,
 			message: "Task updated successfully.",
@@ -385,7 +421,7 @@ export async function deleteTask(req, res, next) {
 
 		const { data: existing, error: findError } = await supabase
 			.from("tasks")
-			.select("id, sprint_id, assigned_to")
+			.select("id, title, sprint_id, assigned_to")
 			.eq("id", taskId)
 			.eq("project_id", projectId)
 			.maybeSingle();
@@ -412,6 +448,15 @@ export async function deleteTask(req, res, next) {
 				console.error("[capacity] deleteTask:", e.message);
 			}
 		}
+
+		logActivity({
+			projectId,
+			actorId: req.profile.id,
+			entityType: "task",
+			entityId: taskId,
+			action: "task.deleted",
+			metadata: { title: existing.title },
+		});
 
 		res.status(200).json({
 			success: true,
@@ -520,6 +565,19 @@ export async function moveTask(req, res, next) {
 			.single();
 
 		if (error) throw error;
+
+		logActivity({
+			projectId,
+			actorId: req.profile.id,
+			entityType: "task",
+			entityId: data.id,
+			action: "task.moved",
+			metadata: {
+				title: data.title,
+				from_column_id: task.board_column_id,
+				to_column_id: board_column_id,
+			},
+		});
 
 		res.status(200).json({
 			success: true,

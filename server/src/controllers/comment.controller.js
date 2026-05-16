@@ -1,6 +1,16 @@
 import { supabase } from "../config/supabase.js";
 import { userHasProjectPermission } from "../middlewares/permission.middleware.js";
 import { validateCreateComment, validateUpdateComment } from "../utils/comment.validator.js";
+import {
+	logActivity,
+	resolveProjectIdFromTaskOrTicket,
+} from "../services/activity-log.service.js";
+
+function snippet(body) {
+	if (!body) return "";
+	const trimmed = String(body).replace(/\s+/g, " ").trim();
+	return trimmed.length > 140 ? `${trimmed.slice(0, 140)}…` : trimmed;
+}
 
 const COMMENT_SELECT = `
 	id,
@@ -65,6 +75,27 @@ export function makeCreateComment(parentIdParam) {
 
 			if (error) throw error;
 
+			(async () => {
+				const projectId = await resolveProjectIdFromTaskOrTicket({
+					taskId: parentIdParam === "taskId" ? parentId : null,
+					ticketId: parentIdParam === "ticketId" ? parentId : null,
+				});
+				if (projectId) {
+					logActivity({
+						projectId,
+						actorId: req.profile.id,
+						entityType: "comment",
+						entityId: data.id,
+						action: "comment.created",
+						metadata: {
+							snippet: snippet(data.body),
+							task_id: data.task_id,
+							ticket_id: data.ticket_id,
+						},
+					});
+				}
+			})();
+
 			res.status(201).json({ success: true, message: "Comment created successfully.", data });
 		} catch (error) {
 			next(error);
@@ -114,6 +145,27 @@ export function makeUpdateComment(parentIdParam) {
 
 			if (error) throw error;
 
+			(async () => {
+				const projectId = await resolveProjectIdFromTaskOrTicket({
+					taskId: parentIdParam === "taskId" ? parentId : null,
+					ticketId: parentIdParam === "ticketId" ? parentId : null,
+				});
+				if (projectId) {
+					logActivity({
+						projectId,
+						actorId: req.profile.id,
+						entityType: "comment",
+						entityId: data.id,
+						action: "comment.updated",
+						metadata: {
+							snippet: snippet(data.body),
+							task_id: data.task_id,
+							ticket_id: data.ticket_id,
+						},
+					});
+				}
+			})();
+
 			res.status(200).json({ success: true, message: "Comment updated successfully.", data });
 		} catch (error) {
 			next(error);
@@ -157,6 +209,28 @@ export function makeDeleteComment(parentIdParam) {
 
 			const { error } = await supabase.from("comments").delete().eq("id", commentId);
 			if (error) throw error;
+
+			(async () => {
+				const resolvedProjectId =
+					projectId ||
+					(await resolveProjectIdFromTaskOrTicket({
+						taskId: parentIdParam === "taskId" ? parentId : null,
+						ticketId: parentIdParam === "ticketId" ? parentId : null,
+					}));
+				if (resolvedProjectId) {
+					logActivity({
+						projectId: resolvedProjectId,
+						actorId: req.profile.id,
+						entityType: "comment",
+						entityId: commentId,
+						action: "comment.deleted",
+						metadata: {
+							task_id: parentIdParam === "taskId" ? parentId : null,
+							ticket_id: parentIdParam === "ticketId" ? parentId : null,
+						},
+					});
+				}
+			})();
 
 			res.status(200).json({ success: true, message: "Comment deleted successfully." });
 		} catch (error) {

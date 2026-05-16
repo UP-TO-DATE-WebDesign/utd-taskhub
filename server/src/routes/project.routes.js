@@ -11,6 +11,7 @@ import {
 	listInvitations,
 	cancelInvitation,
 } from "../controllers/invitation.controller.js";
+import { listProjectActivity } from "../controllers/project-activity.controller.js";
 import { requireAuth } from "../middlewares/auth.middleware.js";
 import {
 	requireProjectMember,
@@ -63,5 +64,13 @@ router.delete(
 		requireProjectPermission("invitations.manage"),
 		cancelInvitation
 	);
+
+// Project activity feed
+router.get(
+	"/:id/activity",
+	requireAuth,
+	requireProjectMember,
+	listProjectActivity,
+);
 
 export default router;

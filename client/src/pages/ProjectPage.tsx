@@ -52,6 +52,8 @@ import {
 	type ProjectIconType,
 } from "@/components/projects/project-icon-options";
 import { GeneralSection as ProjectGeneralSection } from "@/components/project-settings/GeneralSection";
+import { ProjectActivityFeed } from "@/components/projects/ProjectActivityFeed";
+import { DangerZoneSection as ProjectDangerZoneSection } from "@/components/project-settings/DangerZoneSection";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -1783,22 +1785,24 @@ export default function ProjectPage() {
 
 			{/* ── ACTIVITY TAB ─────────────────────────────────────── */}
 			{activeTab === "Activity" && (
-				<Card className="p-5 w-full">
-					<p className="text-sm text-muted text-center py-8">
-						No activity yet.
-					</p>
-				</Card>
+				<ProjectActivityFeed projectId={project.id} />
 			)}
 
 			{activeTab === "Settings" && (
-				<ProjectGeneralSection
-					project={project}
-					onSaved={(updated) =>
-						setProject((prev) =>
-							prev ? { ...prev, ...updated } : prev,
-						)
-					}
-				/>
+				<div className="space-y-5">
+					<ProjectGeneralSection
+						project={project}
+						onSaved={(updated) =>
+							setProject((prev) =>
+								prev ? { ...prev, ...updated } : prev,
+							)
+						}
+					/>
+					<ProjectDangerZoneSection
+						project={project}
+						onDeleted={() => navigate("/projects")}
+					/>
+				</div>
 			)}
 
 			{/* ── Dialogs ──────────────────────────────────────────── */}
