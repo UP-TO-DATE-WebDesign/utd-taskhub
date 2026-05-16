@@ -1,29 +1,33 @@
 import { Router } from "express";
-import { supabase, supabaseAdmin } from "../config/supabase.js";
+import { supabase } from "../config/supabase.js";
 import { requireAuth } from "../middlewares/auth.middleware.js";
 import { register as registerSseClient } from "../services/sse-hub.service.js";
+import { issueTicket, consumeTicket } from "../services/sse-ticket.service.js";
 
 const router = Router();
 
-router.get("/stream", async (req, res) => {
-	const token = req.query.token;
-	if (!token || typeof token !== "string") {
-		return res.status(401).json({ success: false, message: "Missing token." });
-	}
-
-	const { data: authData, error: authError } =
-		await supabaseAdmin.auth.getUser(token);
-
-	if (authError || !authData?.user) {
+// SSE handshake: ticket is single-use, 30s TTL, bound to the issuing user.
+// The long-lived JWT is never placed in the URL, avoiding leakage via
+// access logs, Referer headers, and browser history.
+router.get("/stream", (req, res) => {
+	const userId = consumeTicket(req.query.ticket);
+	if (!userId) {
 		return res
 			.status(401)
-			.json({ success: false, message: "Invalid or expired token." });
+			.json({ success: false, message: "Invalid or expired ticket." });
 	}
-
-	registerSseClient(authData.user.id, req, res);
+	registerSseClient(userId, req, res);
 });
 
 router.use(requireAuth);
+
+router.post("/stream/ticket", (req, res) => {
+	const { ticket, expiresIn } = issueTicket(req.profile.id);
+	res.status(200).json({
+		success: true,
+		data: { ticket, expires_in: expiresIn },
+	});
+});
 
 router.get("/", async (req, res, next) => {
 	try {

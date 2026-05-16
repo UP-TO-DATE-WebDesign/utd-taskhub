@@ -73,3 +73,11 @@ export async function markRead(id: string): Promise<Notification> {
 export async function markAllRead(): Promise<void> {
 	await api.post("/notifications/read-all", {});
 }
+
+export async function requestStreamTicket(): Promise<string> {
+	const res = await api.post<{
+		success: boolean;
+		data: { ticket: string; expires_in: number };
+	}>("/notifications/stream/ticket", {});
+	return res.data.ticket;
+}

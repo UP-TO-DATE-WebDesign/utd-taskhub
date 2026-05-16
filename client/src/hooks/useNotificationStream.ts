@@ -5,9 +5,9 @@ import {
 	listNotifications,
 	markAllRead as markAllReadApi,
 	markRead as markReadApi,
+	requestStreamTicket,
 	type Notification,
 } from "@/services/notification.service";
-import { getStoredAccessToken } from "@/lib/auth-storage";
 import { useAuth } from "@/context/AuthContext";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:5050/api/v1";
@@ -51,13 +51,23 @@ export function useNotificationStream(): UseNotificationStreamResult {
 		sourceRef.current = null;
 	}, []);
 
-	const openStream = useCallback(() => {
-		const token = getStoredAccessToken();
-		if (!token) return;
-
+	const openStream = useCallback(async () => {
 		closeStream();
 
-		const url = `${API_URL}/notifications/stream?token=${encodeURIComponent(token)}`;
+		let ticket: string;
+		try {
+			ticket = await requestStreamTicket();
+		} catch (err) {
+			console.error("[notif] ticket request failed:", err);
+			const delay = backoffRef.current;
+			backoffRef.current = Math.min(delay * 2, BACKOFF_MAX_MS);
+			reconnectTimerRef.current = window.setTimeout(() => {
+				openStream();
+			}, delay);
+			return;
+		}
+
+		const url = `${API_URL}/notifications/stream?ticket=${encodeURIComponent(ticket)}`;
 		const es = new EventSource(url);
 		sourceRef.current = es;
 
