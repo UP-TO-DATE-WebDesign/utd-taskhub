@@ -77,7 +77,7 @@ interface Props {
 	profiles?: Profile[];
 	allTasks?: UiTask[];
 	onClose: () => void;
-	onSaveNotes: (task: UiTask, notes: string) => Promise<void>;
+	onSaveNotes?: (task: UiTask, notes: string) => Promise<void>;
 	onUpdate?: (task: UiTask, payload: UpdateTaskPayload) => Promise<void>;
 	onChangeStatus?: (task: UiTask, status: ApiTaskStatus) => Promise<void>;
 	onAddChild?: (parent: UiTask) => void;
@@ -143,7 +143,9 @@ export function TaskDetailDialogV2({
 		if (!task) return;
 		setSaving(true);
 		try {
-			await onSaveNotes(task, notes);
+			if (onSaveNotes) {
+				await onSaveNotes(task, notes);
+			}
 			setShowNotesEditor(false);
 		} finally {
 			setSaving(false);
@@ -451,17 +453,19 @@ export function TaskDetailDialogV2({
 											onChange={setNotes}
 											placeholder="Add implementation details, technical context, or notes for the dev team..."
 										/>
-										<div className="flex justify-end mt-3">
-											<Button
-												onClick={handleSave}
-												disabled={saving}
-											>
-												{saving && (
-													<Loader2 className="h-4 w-4 animate-spin mr-2" />
-												)}
-												Save Notes
-											</Button>
-										</div>
+										{onSaveNotes && (
+											<div className="flex justify-end mt-3">
+												<Button
+													onClick={handleSave}
+													disabled={saving}
+												>
+													{saving && (
+														<Loader2 className="h-4 w-4 animate-spin mr-2" />
+													)}
+													Save Notes
+												</Button>
+											</div>
+										)}
 									</>
 								) : projectDescriptionText(notes) ? (
 									<div className="text-sm text-foreground bg-muted-subtle/40 rounded-lg p-3">

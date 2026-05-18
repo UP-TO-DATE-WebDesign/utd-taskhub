@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, Pencil, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,13 @@ import {
 import { listSprints, type Sprint } from "@/services/sprint.service";
 import { toast } from "sonner";
 import { listProfiles, type Profile } from "@/services/profile.service";
-import { listTasks, type Task } from "@/services/task.service";
+import {
+	listTasks,
+	updateTask,
+	type ApiTaskStatus,
+	type Task,
+	type UpdateTaskPayload,
+} from "@/services/task.service";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
 import { ProjectDescriptionPreview } from "@/components/projects/project-description";
@@ -24,6 +30,8 @@ import { AddMemberDialog } from "@/components/task-page/AddMemberDialog";
 import { OverviewTab } from "@/components/task-page/OverviewTab";
 import { TasksTab } from "@/components/task-page/TasksTab";
 import { TeamsTab } from "@/components/task-page/TeamsTab";
+import { TaskDetailDialogV2 } from "@/components/tasks/TaskDetailDialogV2";
+import { COLUMN_LABELS, toUiTask, type UiTask } from "@/components/tasks/types";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -56,6 +64,11 @@ export default function ProjectPage() {
 	const [newTaskOpen, setNewTaskOpen] = useState(false);
 	const [addUserOpen, setAddUserOpen] = useState(false);
 	const [assigningSprintId, setAssigningSprintId] = useState(false);
+
+	const [dialogOpen, setDialogOpen] = useState(false);
+
+	const [childParent, setChildParent] = useState<UiTask | null>(null);
+	const [viewTask, setViewTask] = useState<UiTask | null>(null);
 
 	useEffect(() => {
 		if (!id) return;
@@ -126,6 +139,47 @@ export default function ProjectPage() {
 			setAssigningSprintId(false);
 		}
 	}
+	const handleSaveNotes = useCallback(async (task: UiTask, notes: string) => {
+		const apiTask = await updateTask(task.project_id, task.id, {
+			developer_notes: notes,
+		});
+		setTasks((prev) => {
+			return prev.map((t) => (t.id === apiTask.id ? apiTask : t));
+		});
+		setViewTask(toUiTask(apiTask));
+		toast.success("Notes saved");
+	}, []);
+
+	const handleEditTask = useCallback(
+		async (task: UiTask, payload: UpdateTaskPayload) => {
+			const apiTask = await updateTask(task.project_id, task.id, payload);
+			setTasks((prev) => {
+				return prev.map((t) => (t.id === apiTask.id ? apiTask : t));
+			});
+			setViewTask(toUiTask(apiTask));
+			toast.success("Task updated", { description: apiTask.title });
+		},
+		[],
+	);
+
+	const handleChangeStatus = useCallback(
+		async (task: UiTask, status: ApiTaskStatus) => {
+			const apiTask = await updateTask(task.project_id, task.id, {
+				status,
+			});
+			setTasks((prev) => {
+				return prev.map((t) => (t.id === apiTask.id ? apiTask : t));
+			});
+			setViewTask(toUiTask(apiTask));
+			toast.success("Status updated", {
+				description:
+					COLUMN_LABELS[
+						status.replace("_", "-") as keyof typeof COLUMN_LABELS
+					],
+			});
+		},
+		[],
+	);
 
 	if (loading) {
 		return (
@@ -235,7 +289,11 @@ export default function ProjectPage() {
 
 			{/* ── TASKS TAB ────────────────────────────────────────── */}
 			{activeTab === "Tasks" && (
-				<TasksTab tasks={tasks} tasksLoading={tasksLoading} />
+				<TasksTab
+					tasks={tasks}
+					tasksLoading={tasksLoading}
+					onViewTask={(task) => setViewTask(toUiTask(task))}
+				/>
 			)}
 
 			{/* ── TEAMS TAB ────────────────────────────────────────── */}
@@ -317,6 +375,29 @@ export default function ProjectPage() {
 				projectId={project.id}
 				members={members}
 				onCreated={(task) => setTasks((prev) => [task, ...prev])}
+			/>
+			<TaskDetailDialogV2
+				task={viewTask}
+				projects={[project]}
+				profiles={profiles}
+				allTasks={[]}
+				onClose={() => setViewTask(null)}
+				onSaveNotes={handleSaveNotes}
+				onUpdate={handleEditTask}
+				onChangeStatus={handleChangeStatus}
+				onOpenTask={(t) => setViewTask(t)}
+				onAddChild={(parent) => {
+					// setChildParent(parent);
+					// setDialogOpen(true);
+				}}
+				onEdit={(t) => {
+					// setViewTask(null);
+					// setEditTask(t);
+				}}
+				onDelete={(t) => {
+					// handleDeleteTask(t);
+					// setViewTask(null);
+				}}
 			/>
 		</div>
 	);

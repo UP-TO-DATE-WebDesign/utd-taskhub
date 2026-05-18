@@ -2,6 +2,7 @@ const ACCESS_TOKEN_KEY = "access_token";
 const REFRESH_TOKEN_KEY = "refresh_token";
 const REMEMBER_UNTIL_KEY = "remember_until";
 const ACCESS_TOKEN_EXPIRES_AT_KEY = "access_token_expires_at";
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
 interface StoreAuthOptions {
@@ -49,14 +50,10 @@ export function clearStoredAuth() {
 export function storeAuthTokens(tokens: AuthTokens, options: StoreAuthOptions) {
 	clearStoredAuth();
 
-	if (options.remember) {
-		const rememberUntil = options.rememberUntil ?? Date.now() + THIRTY_DAYS_MS;
-		localStorage.setItem(REMEMBER_UNTIL_KEY, String(rememberUntil));
-		setTokens(localStorage, tokens);
-		return;
-	}
-
-	setTokens(sessionStorage, tokens);
+	const expiryMs = options.remember ? THIRTY_DAYS_MS : ONE_DAY_MS;
+	const rememberUntil = options.rememberUntil ?? Date.now() + expiryMs;
+	localStorage.setItem(REMEMBER_UNTIL_KEY, String(rememberUntil));
+	setTokens(localStorage, tokens);
 }
 
 export function getStoredAccessToken(): string | null {
