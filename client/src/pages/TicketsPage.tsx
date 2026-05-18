@@ -56,6 +56,11 @@ import {
 	type UpdateTicketPayload,
 	type ConvertTicketPayload,
 } from "@/services/ticket.service";
+import {
+	listMembers,
+	type ProjectMember,
+} from "@/services/project-member.service";
+import { UNASSIGNED_VALUE } from "@/components/tasks/task-detail/constants";
 import { ProjectDescriptionEditor } from "@/components/projects/project-description";
 import { projectDescriptionText } from "@/components/projects/project-description-utils";
 import { PermissionGate } from "@/components/PermissionGate";
@@ -199,6 +204,17 @@ function TicketDialog({
 	const [codeMessage, setCodeMessage] = useState("");
 	const [submitting, setSubmitting] = useState(false);
 	const [titleError, setTitleError] = useState("");
+	const [members, setMembers] = useState<ProjectMember[]>([]);
+	const [membersLoading, setMembersLoading] = useState(false);
+
+	useEffect(() => {
+		if (!open) return;
+		setMembersLoading(true);
+		listMembers(projectId)
+			.then(setMembers)
+			.catch(() => setMembers([]))
+			.finally(() => setMembersLoading(false));
+	}, [open, projectId]);
 
 	useEffect(() => {
 		if (!open) return;
@@ -503,13 +519,38 @@ function TicketDialog({
 
 					<div>
 						<label className="text-sm font-medium text-muted-foreground mb-1.5 block">
-							Assigned To (UUID)
+							Assigned To
 						</label>
-						<Input
-							placeholder="User UUID (optional)"
-							value={assignedTo}
-							onChange={(e) => setAssignedTo(e.target.value)}
-						/>
+						<Select
+							value={assignedTo || UNASSIGNED_VALUE}
+							onValueChange={(v) =>
+								setAssignedTo(v === UNASSIGNED_VALUE ? "" : v)
+							}
+							disabled={membersLoading}
+						>
+							<SelectTrigger>
+								<SelectValue
+									placeholder={
+										membersLoading
+											? "Loading members..."
+											: "Unassigned"
+									}
+								/>
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value={UNASSIGNED_VALUE}>
+									Unassigned
+								</SelectItem>
+								{members.map((m) => (
+									<SelectItem
+										key={m.profiles.id}
+										value={m.profiles.id}
+									>
+										{m.profiles.full_name ?? m.profiles.email}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
 					</div>
 				</div>
 
@@ -566,6 +607,17 @@ function ConvertDialog({
 	const [boardColumnId, setBoardColumnId] = useState("");
 	const [submitting, setSubmitting] = useState(false);
 	const [titleError, setTitleError] = useState("");
+	const [members, setMembers] = useState<ProjectMember[]>([]);
+	const [membersLoading, setMembersLoading] = useState(false);
+
+	useEffect(() => {
+		if (!open) return;
+		setMembersLoading(true);
+		listMembers(projectId)
+			.then(setMembers)
+			.catch(() => setMembers([]))
+			.finally(() => setMembersLoading(false));
+	}, [open, projectId]);
 
 	useEffect(() => {
 		if (open && ticket) {
@@ -723,13 +775,41 @@ function ConvertDialog({
 					<div className="grid grid-cols-2 gap-3">
 						<div>
 							<label className="text-sm font-medium text-muted-foreground mb-1.5 block">
-								Assigned To (UUID)
+								Assigned To
 							</label>
-							<Input
-								placeholder="User UUID (optional)"
-								value={assignedTo}
-								onChange={(e) => setAssignedTo(e.target.value)}
-							/>
+							<Select
+								value={assignedTo || UNASSIGNED_VALUE}
+								onValueChange={(v) =>
+									setAssignedTo(
+										v === UNASSIGNED_VALUE ? "" : v
+									)
+								}
+								disabled={membersLoading}
+							>
+								<SelectTrigger>
+									<SelectValue
+										placeholder={
+											membersLoading
+												? "Loading members..."
+												: "Unassigned"
+										}
+									/>
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value={UNASSIGNED_VALUE}>
+										Unassigned
+									</SelectItem>
+									{members.map((m) => (
+										<SelectItem
+											key={m.profiles.id}
+											value={m.profiles.id}
+										>
+											{m.profiles.full_name ??
+												m.profiles.email}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
 						</div>
 
 						<div>
