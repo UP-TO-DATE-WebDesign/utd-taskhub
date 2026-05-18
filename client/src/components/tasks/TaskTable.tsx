@@ -1,7 +1,7 @@
 import { Calendar, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { type Project } from "@/services/project.service";
 import {
@@ -53,6 +53,12 @@ function ListRow({
 				{assignee && (
 					<div className="flex items-center gap-2">
 						<Avatar className="h-6 w-6">
+							{assignee.avatar_url && (
+								<AvatarImage
+									src={assignee.avatar_url}
+									alt={assignee.full_name ?? assignee.email}
+								/>
+							)}
 							<AvatarFallback
 								className={`text-[9px] text-white ${profileColorClass(assignee.id)}`}
 							>

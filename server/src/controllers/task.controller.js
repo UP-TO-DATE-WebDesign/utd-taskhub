@@ -39,12 +39,14 @@ const TASK_SELECT = `
 	assigned_to:profiles!tasks_assigned_to_fkey (
 		id,
 		full_name,
-		email
+		email,
+		avatar_url
 	),
 	created_by:profiles!tasks_created_by_fkey (
 		id,
 		full_name,
-		email
+		email,
+		avatar_url
 	)
 `;
 
