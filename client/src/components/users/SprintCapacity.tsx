@@ -81,7 +81,7 @@ const SprintCapacity = ({ userId }: SprintCapacityProps) => {
 				<Progress.Section value={assignedPct} color={barColor} animated>
 					<Progress.Label>{assignedPct}%</Progress.Label>
 				</Progress.Section>
-				<Progress.Section value={remainingPct} color="gray">
+				<Progress.Section value={remainingPct} color="#b8bbc1">
 					<Progress.Label>{remainingPct}%</Progress.Label>
 				</Progress.Section>
 			</Progress.Root>
