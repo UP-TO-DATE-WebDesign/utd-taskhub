@@ -169,7 +169,7 @@ export function OverviewTab({
 						<p className="text-sm text-muted">No members yet.</p>
 					) : (
 						<div className="space-y-3">
-							{members.map((m, i) => (
+							{members.map((m) => (
 								<div
 									key={m.user_id}
 									className="flex items-center gap-3"

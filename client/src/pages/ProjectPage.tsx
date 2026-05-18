@@ -66,9 +66,8 @@ export default function ProjectPage() {
 	const [addUserOpen, setAddUserOpen] = useState(false);
 	const [assigningSprintId, setAssigningSprintId] = useState(false);
 
-	const [dialogOpen, setDialogOpen] = useState(false);
-
-	const [childParent, setChildParent] = useState<UiTask | null>(null);
+	// const [dialogOpen, setDialogOpen] = useState(false);
+	// const [childParent, setChildParent] = useState<UiTask | null>(null);
 	const [viewTask, setViewTask] = useState<UiTask | null>(null);
 
 	const [search, setSearch] = useState("");
@@ -427,18 +426,18 @@ export default function ProjectPage() {
 				onUpdate={handleEditTask}
 				onChangeStatus={handleChangeStatus}
 				onOpenTask={(t) => setViewTask(t)}
-				onAddChild={(parent) => {
-					// setChildParent(parent);
-					// setDialogOpen(true);
-				}}
-				onEdit={(t) => {
-					// setViewTask(null);
-					// setEditTask(t);
-				}}
-				onDelete={(t) => {
-					// handleDeleteTask(t);
-					// setViewTask(null);
-				}}
+				// onAddChild={(parent) => {
+				// 	// setChildParent(parent);
+				// 	// setDialogOpen(true);
+				// }}
+				// onEdit={(t) => {
+				// 	// setViewTask(null);
+				// 	// setEditTask(t);
+				// }}
+				// onDelete={(t) => {
+				// 	// handleDeleteTask(t);
+				// 	// setViewTask(null);
+				// }}
 			/>
 		</div>
 	);

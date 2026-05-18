@@ -69,7 +69,7 @@ export function TeamsTab({
 								</td>
 							</tr>
 						) : (
-							members.map((m, i) => {
+							members.map((m) => {
 								const isOwner =
 									m.user_id === project.created_by;
 								return (

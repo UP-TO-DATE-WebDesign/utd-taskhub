@@ -7,7 +7,7 @@ import {
 	type ApiTaskStatus,
 	type ApiTaskPriority,
 } from "@/services/task.service";
-import { profileColorClass } from "@/components/tasks/types";
+import { profileColorClass, type UiTask } from "@/components/tasks/types";
 import { projectDescriptionText } from "@/components/projects/project-description-utils";
 import { getInitials, formatDate } from "./utils";
 

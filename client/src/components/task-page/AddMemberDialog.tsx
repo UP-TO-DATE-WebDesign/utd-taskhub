@@ -80,7 +80,7 @@ export function AddMemberDialog({
 						</p>
 					) : (
 						<div className="space-y-2 max-h-64 overflow-y-auto">
-							{available.map((p, i) => (
+							{available.map((p) => (
 								<label
 									key={p.id}
 									className={cn(

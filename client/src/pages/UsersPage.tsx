@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
 	Dialog,
 	DialogContent,
@@ -88,9 +88,16 @@ function UserCard({
 	onDelete: (user: UserProfile) => void;
 }) {
 	return (
-		<Card className="p-5 flex flex-col gap-4">
+		<Card
+			className="p-5 flex flex-col gap-4"
+			key={`index-${user.id}-${index}`}
+		>
 			<div className="flex items-center gap-3">
 				<Avatar className="h-10 w-10">
+					<AvatarImage
+						src={user.avatar_url ?? undefined}
+						alt={user.full_name ?? user.email}
+					/>
 					<AvatarFallback
 						className={`text-sm text-white ${avatarColor(String(user.full_name)?.length)}`}
 					>
@@ -148,6 +155,10 @@ function UserRow({
 			<td className="px-5 py-3.5">
 				<div className="flex items-center gap-3">
 					<Avatar className="h-7 w-7">
+						<AvatarImage
+							src={user.avatar_url ?? undefined}
+							alt={user.full_name ?? user.email}
+						/>
 						<AvatarFallback
 							className={`text-[10px] text-white ${avatarColor(String(user.full_name)?.length)}`}
 						>

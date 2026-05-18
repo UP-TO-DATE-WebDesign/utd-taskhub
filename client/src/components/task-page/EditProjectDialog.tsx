@@ -337,7 +337,7 @@ export function EditProjectDialog({
 								Team Members
 							</label>
 							<div className="grid grid-cols-2 gap-2">
-								{profiles.map((profile, i) => {
+								{profiles.map((profile) => {
 									const isOwner =
 										profile.id === project.created_by;
 									const checked = form.memberIds.includes(
