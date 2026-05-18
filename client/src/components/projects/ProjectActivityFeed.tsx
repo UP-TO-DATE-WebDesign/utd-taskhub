@@ -327,7 +327,7 @@ export function ProjectActivityFeed({ projectId }: ProjectActivityFeedProps) {
 					{page < totalPages && (
 						<div className="pt-2 flex justify-center">
 							<Button
-								variant="outline"
+								variant="ghost"
 								size="sm"
 								disabled={loadingMore}
 								onClick={() =>
