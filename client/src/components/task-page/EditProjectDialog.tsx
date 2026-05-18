@@ -28,9 +28,7 @@ import {
 import { toast } from "sonner";
 import { addMember, removeMember } from "@/services/project-member.service";
 import { type Profile } from "@/services/profile.service";
-import {
-	ProjectDescriptionEditor,
-} from "@/components/projects/project-description";
+import { ProjectDescriptionEditor } from "@/components/projects/project-description";
 import { projectDescriptionText } from "@/components/projects/project-description-utils";
 import {
 	DEFAULT_PROJECT_ICON,
@@ -68,7 +66,9 @@ export function EditProjectDialog({
 	const [form, setForm] = useState(EDIT_EMPTY);
 	const [initialMemberIds, setInitialMemberIds] = useState<string[]>([]);
 	const [submitting, setSubmitting] = useState(false);
-	const [errors, setErrors] = useState<{ name?: string; submit?: string }>({});
+	const [errors, setErrors] = useState<{ name?: string; submit?: string }>(
+		{},
+	);
 
 	useEffect(() => {
 		if (!open) return;
@@ -364,7 +364,7 @@ export function EditProjectDialog({
 											/>
 											<Avatar className="h-6 w-6 shrink-0">
 												<AvatarFallback
-													className={`text-[9px] text-white ${avatarColor(i)}`}
+													className={`text-[9px] text-white ${avatarColor(String(profile.id)?.length)}`}
 												>
 													{getInitials(
 														profile.full_name,

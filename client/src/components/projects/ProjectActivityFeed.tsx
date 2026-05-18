@@ -3,13 +3,14 @@ import { Loader2, AlertCircle, Activity } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
 	listProjectActivity,
 	type ActivityEntry,
 	type ActivityEntityType,
 } from "@/services/activity.service";
+import { avatarColor } from "../task-page/utils";
 
 const PAGE_SIZE = 50;
 
@@ -131,7 +132,13 @@ function ActorAvatar({ actor }: { actor: ActivityEntry["actor"] }) {
 	const initials = getInitials(actor?.full_name ?? actor?.email ?? null);
 	return (
 		<Avatar className="h-8 w-8 shrink-0">
-			<AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
+			<AvatarImage
+				src={actor?.avatar_url ?? undefined}
+				alt={actor?.full_name ?? ""}
+			/>
+			<AvatarFallback
+				className={` text-white ${avatarColor(String(actor?.id)?.length)}`}
+			>
 				{initials}
 			</AvatarFallback>
 		</Avatar>

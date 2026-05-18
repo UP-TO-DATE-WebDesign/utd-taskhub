@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import type { Project } from "@/services/project.service";
 import { getInitials, avatarColor } from "./utils";
 
@@ -16,8 +16,12 @@ export function TeamAvatars({
 					key={m.user_id}
 					className={`h-9 w-9 border-2 border-surface ${i > 0 ? "-ml-3" : ""}`}
 				>
+					<AvatarImage
+						src={m.profiles?.avatar_url ?? undefined}
+						alt={m.profiles?.full_name ?? ""}
+					/>
 					<AvatarFallback
-						className={`text-[10px] text-white ${avatarColor(i)}`}
+						className={`text-[10px] text-white ${avatarColor(String(m.profiles?.id)?.length)}`}
 					>
 						{getInitials(m.profiles?.full_name ?? null)}
 					</AvatarFallback>

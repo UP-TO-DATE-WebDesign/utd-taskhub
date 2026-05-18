@@ -10,7 +10,7 @@ import {
 	DialogFooter,
 	DialogClose,
 } from "@/components/ui/dialog";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { addMember } from "@/services/project-member.service";
 import { type Profile } from "@/services/profile.service";
 import { toast } from "sonner";
@@ -99,8 +99,12 @@ export function AddMemberDialog({
 										className="sr-only"
 									/>
 									<Avatar className="h-8 w-8 shrink-0">
+										<AvatarImage
+											src={p.avatar_url ?? undefined}
+											alt={p.full_name ?? ""}
+										/>
 										<AvatarFallback
-											className={`text-[10px] text-white ${avatarColor(i)}`}
+											className={`text-[10px] text-white ${avatarColor(String(p.id)?.length)}`}
 										>
 											{getInitials(p.full_name)}
 										</AvatarFallback>

@@ -1,7 +1,7 @@
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import type { Project } from "@/services/project.service";
 import { removeMember } from "@/services/project-member.service";
 import { toast } from "sonner";
@@ -80,8 +80,20 @@ export function TeamsTab({
 										<td className="px-5 py-4">
 											<div className="flex items-center gap-3">
 												<Avatar className="h-8 w-8 shrink-0">
+													<AvatarImage
+														src={
+															m.profiles
+																?.avatar_url ??
+															undefined
+														}
+														alt={
+															m.profiles
+																?.full_name ??
+															""
+														}
+													/>
 													<AvatarFallback
-														className={`text-[10px] text-white ${avatarColor(i)}`}
+														className={`text-[10px] text-white ${avatarColor(String(m.profiles?.id)?.length)}`}
 													>
 														{getInitials(
 															m.profiles
@@ -92,7 +104,8 @@ export function TeamsTab({
 												</Avatar>
 												<div>
 													<p className="text-sm font-medium text-foreground">
-														{m.profiles?.full_name ??
+														{m.profiles
+															?.full_name ??
 															"Unknown"}
 													</p>
 													{isOwner && (

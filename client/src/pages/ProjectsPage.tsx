@@ -131,7 +131,7 @@ type TeamMember = {
 function membersToTeam(members: Project["project_members"]): TeamMember[] {
 	return members.map((m, i) => ({
 		initials: getInitials(m.profiles?.full_name ?? null),
-		color: avatarColor(i),
+		color: avatarColor(String(m.profiles?.id)?.length),
 		avatarUrl: m.profiles?.avatar_url ?? null,
 		name: m.profiles?.full_name ?? "",
 	}));
@@ -475,7 +475,8 @@ function NewProjectDialog({
 							maxLength={10}
 						/>
 						<p className="text-xs text-muted-foreground mt-1">
-							2-10 uppercase letters or digits. Used as ticket code prefix (e.g. WEB-001).
+							2-10 uppercase letters or digits. Used as ticket
+							code prefix (e.g. WEB-001).
 						</p>
 					</div>
 
@@ -630,14 +631,15 @@ function NewProjectDialog({
 										/>
 										<Avatar className="h-6 w-6 shrink-0">
 											<AvatarFallback
-												className={`text-[9px] text-white ${avatarColor(i)}`}
+												className={`text-[9px] text-white ${avatarColor(String(profile.id)?.length)}`}
 											>
 												{getInitials(profile.full_name)}
 											</AvatarFallback>
 										</Avatar>
 										<div className="flex min-w-0 flex-col">
 											<span className="truncate text-sm text-foreground">
-												{profile.full_name ?? profile.email}
+												{profile.full_name ??
+													profile.email}
 											</span>
 											<span className="truncate text-[10px] text-muted-foreground">
 												{profile.email}

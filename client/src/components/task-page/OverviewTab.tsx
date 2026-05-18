@@ -1,6 +1,6 @@
 import { TrendingUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
 	Select,
 	SelectContent,
@@ -107,10 +107,7 @@ export function OverviewTab({
 											No sprint
 										</SelectItem>
 										{allSprints.map((s) => (
-											<SelectItem
-												key={s.id}
-												value={s.id}
-											>
+											<SelectItem key={s.id} value={s.id}>
 												{s.name}
 											</SelectItem>
 										))}
@@ -178,8 +175,15 @@ export function OverviewTab({
 									className="flex items-center gap-3"
 								>
 									<Avatar className="h-8 w-8 shrink-0">
+										<AvatarImage
+											src={
+												m.profiles?.avatar_url ??
+												undefined
+											}
+											alt={m.profiles?.full_name ?? ""}
+										/>
 										<AvatarFallback
-											className={`text-[10px] text-white ${avatarColor(i)}`}
+											className={`text-[10px] text-white ${avatarColor(String(m.profiles?.id)?.length)}`}
 										>
 											{getInitials(
 												m.profiles?.full_name ?? null,
