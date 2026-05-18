@@ -6,6 +6,8 @@ import {
 	ShieldCheck,
 	Ticket,
 	AlertTriangle,
+	ArrowDown,
+	ArrowUp,
 	MoreVertical,
 	Bug,
 	CalendarDays,
@@ -115,6 +117,19 @@ export default function DashboardPage() {
 		AdminReportPayload["projectStatusSummary"] | null
 	>(null);
 	const [reportsLoading, setReportsLoading] = useState(false);
+	const [sortKey, setSortKey] = useState<
+		"title" | "project" | "due_date" | "status"
+	>("due_date");
+	const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+
+	const toggleSort = (key: typeof sortKey) => {
+		if (sortKey === key) {
+			setSortDir(sortDir === "asc" ? "desc" : "asc");
+		} else {
+			setSortKey(key);
+			setSortDir("asc");
+		}
+	};
 
 	useEffect(() => {
 		getDashboard()
@@ -228,6 +243,23 @@ export default function DashboardPage() {
 	if (!data) return null;
 
 	const { stats, active_sprint, recent_tasks, recent_tickets } = data;
+
+	const sortedRecentTasks = [...recent_tasks].sort((a, b) => {
+		const dir = sortDir === "asc" ? 1 : -1;
+		const av =
+			sortKey === "project"
+				? (a.project?.name ?? "")
+				: sortKey === "due_date"
+					? (a.due_date ?? "")
+					: (a[sortKey] ?? "");
+		const bv =
+			sortKey === "project"
+				? (b.project?.name ?? "")
+				: sortKey === "due_date"
+					? (b.due_date ?? "")
+					: (b[sortKey] ?? "");
+		return String(av).localeCompare(String(bv)) * dir;
+	});
 
 	const statCards = [
 		{
@@ -488,29 +520,76 @@ export default function DashboardPage() {
 							<h2 className="text-base font-semibold text-foreground">
 								Recent Tasks
 							</h2>
-							<button className="text-sm text-primary font-medium hover:underline">
+							<button
+								onClick={() => navigate("/tasks")}
+								className="text-sm text-primary font-medium hover:underline"
+							>
 								View All
 							</button>
 						</div>
 						<table className="w-full text-sm">
 							<thead>
 								<tr className="border-b border-border">
-									<th className="px-5 py-3 text-[10px] font-medium uppercase tracking-wider text-muted text-left">
-										Task Description
+									<th
+										onClick={() => toggleSort("title")}
+										className="px-5 py-3 text-[10px] font-medium uppercase tracking-wider text-muted text-left cursor-pointer select-none"
+									>
+										<span className="inline-flex items-center gap-1">
+											Task Description
+											{sortKey === "title" &&
+												(sortDir === "asc" ? (
+													<ArrowUp className="h-3 w-3" />
+												) : (
+													<ArrowDown className="h-3 w-3" />
+												))}
+										</span>
 									</th>
-									<th className="px-4 py-3 text-[10px] font-medium uppercase tracking-wider text-muted text-left">
-										Project
+									<th
+										onClick={() => toggleSort("project")}
+										className="px-4 py-3 text-[10px] font-medium uppercase tracking-wider text-muted text-left cursor-pointer select-none"
+									>
+										<span className="inline-flex items-center gap-1">
+											Project
+											{sortKey === "project" &&
+												(sortDir === "asc" ? (
+													<ArrowUp className="h-3 w-3" />
+												) : (
+													<ArrowDown className="h-3 w-3" />
+												))}
+										</span>
 									</th>
-									<th className="px-4 py-3 text-[10px] font-medium uppercase tracking-wider text-muted text-left">
-										Due
+									<th
+										onClick={() => toggleSort("due_date")}
+										className="px-4 py-3 text-[10px] font-medium uppercase tracking-wider text-muted text-left cursor-pointer select-none"
+									>
+										<span className="inline-flex items-center gap-1">
+											Due
+											{sortKey === "due_date" &&
+												(sortDir === "asc" ? (
+													<ArrowUp className="h-3 w-3" />
+												) : (
+													<ArrowDown className="h-3 w-3" />
+												))}
+										</span>
 									</th>
-									<th className="px-4 py-3 text-[10px] font-medium uppercase tracking-wider text-muted text-left">
-										Status
+									<th
+										onClick={() => toggleSort("status")}
+										className="px-4 py-3 text-[10px] font-medium uppercase tracking-wider text-muted text-left cursor-pointer select-none"
+									>
+										<span className="inline-flex items-center gap-1">
+											Status
+											{sortKey === "status" &&
+												(sortDir === "asc" ? (
+													<ArrowUp className="h-3 w-3" />
+												) : (
+													<ArrowDown className="h-3 w-3" />
+												))}
+										</span>
 									</th>
 								</tr>
 							</thead>
 							<tbody>
-								{recent_tasks.length === 0 ? (
+								{sortedRecentTasks.length === 0 ? (
 									<tr>
 										<td
 											colSpan={4}
@@ -520,7 +599,7 @@ export default function DashboardPage() {
 										</td>
 									</tr>
 								) : (
-									recent_tasks.map((task) => (
+									sortedRecentTasks.map((task) => (
 										<tr
 											key={task.id}
 											className="border-b border-border last:border-0 hover:bg-muted-subtle transition-colors"
