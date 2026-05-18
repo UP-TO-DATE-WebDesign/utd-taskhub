@@ -7,7 +7,11 @@ import {
 	type ApiTaskStatus,
 	type ApiTaskPriority,
 } from "@/services/task.service";
-import { profileColorClass, type UiTask } from "@/components/tasks/types";
+import {
+	profileColorClass,
+	toUiTask,
+	type UiTask,
+} from "@/components/tasks/types";
 import { projectDescriptionText } from "@/components/projects/project-description-utils";
 import { getInitials, formatDate } from "./utils";
 
@@ -49,7 +53,7 @@ export function TasksTab({
 }: {
 	tasks: Task[];
 	tasksLoading: boolean;
-	onViewTask: (task: UiTask) => void;
+	onViewTask: (task: UiTask | null) => void;
 }) {
 	return (
 		<Card className="p-0 overflow-hidden">
@@ -107,7 +111,7 @@ export function TasksTab({
 									key={task.id}
 									className="border-b border-border last:border-0 hover:bg-muted-subtle transition-colors"
 									onClick={() => {
-										onViewTask(task);
+										onViewTask(toUiTask(task));
 									}}
 								>
 									<td className="px-5 py-4">

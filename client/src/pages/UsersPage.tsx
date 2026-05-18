@@ -143,11 +143,9 @@ function UserCard({
 
 function UserRow({
 	user,
-	index,
 	onDelete,
 }: {
 	user: UserProfile;
-	index: number;
 	onDelete: (user: UserProfile) => void;
 }) {
 	return (
@@ -818,11 +816,10 @@ export default function UsersPage() {
 							</tr>
 						</thead>
 						<tbody>
-							{filtered.map((u, i) => (
+							{filtered.map((u) => (
 								<UserRow
 									key={u.id}
 									user={u}
-									index={i}
 									onDelete={setDeleteTarget}
 								/>
 							))}

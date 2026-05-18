@@ -331,7 +331,7 @@ export default function ProjectPage() {
 					<TasksTab
 						tasks={filteredTasks}
 						tasksLoading={tasksLoading}
-						onViewTask={(task) => setViewTask(toUiTask(task))}
+						onViewTask={(task) => setViewTask(task)}
 					/>
 				</>
 			)}

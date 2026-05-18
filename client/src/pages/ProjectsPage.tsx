@@ -129,7 +129,7 @@ type TeamMember = {
 };
 
 function membersToTeam(members: Project["project_members"]): TeamMember[] {
-	return members.map((m, i) => ({
+	return members.map((m) => ({
 		initials: getInitials(m.profiles?.full_name ?? null),
 		color: avatarColor(String(m.profiles?.full_name)?.length),
 		avatarUrl: m.profiles?.avatar_url ?? null,
@@ -611,7 +611,7 @@ function NewProjectDialog({
 							</div>
 						) : (
 							<div className="grid gap-2 sm:grid-cols-2">
-								{profiles.map((profile, i) => (
+								{profiles.map((profile) => (
 									<label
 										key={profile.id}
 										className={cn(
