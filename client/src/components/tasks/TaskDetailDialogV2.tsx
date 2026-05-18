@@ -7,6 +7,7 @@ import {
 	Link2,
 	Paperclip,
 	MessageSquare,
+	MessagesSquare,
 	ListChecks,
 	Check,
 } from "lucide-react";
@@ -45,6 +46,7 @@ import {
 import { type Profile } from "@/services/profile.service";
 import { type UiTask, STATUS_BADGE } from "./types";
 import { TaskAttachments } from "./TaskAttachments";
+import { TaskComments } from "./TaskComments";
 import {
 	InlineTitle,
 	InlineDescription,
@@ -465,6 +467,22 @@ export function TaskDetailDialogV2({
 									</p>
 								)}
 							</section>
+
+							{/* Comments */}
+							{task && (
+								<section>
+									<div className="flex items-center gap-2 mb-3">
+										<MessagesSquare className="h-4 w-4 text-muted" />
+										<h3 className="text-sm font-semibold text-foreground">
+											Comments
+										</h3>
+									</div>
+									<TaskComments
+										projectId={task.project_id}
+										taskId={task.id}
+									/>
+								</section>
+							)}
 						</div>
 
 						{/* Sidebar */}

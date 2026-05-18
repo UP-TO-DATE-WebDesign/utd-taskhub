@@ -17,12 +17,14 @@ const COMMENT_SELECT = `
 	body,
 	task_id,
 	ticket_id,
+	parent_comment_id,
 	created_at,
 	updated_at,
 	author:profiles!comments_created_by_fkey (
 		id,
 		full_name,
-		email
+		email,
+		avatar_url
 	)
 `;
 
@@ -63,11 +65,35 @@ export function makeCreateComment(parentIdParam) {
 				return res.status(400).json({ success: false, message: "Validation failed.", errors });
 			}
 
+			const parentCommentId = req.body.parent_comment_id ?? null;
+			if (parentCommentId) {
+				const { data: parentComment, error: parentLookupError } =
+					await supabase
+						.from("comments")
+						.select("id, parent_comment_id, " + column)
+						.eq("id", parentCommentId)
+						.maybeSingle();
+				if (parentLookupError) throw parentLookupError;
+				if (!parentComment || parentComment[column] !== parentId) {
+					return res.status(400).json({
+						success: false,
+						message: "Parent comment not found on this thread.",
+					});
+				}
+				if (parentComment.parent_comment_id) {
+					return res.status(400).json({
+						success: false,
+						message: "Replies are limited to one level.",
+					});
+				}
+			}
+
 			const { data, error } = await supabase
 				.from("comments")
 				.insert({
 					[column]: parentId,
 					body: req.body.body.trim(),
+					parent_comment_id: parentCommentId,
 					created_by: req.profile.id,
 				})
 				.select(COMMENT_SELECT)
