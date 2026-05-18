@@ -13,6 +13,11 @@ import {
 	makeUpdateComment,
 	makeDeleteComment,
 } from "../controllers/comment.controller.js";
+import {
+	listAttachments,
+	createAttachment,
+	deleteAttachment,
+} from "../controllers/task-attachment.controller.js";
 import { requireAuth } from "../middlewares/auth.middleware.js";
 import {
 	requireProjectMember,
@@ -49,5 +54,27 @@ router.get("/:taskId/comments", requireAuth, requireProjectMember, requireProjec
 router.post("/:taskId/comments", requireAuth, requireProjectMember, requireProjectPermission("comments.create"), makeCreateComment("taskId"));
 router.patch("/:taskId/comments/:commentId", requireAuth, requireProjectMember, requireProjectPermission("comments.update_own"), makeUpdateComment("taskId"));
 router.delete("/:taskId/comments/:commentId", requireAuth, requireProjectMember, makeDeleteComment("taskId"));
+
+router.get(
+	"/:taskId/attachments",
+	requireAuth,
+	requireProjectMember,
+	requireProjectPermission("tasks.read"),
+	listAttachments,
+);
+router.post(
+	"/:taskId/attachments",
+	requireAuth,
+	requireProjectMember,
+	requireProjectPermission("tasks.update"),
+	createAttachment,
+);
+router.delete(
+	"/:taskId/attachments/:attachmentId",
+	requireAuth,
+	requireProjectMember,
+	requireProjectPermission("tasks.update"),
+	deleteAttachment,
+);
 
 export default router;

@@ -59,6 +59,7 @@ import {
 	profileColorClass,
 } from "./types";
 import { cn } from "@/lib/utils";
+import { TaskAttachments } from "./TaskAttachments";
 
 const STATUS_OPTIONS: ApiTaskStatus[] = [
 	"backlog",
@@ -215,467 +216,483 @@ export function TaskDetailDialogV2({
 
 	return (
 		<>
-		<Dialog
-			open={!!task}
-			onOpenChange={(isOpen) => {
-				if (!isOpen) onClose();
-			}}
-		>
-			<DialogContent className="max-w-5xl p-0 overflow-hidden">
-				{/* Top bar */}
-				<div className="flex items-center justify-between gap-3 border-b border-border bg-surface px-5 py-3">
-					<div className="flex items-center gap-3 min-w-0">
-						<DialogClose className="rounded-md p-1 text-danger hover:text-foreground hover:bg-muted-subtle"></DialogClose>
-						{task && (
-							<>
-								<InlinePriority
-									value={task.priority}
-									canEdit={canEdit}
-									onSave={(p) => persist({ priority: p })}
-								/>
-								<span className="text-sm text-muted">/</span>
-								<span className="text-sm font-medium text-foreground truncate">
-									{shortTaskRef(task, project)}
-								</span>
-							</>
-						)}
-					</div>
-					<div className="flex items-center gap-2 shrink-0 pr-8">
-						{task && onEdit && (
-							<PermissionGate feature="Create & edit tasks">
-								<Button
-									variant="primary_outline"
-									size="sm"
-									className="text-foreground"
-									onClick={() => onEdit(task)}
-								>
-									<Pencil className="h-3.5 w-3.5" />
-									<span className="text-[12px]">Edit</span>
-								</Button>
-							</PermissionGate>
-						)}
-						{task && onDelete && (
-							<PermissionGate feature="Create & edit tasks">
-								<Button
-									variant="destructive_outline"
-									size="sm"
-									className="text-foreground hover:text-danger"
-									onClick={() => setConfirmingDelete(true)}
-								>
-									<Trash2 className="h-3.5 w-3.5" />
-									<span className="text-[12px]">Delete</span>
-								</Button>
-							</PermissionGate>
-						)}
-					</div>
-				</div>
-
-				{/* Body */}
-				<div className="grid grid-cols-1 md:grid-cols-[1fr_300px] max-h-[80vh] overflow-hidden">
-					{/* Main column */}
-					<div className="overflow-y-auto px-6 py-6 space-y-7 max-h-[80vh]">
-						{/* Title + description */}
-						<div>
+			<Dialog
+				open={!!task}
+				onOpenChange={(isOpen) => {
+					if (!isOpen) onClose();
+				}}
+			>
+				<DialogContent className="max-w-5xl p-0 overflow-hidden">
+					{/* Top bar */}
+					<div className="flex items-center justify-between gap-3 border-b border-border bg-surface px-5 py-3">
+						<div className="flex items-center gap-3 min-w-0">
+							<DialogClose className="rounded-md p-1 text-danger hover:text-foreground hover:bg-muted-subtle"></DialogClose>
 							{task && (
-								<InlineTitle
-									value={task.title}
-									canEdit={canEdit}
-									onSave={(v) => persist({ title: v })}
-								/>
-							)}
-							{task && (
-								<InlineDescription
-									value={task.description ?? ""}
-									canEdit={canEdit}
-									onSave={(v) => persist({ description: v })}
-								/>
+								<>
+									<InlinePriority
+										value={task.priority}
+										canEdit={canEdit}
+										onSave={(p) => persist({ priority: p })}
+									/>
+									<span className="text-sm text-muted">
+										/
+									</span>
+									<span className="text-sm font-medium text-foreground truncate">
+										{shortTaskRef(task, project)}
+									</span>
+								</>
 							)}
 						</div>
-
-						{/* Subtasks */}
-						<section>
-							<div className="flex items-center justify-between mb-3">
-								<div className="flex items-center gap-2">
-									<ListChecks className="h-4 w-4 text-muted" />
-									<h3 className="text-sm font-semibold text-foreground">
-										Subtasks
-									</h3>
-									<span className="text-xs text-muted">
-										({children.length})
-									</span>
-								</div>
-								{children.length > 0 && (
-									<span className="text-xs font-medium text-primary">
-										{progress}% Complete
-									</span>
-								)}
-							</div>
-							{children.length > 0 && (
-								<div className="h-1.5 w-full rounded-full bg-muted-subtle overflow-hidden mb-3">
-									<div
-										className="h-full bg-primary transition-all"
-										style={{ width: `${progress}%` }}
-									/>
-								</div>
-							)}
-							{children.length === 0 ? (
-								<div className="rounded-lg border border-dashed border-border px-4 py-6 text-center">
-									<p className="text-xs text-muted mb-2">
-										No subtasks yet
-									</p>
-									{task && onAddChild && (
-										<PermissionGate feature="Create & edit tasks">
-											<Button
-												variant="outline"
-												size="sm"
-												onClick={() => onAddChild(task)}
-											>
-												<Plus className="h-3 w-3 mr-1" />
-												Add subtask
-											</Button>
-										</PermissionGate>
-									)}
-								</div>
-							) : (
-								<div className="rounded-lg border border-border bg-muted-subtle/30 p-3 space-y-1.5">
-									{children.map((child) => {
-										const done = child.apiStatus === "done";
-										return (
-											<div
-												key={child.id}
-												className="flex items-center gap-2.5 group"
-											>
-												<button
-													type="button"
-													onClick={() =>
-														onToggleChildDone?.(
-															child,
-														)
-													}
-													className={`h-4 w-4 rounded shrink-0 flex items-center justify-center border transition-colors ${
-														done
-															? "bg-primary border-primary text-white"
-															: "border-border-strong bg-surface hover:border-primary"
-													}`}
-													aria-label={
-														done
-															? "Mark not done"
-															: "Mark done"
-													}
-													disabled={
-														!onToggleChildDone
-													}
-												>
-													{done && (
-														<Check className="h-3 w-3" />
-													)}
-												</button>
-												<button
-													type="button"
-													onClick={() =>
-														onOpenTask?.(child)
-													}
-													className={`flex-1 text-left text-sm truncate transition-colors ${
-														done
-															? "line-through text-muted"
-															: "text-foreground hover:text-primary"
-													}`}
-												>
-													{child.title}
-												</button>
-												<Badge
-													variant={
-														STATUS_BADGE[
-															child.apiStatus
-														].variant
-													}
-													className="text-[9px] shrink-0"
-												>
-													{
-														STATUS_BADGE[
-															child.apiStatus
-														].label
-													}
-												</Badge>
-											</div>
-										);
-									})}
-									{task && onAddChild && (
-										<PermissionGate feature="Create & edit tasks">
-											<button
-												type="button"
-												onClick={() => onAddChild(task)}
-												className="flex items-center gap-2 text-xs text-muted hover:text-primary pt-1.5"
-											>
-												<Plus className="h-3 w-3" />
-												Add subtask
-											</button>
-										</PermissionGate>
-									)}
-								</div>
-							)}
-						</section>
-
-						{/* Attachments (placeholder) */}
-						<section>
-							<div className="flex items-center gap-2 mb-3">
-								<Paperclip className="h-4 w-4 text-muted" />
-								<h3 className="text-sm font-semibold text-foreground">
-									Attachments
-								</h3>
-							</div>
-							<div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-								<button
-									type="button"
-									disabled
-									className="aspect-[4/3] rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center text-muted hover:border-primary hover:text-primary transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-								>
-									<Plus className="h-5 w-5 mb-1" />
-									<span className="text-xs font-medium">
-										Add New
-									</span>
-								</button>
-							</div>
-							<p className="text-[11px] text-muted mt-2 italic">
-								Attachments coming soon.
-							</p>
-						</section>
-
-						{/* Developer notes */}
-						<section>
-							<div className="flex items-center justify-between mb-3">
-								<div className="flex items-center gap-2">
-									<MessageSquare className="h-4 w-4 text-muted" />
-									<h3 className="text-sm font-semibold text-foreground">
-										Developer's Notes
-									</h3>
-								</div>
+						<div className="flex items-center gap-2 shrink-0 pr-8">
+							{task && onEdit && (
 								<PermissionGate feature="Create & edit tasks">
 									<Button
 										variant="primary_outline"
 										size="sm"
-										onClick={() =>
-											setShowNotesEditor((v) => !v)
-										}
+										className="text-foreground"
+										onClick={() => onEdit(task)}
 									>
-										{showNotesEditor
-											? "Cancel"
-											: "Edit notes"}
+										<Pencil className="h-3.5 w-3.5" />
+										<span className="text-[12px]">
+											Edit
+										</span>
 									</Button>
 								</PermissionGate>
-							</div>
-							{showNotesEditor ? (
-								<>
-									<ProjectDescriptionEditor
-										value={notes}
-										onChange={setNotes}
-										placeholder="Add implementation details, technical context, or notes for the dev team..."
-									/>
-									<div className="flex justify-end mt-3">
-										<Button
-											onClick={handleSave}
-											disabled={saving}
-										>
-											{saving && (
-												<Loader2 className="h-4 w-4 animate-spin mr-2" />
-											)}
-											Save Notes
-										</Button>
-									</div>
-								</>
-							) : projectDescriptionText(notes) ? (
-								<div className="text-sm text-foreground bg-muted-subtle/40 rounded-lg p-3">
-									<ProjectDescriptionPreview value={notes} />
-								</div>
-							) : (
-								<p className="text-xs text-muted italic">
-									No notes yet.
-								</p>
 							)}
-						</section>
+							{task && onDelete && (
+								<PermissionGate feature="Create & edit tasks">
+									<Button
+										variant="destructive_outline"
+										size="sm"
+										className="text-foreground hover:text-danger"
+										onClick={() =>
+											setConfirmingDelete(true)
+										}
+									>
+										<Trash2 className="h-3.5 w-3.5" />
+										<span className="text-[12px]">
+											Delete
+										</span>
+									</Button>
+								</PermissionGate>
+							)}
+						</div>
 					</div>
 
-					{/* Sidebar */}
-					<aside className="border-l border-border bg-muted-subtle/30 overflow-y-auto px-5 py-6 space-y-5">
-						{/* Status */}
-						<div>
-							<p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-2">
-								Status
-							</p>
-							{canEditStatus && task ? (
-								<div className="flex items-center gap-2">
-									<Select
-										value={task.apiStatus}
-										onValueChange={handleStatusChange}
-										disabled={statusSaving}
-									>
-										<SelectTrigger className="h-8 text-xs">
-											<SelectValue />
-										</SelectTrigger>
-										<SelectContent>
-											{STATUS_OPTIONS.map((s) => (
-												<SelectItem key={s} value={s}>
-													{STATUS_BADGE[s].label}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-									{statusSaving && (
-										<Loader2 className="h-3.5 w-3.5 animate-spin text-muted" />
+					{/* Body */}
+					<div className="grid grid-cols-1 md:grid-cols-[1fr_300px] max-h-[80vh] overflow-hidden">
+						{/* Main column */}
+						<div className="overflow-y-auto px-6 py-6 space-y-7 max-h-[80vh]">
+							{/* Title + description */}
+							<div>
+								{task && (
+									<InlineTitle
+										value={task.title}
+										canEdit={canEdit}
+										onSave={(v) => persist({ title: v })}
+									/>
+								)}
+								{task && (
+									<InlineDescription
+										value={task.description ?? ""}
+										canEdit={canEdit}
+										onSave={(v) =>
+											persist({ description: v })
+										}
+									/>
+								)}
+							</div>
+
+							{/* Subtasks */}
+							<section>
+								<div className="flex items-center justify-between mb-3">
+									<div className="flex items-center gap-2">
+										<ListChecks className="h-4 w-4 text-muted" />
+										<h3 className="text-sm font-semibold text-foreground">
+											Subtasks
+										</h3>
+										<span className="text-xs text-muted">
+											({children.length})
+										</span>
+									</div>
+									{children.length > 0 && (
+										<span className="text-xs font-medium text-primary">
+											{progress}% Complete
+										</span>
 									)}
 								</div>
-							) : (
-								<Badge
-									variant={
-										STATUS_BADGE[task?.apiStatus ?? "todo"]
-											.variant
-									}
-								>
-									{
-										STATUS_BADGE[task?.apiStatus ?? "todo"]
-											.label
-									}
-								</Badge>
-							)}
-						</div>
+								{children.length > 0 && (
+									<div className="h-1.5 w-full rounded-full bg-muted-subtle overflow-hidden mb-3">
+										<div
+											className="h-full bg-primary transition-all"
+											style={{ width: `${progress}%` }}
+										/>
+									</div>
+								)}
+								{children.length === 0 ? (
+									<div className="rounded-lg border border-dashed border-border px-4 py-6 text-center">
+										<p className="text-xs text-muted mb-2">
+											No subtasks yet
+										</p>
+										{task && onAddChild && (
+											<PermissionGate feature="Create & edit tasks">
+												<Button
+													variant="outline"
+													size="sm"
+													onClick={() =>
+														onAddChild(task)
+													}
+												>
+													<Plus className="h-3 w-3 mr-1" />
+													Add subtask
+												</Button>
+											</PermissionGate>
+										)}
+									</div>
+								) : (
+									<div className="rounded-lg border border-border bg-muted-subtle/30 p-3 space-y-1.5">
+										{children.map((child) => {
+											const done =
+												child.apiStatus === "done";
+											return (
+												<div
+													key={child.id}
+													className="flex items-center gap-2.5 group"
+												>
+													<button
+														type="button"
+														onClick={() =>
+															onToggleChildDone?.(
+																child,
+															)
+														}
+														className={`h-4 w-4 rounded shrink-0 flex items-center justify-center border transition-colors ${
+															done
+																? "bg-primary border-primary text-white"
+																: "border-border-strong bg-surface hover:border-primary"
+														}`}
+														aria-label={
+															done
+																? "Mark not done"
+																: "Mark done"
+														}
+														disabled={
+															!onToggleChildDone
+														}
+													>
+														{done && (
+															<Check className="h-3 w-3" />
+														)}
+													</button>
+													<button
+														type="button"
+														onClick={() =>
+															onOpenTask?.(child)
+														}
+														className={`flex-1 text-left text-sm truncate transition-colors ${
+															done
+																? "line-through text-muted"
+																: "text-foreground hover:text-primary"
+														}`}
+													>
+														{child.title}
+													</button>
+													<Badge
+														variant={
+															STATUS_BADGE[
+																child.apiStatus
+															].variant
+														}
+														className="text-[9px] shrink-0"
+													>
+														{
+															STATUS_BADGE[
+																child.apiStatus
+															].label
+														}
+													</Badge>
+												</div>
+											);
+										})}
+										{task && onAddChild && (
+											<PermissionGate feature="Create & edit tasks">
+												<button
+													type="button"
+													onClick={() =>
+														onAddChild(task)
+													}
+													className="flex items-center gap-2 text-xs text-muted hover:text-primary pt-1.5"
+												>
+													<Plus className="h-3 w-3" />
+													Add subtask
+												</button>
+											</PermissionGate>
+										)}
+									</div>
+								)}
+							</section>
 
-						<Separator />
-
-						{/* Assignee */}
-						<div>
-							<p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-2">
-								Assignee
-							</p>
+							{/* Attachments */}
 							{task && (
-								<InlineAssignee
-									assignee={task.assigned_to}
-									profiles={profiles}
-									canEdit={canEdit}
-									onSave={(v) => persist({ assigned_to: v })}
-								/>
+								<section>
+									<div className="flex items-center gap-2 mb-3">
+										<Paperclip className="h-4 w-4 text-muted" />
+										<h3 className="text-sm font-semibold text-foreground">
+											Attachments
+										</h3>
+									</div>
+									<TaskAttachments
+										projectId={task.project_id}
+										taskId={task.id}
+										canEdit={canEdit}
+									/>
+								</section>
 							)}
+
+							{/* Developer notes */}
+							<section>
+								<div className="flex items-center justify-between mb-3">
+									<div className="flex items-center gap-2">
+										<MessageSquare className="h-4 w-4 text-muted" />
+										<h3 className="text-sm font-semibold text-foreground">
+											Developer's Notes
+										</h3>
+									</div>
+									<PermissionGate feature="Create & edit tasks">
+										<Button
+											variant="primary_outline"
+											size="sm"
+											onClick={() =>
+												setShowNotesEditor((v) => !v)
+											}
+										>
+											{showNotesEditor
+												? "Cancel"
+												: "Edit notes"}
+										</Button>
+									</PermissionGate>
+								</div>
+								{showNotesEditor ? (
+									<>
+										<ProjectDescriptionEditor
+											value={notes}
+											onChange={setNotes}
+											placeholder="Add implementation details, technical context, or notes for the dev team..."
+										/>
+										<div className="flex justify-end mt-3">
+											<Button
+												onClick={handleSave}
+												disabled={saving}
+											>
+												{saving && (
+													<Loader2 className="h-4 w-4 animate-spin mr-2" />
+												)}
+												Save Notes
+											</Button>
+										</div>
+									</>
+								) : projectDescriptionText(notes) ? (
+									<div className="text-sm text-foreground bg-muted-subtle/40 rounded-lg p-3">
+										<ProjectDescriptionPreview
+											value={notes}
+										/>
+									</div>
+								) : (
+									<p className="text-xs text-muted italic">
+										No notes yet.
+									</p>
+								)}
+							</section>
 						</div>
 
-						<Separator />
-
-						{/* Project + Sprint */}
-						<div className="space-y-3">
+						{/* Sidebar */}
+						<aside className="border-l border-border bg-muted-subtle/30 overflow-y-auto px-5 py-6 space-y-5">
+							{/* Status */}
 							<div>
-								<p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-1">
-									Project
+								<p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-2">
+									Status
 								</p>
-								<p className="text-sm font-medium text-foreground">
-									{project?.name ?? "—"}
-								</p>
+								{canEditStatus && task ? (
+									<div className="flex items-center gap-2">
+										<Select
+											value={task.apiStatus}
+											onValueChange={handleStatusChange}
+											disabled={statusSaving}
+										>
+											<SelectTrigger className="h-8 text-xs">
+												<SelectValue />
+											</SelectTrigger>
+											<SelectContent>
+												{STATUS_OPTIONS.map((s) => (
+													<SelectItem
+														key={s}
+														value={s}
+													>
+														{STATUS_BADGE[s].label}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+										{statusSaving && (
+											<Loader2 className="h-3.5 w-3.5 animate-spin text-muted" />
+										)}
+									</div>
+								) : (
+									<Badge
+										variant={
+											STATUS_BADGE[
+												task?.apiStatus ?? "todo"
+											].variant
+										}
+									>
+										{
+											STATUS_BADGE[
+												task?.apiStatus ?? "todo"
+											].label
+										}
+									</Badge>
+								)}
 							</div>
+
+							<Separator />
+
+							{/* Assignee */}
 							<div>
-								<p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-1">
-									Sprint
+								<p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-2">
+									Assignee
 								</p>
-								<p className="text-sm font-medium text-foreground">
-									{task?.sprint?.name ?? "—"}
-								</p>
+								{task && (
+									<InlineAssignee
+										assignee={task.assigned_to}
+										profiles={profiles}
+										canEdit={canEdit}
+										onSave={(v) =>
+											persist({ assigned_to: v })
+										}
+									/>
+								)}
 							</div>
-						</div>
 
-						<Separator />
+							<Separator />
 
-						{/* Due date */}
-						<div>
-							<p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-2">
-								Due Date
-							</p>
-							{task && (
-								<InlineDueDate
-									value={task.due_date}
-									canEdit={canEdit}
-									onSave={(v) => persist({ due_date: v })}
-								/>
-							)}
-						</div>
+							{/* Project + Sprint */}
+							<div className="space-y-3">
+								<div>
+									<p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-1">
+										Project
+									</p>
+									<p className="text-sm font-medium text-foreground">
+										{project?.name ?? "—"}
+									</p>
+								</div>
+								<div>
+									<p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-1">
+										Sprint
+									</p>
+									<p className="text-sm font-medium text-foreground">
+										{task?.sprint?.name ?? "—"}
+									</p>
+								</div>
+							</div>
 
-						{/* Estimation */}
-						<div>
-							<p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-2">
-								Estimation
-							</p>
-							{task && (
-								<InlineEstimatedTime
-									value={task.estimated_time}
-									canEdit={canEdit}
-									onSave={(v) =>
-										persist({ estimated_time: v })
-									}
-								/>
-							)}
-						</div>
+							<Separator />
 
-						<Separator />
+							{/* Due date */}
+							<div>
+								<p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-2">
+									Due Date
+								</p>
+								{task && (
+									<InlineDueDate
+										value={task.due_date}
+										canEdit={canEdit}
+										onSave={(v) => persist({ due_date: v })}
+									/>
+								)}
+							</div>
 
-						{/* Tags */}
-						<div>
-							<p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-2">
-								Tags
-							</p>
-							{task && (
-								<InlineTags
-									value={task.tags}
-									canEdit={canEdit}
-									onSave={(v) => persist({ tags: v })}
-								/>
-							)}
-						</div>
+							{/* Estimation */}
+							<div>
+								<p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-2">
+									Estimation
+								</p>
+								{task && (
+									<InlineEstimatedTime
+										value={task.estimated_time}
+										canEdit={canEdit}
+										onSave={(v) =>
+											persist({ estimated_time: v })
+										}
+									/>
+								)}
+							</div>
 
-						{/* Copy link */}
+							<Separator />
+
+							{/* Tags */}
+							<div>
+								<p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-2">
+									Tags
+								</p>
+								{task && (
+									<InlineTags
+										value={task.tags}
+										canEdit={canEdit}
+										onSave={(v) => persist({ tags: v })}
+									/>
+								)}
+							</div>
+
+							{/* Copy link */}
+							<Button
+								variant="outline"
+								className="w-full justify-start"
+								onClick={handleCopyLink}
+							>
+								<Link2 className="h-4 w-4 mr-2" />
+								Copy Task Link
+							</Button>
+						</aside>
+					</div>
+				</DialogContent>
+			</Dialog>
+
+			<Dialog
+				open={confirmingDelete && !!task}
+				onOpenChange={(o) => {
+					if (!o) setConfirmingDelete(false);
+				}}
+			>
+				<DialogContent className="max-w-[420px]">
+					<DialogHeader>
+						<DialogTitle>Delete Task</DialogTitle>
+						<DialogDescription>
+							This will permanently delete{" "}
+							<span className="font-medium text-foreground">
+								{task?.title}
+							</span>
+							. This action cannot be undone.
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter>
+						<DialogClose asChild>
+							<Button variant="outline">Cancel</Button>
+						</DialogClose>
 						<Button
-							variant="outline"
-							className="w-full justify-start"
-							onClick={handleCopyLink}
+							variant="destructive"
+							className="bg-danger text-white hover:bg-danger/90"
+							onClick={() => {
+								if (!task || !onDelete) return;
+								setConfirmingDelete(false);
+								onDelete(task);
+							}}
 						>
-							<Link2 className="h-4 w-4 mr-2" />
-							Copy Task Link
+							<Trash2 className="h-4 w-4 mr-1.5" />
+							Delete
 						</Button>
-					</aside>
-				</div>
-			</DialogContent>
-		</Dialog>
-
-		<Dialog
-			open={confirmingDelete && !!task}
-			onOpenChange={(o) => {
-				if (!o) setConfirmingDelete(false);
-			}}
-		>
-			<DialogContent className="max-w-[420px]">
-				<DialogHeader>
-					<DialogTitle>Delete Task</DialogTitle>
-					<DialogDescription>
-						This will permanently delete{" "}
-						<span className="font-medium text-foreground">
-							{task?.title}
-						</span>
-						. This action cannot be undone.
-					</DialogDescription>
-				</DialogHeader>
-				<DialogFooter>
-					<DialogClose asChild>
-						<Button variant="outline">Cancel</Button>
-					</DialogClose>
-					<Button
-						variant="destructive"
-						className="bg-danger text-white hover:bg-danger/90"
-						onClick={() => {
-							if (!task || !onDelete) return;
-							setConfirmingDelete(false);
-							onDelete(task);
-						}}
-					>
-						<Trash2 className="h-4 w-4 mr-1.5" />
-						Delete
-					</Button>
-				</DialogFooter>
-			</DialogContent>
-		</Dialog>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</>
 	);
 }
@@ -832,7 +849,7 @@ function InlineDescription({
 
 	return (
 		<div
-			className="relative"
+			className="relative shadow-[0px_0px_4px_0px_rgba(0,0,0,0.1),0px_0px_0px_1px_rgba(0,0,0,0.1)] p-2 rounded-xs	"
 			onKeyDown={(e) => {
 				if (e.key === "Escape") {
 					e.preventDefault();
