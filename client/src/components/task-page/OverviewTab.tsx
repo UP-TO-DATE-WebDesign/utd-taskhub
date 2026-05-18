@@ -183,7 +183,7 @@ export function OverviewTab({
 											alt={m.profiles?.full_name ?? ""}
 										/>
 										<AvatarFallback
-											className={`text-[10px] text-white ${avatarColor(String(m.profiles?.id)?.length)}`}
+											className={`text-[10px] text-white ${avatarColor(String(m.profiles?.full_name)?.length)}`}
 										>
 											{getInitials(
 												m.profiles?.full_name ?? null,

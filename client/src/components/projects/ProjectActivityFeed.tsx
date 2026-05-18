@@ -137,7 +137,7 @@ function ActorAvatar({ actor }: { actor: ActivityEntry["actor"] }) {
 				alt={actor?.full_name ?? ""}
 			/>
 			<AvatarFallback
-				className={` text-white ${avatarColor(String(actor?.id)?.length)}`}
+				className={` text-white ${avatarColor(String(actor?.full_name)?.length)}`}
 			>
 				{initials}
 			</AvatarFallback>

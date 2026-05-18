@@ -93,7 +93,7 @@ export function TeamsTab({
 														}
 													/>
 													<AvatarFallback
-														className={`text-[10px] text-white ${avatarColor(String(m.profiles?.id)?.length)}`}
+														className={`text-[10px] text-white ${avatarColor(String(m.profiles?.full_name)?.length)}`}
 													>
 														{getInitials(
 															m.profiles

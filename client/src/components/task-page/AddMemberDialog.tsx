@@ -104,7 +104,7 @@ export function AddMemberDialog({
 											alt={p.full_name ?? ""}
 										/>
 										<AvatarFallback
-											className={`text-[10px] text-white ${avatarColor(String(p.id)?.length)}`}
+											className={`text-[10px] text-white ${avatarColor(String(p.full_name)?.length)}`}
 										>
 											{getInitials(p.full_name)}
 										</AvatarFallback>

@@ -131,7 +131,7 @@ type TeamMember = {
 function membersToTeam(members: Project["project_members"]): TeamMember[] {
 	return members.map((m, i) => ({
 		initials: getInitials(m.profiles?.full_name ?? null),
-		color: avatarColor(String(m.profiles?.id)?.length),
+		color: avatarColor(String(m.profiles?.full_name)?.length),
 		avatarUrl: m.profiles?.avatar_url ?? null,
 		name: m.profiles?.full_name ?? "",
 	}));
@@ -631,7 +631,7 @@ function NewProjectDialog({
 										/>
 										<Avatar className="h-6 w-6 shrink-0">
 											<AvatarFallback
-												className={`text-[9px] text-white ${avatarColor(String(profile.id)?.length)}`}
+												className={`text-[9px] text-white ${avatarColor(String(profile.full_name)?.length)}`}
 											>
 												{getInitials(profile.full_name)}
 											</AvatarFallback>

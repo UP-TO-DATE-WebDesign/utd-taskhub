@@ -92,7 +92,7 @@ function UserCard({
 			<div className="flex items-center gap-3">
 				<Avatar className="h-10 w-10">
 					<AvatarFallback
-						className={`text-sm text-white ${avatarColor(String(user.id)?.length)}`}
+						className={`text-sm text-white ${avatarColor(String(user.full_name)?.length)}`}
 					>
 						{getInitials(user.full_name)}
 					</AvatarFallback>
@@ -149,7 +149,7 @@ function UserRow({
 				<div className="flex items-center gap-3">
 					<Avatar className="h-7 w-7">
 						<AvatarFallback
-							className={`text-[10px] text-white ${avatarColor(String(user.id)?.length)}`}
+							className={`text-[10px] text-white ${avatarColor(String(user.full_name)?.length)}`}
 						>
 							{getInitials(user.full_name)}
 						</AvatarFallback>

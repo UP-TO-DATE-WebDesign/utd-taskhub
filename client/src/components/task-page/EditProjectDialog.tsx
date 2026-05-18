@@ -364,7 +364,7 @@ export function EditProjectDialog({
 											/>
 											<Avatar className="h-6 w-6 shrink-0">
 												<AvatarFallback
-													className={`text-[9px] text-white ${avatarColor(String(profile.id)?.length)}`}
+													className={`text-[9px] text-white ${avatarColor(String(profile.full_name)?.length)}`}
 												>
 													{getInitials(
 														profile.full_name,
