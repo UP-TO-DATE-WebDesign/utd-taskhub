@@ -10,6 +10,7 @@ import {
 	MessagesSquare,
 	ListChecks,
 	Check,
+	Link,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -167,7 +168,7 @@ export function TaskDetailDialogV2({
 
 	function handleCopyLink() {
 		if (!task) return;
-		const url = `${window.location.origin}/tasks?taskId=${task.id}`;
+		const url = `${window.location.origin}/tasks?taskId=${task.id}&projectId=${task.project_id}`;
 		navigator.clipboard
 			.writeText(url)
 			.then(() =>
@@ -201,8 +202,15 @@ export function TaskDetailDialogV2({
 									<span className="text-sm text-muted">
 										/
 									</span>
-									<span className="text-sm font-medium text-foreground truncate">
+									<span
+										className="text-sm font-medium text-primary truncate cursor-pointer flex items-center hover:text-primary-hover gap-2"
+										onClick={handleCopyLink}
+										title="Click to copy task link"
+									>
 										{shortTaskRef(task, project)}
+										<span>
+											<Link className="h-4 w-4" />
+										</span>
 									</span>
 								</>
 							)}

@@ -125,6 +125,15 @@ export async function createTask(
 	);
 	return res.data;
 }
+export async function getTaskDetails(
+	projectId: string,
+	taskId: string,
+): Promise<Task> {
+	const res = await api.get<{ success: boolean; data: Task }>(
+		`/projects/${projectId}/tasks/${taskId}`,
+	);
+	return res.data;
+}
 
 export async function updateTask(
 	projectId: string,

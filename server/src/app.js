@@ -52,7 +52,10 @@ app.use(
 					? /^http:\/\/localhost(:\d+)?$/.test(origin)
 					: origin === env.appUrl;
 
-			callback(allowed ? null : new Error("Not allowed by CORS"), allowed);
+			callback(
+				allowed ? null : new Error("Not allowed by CORS"),
+				allowed,
+			);
 		},
 		credentials: true,
 	}),
@@ -66,7 +69,9 @@ if (env.nodeEnv === "development") {
 	app.use(
 		morgan("dev", {
 			skip: (req) =>
-				req.originalUrl.startsWith(`/api/${env.apiVersion}/notifications/stream`),
+				req.originalUrl.startsWith(
+					`/api/${env.apiVersion}/notifications/stream`,
+				),
 		}),
 	);
 }
@@ -85,10 +90,16 @@ app.use(`/api/${env.apiVersion}/projects`, projectRoutes);
 app.use(`/api/${env.apiVersion}/invitations`, invitationRoutes);
 app.use(`/api/${env.apiVersion}/profiles`, profileRoutes);
 app.use(`/api/${env.apiVersion}/projects/:projectId/boards`, boardRoutes);
-app.use(`/api/${env.apiVersion}/projects/:projectId/boards/:boardId/columns`, boardColumnRoutes);
+app.use(
+	`/api/${env.apiVersion}/projects/:projectId/boards/:boardId/columns`,
+	boardColumnRoutes,
+);
 app.use(`/api/${env.apiVersion}/projects/:projectId/tasks`, taskRoutes);
 app.use(`/api/${env.apiVersion}/projects/:projectId/tickets`, ticketRoutes);
-app.use(`/api/${env.apiVersion}/projects/:projectId/members`, projectMemberRoutes);
+app.use(
+	`/api/${env.apiVersion}/projects/:projectId/members`,
+	projectMemberRoutes,
+);
 app.use(`/api/${env.apiVersion}/sprints`, sprintRoutes);
 app.use(`/api/${env.apiVersion}/users`, userRoutes);
 app.use(`/api/${env.apiVersion}/roles`, roleRoutes);

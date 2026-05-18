@@ -22,6 +22,7 @@ import {
 	createTask,
 	updateTask,
 	deleteTask,
+	getTaskDetails,
 	type ApiTaskStatus,
 	type CreateTaskPayload,
 	type UpdateTaskPayload,
@@ -54,8 +55,13 @@ import { EditTaskDialog } from "@/components/tasks/EditTaskDialog";
 import { TaskDetailDialogV2 } from "@/components/tasks/TaskDetailDialogV2";
 import { EndSprintButton } from "@/components/tasks/end-sprint/EndSprintButton";
 import { StartSprintButton } from "@/components/tasks/start-sprint/StartSprintButton";
+import { useSearchParams } from "react-router-dom";
 
 export default function TasksPage() {
+	const [searchParams] = useSearchParams();
+
+	const taskId = searchParams.get("taskId");
+	const projectId = searchParams.get("projectId");
 	const [columns, setColumns] = useState<Columns>(emptyColumns);
 	const [projects, setProjects] = useState<Project[]>([]);
 	const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -71,7 +77,9 @@ export default function TasksPage() {
 
 	const [filterProject, setFilterProject] = useState("all");
 	const [filterSprint, setFilterSprint] = useState("all");
-	const [filterSprintOptions, setFilterSprintOptions] = useState<Sprint[]>([]);
+	const [filterSprintOptions, setFilterSprintOptions] = useState<Sprint[]>(
+		[],
+	);
 	const [filterSprintsLoading, setFilterSprintsLoading] = useState(false);
 	const [filterUser, setFilterUser] = useState("all");
 	const [filterStatus, setFilterStatus] = useState("all");
@@ -100,7 +108,9 @@ export default function TasksPage() {
 				setProfiles(profs);
 				setColumns(
 					buildColumns(
-						tasks.map(toUiTask).filter((u): u is UiTask => u !== null),
+						tasks
+							.map(toUiTask)
+							.filter((u): u is UiTask => u !== null),
 					),
 				);
 			} catch (e) {
@@ -110,8 +120,28 @@ export default function TasksPage() {
 			}
 		}
 		load();
-		return () => { cancelled = true; };
+		return () => {
+			cancelled = true;
+		};
 	}, []);
+
+	//open task details when taskId and projectId is present on url search params
+	useEffect(() => {
+		const t = setTimeout(() => {
+			if (
+				taskId &&
+				typeof taskId === "string" &&
+				projectId &&
+				typeof projectId === "string" &&
+				viewTask === null
+			) {
+				getTaskDetails(projectId, taskId).then((data) => {
+					setViewTask(toUiTask(data));
+				});
+			}
+		}, 250);
+		return () => clearTimeout(t);
+	}, [taskId, projectId, viewTask]);
 
 	// ── Sprint filter options ────────────────────────────────────────────────
 
@@ -130,21 +160,30 @@ export default function TasksPage() {
 					});
 				}
 			})
-			.catch(() => { if (active) setFilterSprintOptions([]); })
-			.finally(() => { if (active) setFilterSprintsLoading(false); });
-		return () => { active = false; };
+			.catch(() => {
+				if (active) setFilterSprintOptions([]);
+			})
+			.finally(() => {
+				if (active) setFilterSprintsLoading(false);
+			});
+		return () => {
+			active = false;
+		};
 	}, []);
 
 	// ── DnD ──────────────────────────────────────────────────────────────────
 
 	const sensors = useSensors(
 		useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-		useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+		useSensor(KeyboardSensor, {
+			coordinateGetter: sortableKeyboardCoordinates,
+		}),
 	);
 
 	function findColumnId(taskId: string): ColumnId | null {
 		for (const colId of COLUMN_IDS) {
-			if (columnsRef.current[colId].some((t) => t.id === taskId)) return colId;
+			if (columnsRef.current[colId].some((t) => t.id === taskId))
+				return colId;
 		}
 		return null;
 	}
@@ -168,7 +207,9 @@ export default function TasksPage() {
 
 		const srcColId = findColumnId(activeId);
 		const dstColId = (
-			COLUMN_IDS.includes(overId as ColumnId) ? overId : findColumnId(overId)
+			COLUMN_IDS.includes(overId as ColumnId)
+				? overId
+				: findColumnId(overId)
 		) as ColumnId | null;
 
 		if (!srcColId || !dstColId || srcColId === dstColId) return;
@@ -201,7 +242,9 @@ export default function TasksPage() {
 		const curCol = findColumnId(activeId);
 
 		if (srcCol && curCol && srcCol !== curCol) {
-			const task = columnsRef.current[curCol].find((t) => t.id === activeId);
+			const task = columnsRef.current[curCol].find(
+				(t) => t.id === activeId,
+			);
 			if (task) {
 				updateTask(task.project_id, task.id, {
 					status: columnIdToApiStatus(curCol),
@@ -212,11 +255,15 @@ export default function TasksPage() {
 						}),
 					)
 					.catch(() => {
-						toast.error("Failed to move task", { description: "Please try again." });
+						toast.error("Failed to move task", {
+							description: "Please try again.",
+						});
 						listAllTasks().then((tasks) =>
 							setColumns(
 								buildColumns(
-									tasks.map(toUiTask).filter((u): u is UiTask => u !== null),
+									tasks
+										.map(toUiTask)
+										.filter((u): u is UiTask => u !== null),
 								),
 							),
 						);
@@ -248,19 +295,36 @@ export default function TasksPage() {
 		const lc = search.toLowerCase();
 		return COLUMN_IDS.reduce((acc, colId) => {
 			acc[colId] = columns[colId].filter((t) => {
-				if (filterProject !== "all" && t.project_id !== filterProject) return false;
-				if (filterSprint !== "all" && t.sprint?.id !== filterSprint) return false;
-				if (filterUser !== "all" && t.assigned_to?.id !== filterUser) return false;
-				if (filterStatus !== "all" && t.apiStatus !== (filterStatus as ApiTaskStatus)) return false;
+				if (filterProject !== "all" && t.project_id !== filterProject)
+					return false;
+				if (filterSprint !== "all" && t.sprint?.id !== filterSprint)
+					return false;
+				if (filterUser !== "all" && t.assigned_to?.id !== filterUser)
+					return false;
+				if (
+					filterStatus !== "all" &&
+					t.apiStatus !== (filterStatus as ApiTaskStatus)
+				)
+					return false;
 				if (search && !t.title.toLowerCase().includes(lc)) return false;
 				return true;
 			});
 			return acc;
 		}, {} as Columns);
-	}, [columns, filterProject, filterSprint, filterUser, filterStatus, search]);
+	}, [
+		columns,
+		filterProject,
+		filterSprint,
+		filterUser,
+		filterStatus,
+		search,
+	]);
 
 	const allFilteredTasks = useMemo(
-		() => (view === "list" ? COLUMN_IDS.flatMap((c) => filteredColumns[c]) : []),
+		() =>
+			view === "list"
+				? COLUMN_IDS.flatMap((c) => filteredColumns[c])
+				: [],
 		[view, filteredColumns],
 	);
 
@@ -270,7 +334,8 @@ export default function TasksPage() {
 	);
 
 	const defaultSprintFilter = useMemo(
-		() => filterSprintOptions.find((s) => s.status === "active")?.id ?? "all",
+		() =>
+			filterSprintOptions.find((s) => s.status === "active")?.id ?? "all",
 		[filterSprintOptions],
 	);
 
@@ -349,7 +414,9 @@ export default function TasksPage() {
 	const handleDeleteTask = useCallback(async (task: UiTask) => {
 		setColumns((prev) => ({
 			...prev,
-			[task.columnId]: prev[task.columnId].filter((t) => t.id !== task.id),
+			[task.columnId]: prev[task.columnId].filter(
+				(t) => t.id !== task.id,
+			),
 		}));
 		try {
 			await deleteTask(task.project_id, task.id);
@@ -359,12 +426,16 @@ export default function TasksPage() {
 				...prev,
 				[task.columnId]: [task, ...prev[task.columnId]],
 			}));
-			toast.error("Failed to delete task", { description: "Please try again." });
+			toast.error("Failed to delete task", {
+				description: "Please try again.",
+			});
 		}
 	}, []);
 
 	const handleSaveNotes = useCallback(async (task: UiTask, notes: string) => {
-		const apiTask = await updateTask(task.project_id, task.id, { developer_notes: notes });
+		const apiTask = await updateTask(task.project_id, task.id, {
+			developer_notes: notes,
+		});
 		const updated = toUiTask(apiTask);
 		if (!updated) return;
 		setColumns((prev) => ({
@@ -379,12 +450,16 @@ export default function TasksPage() {
 
 	const handleChangeStatus = useCallback(
 		async (task: UiTask, status: ApiTaskStatus) => {
-			const apiTask = await updateTask(task.project_id, task.id, { status });
+			const apiTask = await updateTask(task.project_id, task.id, {
+				status,
+			});
 			const updated = toUiTask(apiTask);
 			if (!updated) {
 				setColumns((prev) => ({
 					...prev,
-					[task.columnId]: prev[task.columnId].filter((t) => t.id !== task.id),
+					[task.columnId]: prev[task.columnId].filter(
+						(t) => t.id !== task.id,
+					),
 				}));
 				setViewTask(null);
 				toast.success("Status updated");
@@ -393,13 +468,17 @@ export default function TasksPage() {
 			setColumns((prev) => {
 				const withoutOld = {
 					...prev,
-					[task.columnId]: prev[task.columnId].filter((t) => t.id !== task.id),
+					[task.columnId]: prev[task.columnId].filter(
+						(t) => t.id !== task.id,
+					),
 				};
 				return {
 					...withoutOld,
 					[updated.columnId]: [
 						updated,
-						...withoutOld[updated.columnId].filter((t) => t.id !== updated.id),
+						...withoutOld[updated.columnId].filter(
+							(t) => t.id !== updated.id,
+						),
 					],
 				};
 			});
@@ -437,26 +516,31 @@ export default function TasksPage() {
 		[],
 	);
 
-	const handleSprintEnded = useCallback(async (_result: EndSprintResponse) => {
-		try {
-			const [tasks, sprints] = await Promise.all([
-				listAllTasks(),
-				listSprints(),
-			]);
-			setColumns(
-				buildColumns(
-					tasks.map(toUiTask).filter((u): u is UiTask => u !== null),
-				),
-			);
-			setFilterSprintOptions(sprints);
-			setFilterSprint("all");
-			didApplyDefaultSprintFilterRef.current = true;
-		} catch {
-			toast.error("Sprint ended, but failed to refresh board.", {
-				description: "Reload the page to see latest state.",
-			});
-		}
-	}, []);
+	const handleSprintEnded = useCallback(
+		async (_result: EndSprintResponse) => {
+			try {
+				const [tasks, sprints] = await Promise.all([
+					listAllTasks(),
+					listSprints(),
+				]);
+				setColumns(
+					buildColumns(
+						tasks
+							.map(toUiTask)
+							.filter((u): u is UiTask => u !== null),
+					),
+				);
+				setFilterSprintOptions(sprints);
+				setFilterSprint("all");
+				didApplyDefaultSprintFilterRef.current = true;
+			} catch {
+				toast.error("Sprint ended, but failed to refresh board.", {
+					description: "Reload the page to see latest state.",
+				});
+			}
+		},
+		[],
+	);
 
 	const handleEditTask = useCallback(
 		async (task: UiTask, payload: UpdateTaskPayload) => {
@@ -466,13 +550,17 @@ export default function TasksPage() {
 			setColumns((prev) => {
 				const withoutOld = {
 					...prev,
-					[task.columnId]: prev[task.columnId].filter((t) => t.id !== task.id),
+					[task.columnId]: prev[task.columnId].filter(
+						(t) => t.id !== task.id,
+					),
 				};
 				return {
 					...withoutOld,
 					[updated.columnId]: [
 						updated,
-						...withoutOld[updated.columnId].filter((t) => t.id !== updated.id),
+						...withoutOld[updated.columnId].filter(
+							(t) => t.id !== updated.id,
+						),
 					],
 				};
 			});
@@ -495,7 +583,9 @@ export default function TasksPage() {
 	if (error) {
 		return (
 			<div className="flex flex-col items-center justify-center py-24 text-center">
-				<p className="text-sm font-medium text-foreground mb-1">Failed to load tasks</p>
+				<p className="text-sm font-medium text-foreground mb-1">
+					Failed to load tasks
+				</p>
 				<p className="text-xs text-muted">{error}</p>
 			</div>
 		);
@@ -512,7 +602,8 @@ export default function TasksPage() {
 						Tasks
 					</h1>
 					<p className="text-sm text-muted mt-1">
-						{COLUMN_IDS.reduce((s, c) => s + columns[c].length, 0)} tasks across all projects
+						{COLUMN_IDS.reduce((s, c) => s + columns[c].length, 0)}{" "}
+						tasks across all projects
 					</p>
 				</div>
 				<div className="flex items-center gap-2">
@@ -527,7 +618,10 @@ export default function TasksPage() {
 						onEnded={handleSprintEnded}
 					/>
 					<PermissionGate feature="Create & edit tasks">
-						<Button className="flex items-center gap-2" onClick={() => setDialogOpen(true)}>
+						<Button
+							className="flex items-center gap-2"
+							onClick={() => setDialogOpen(true)}
+						>
 							<Plus className="h-4 w-4" />
 							New Task
 						</Button>
@@ -585,10 +679,16 @@ export default function TasksPage() {
 						))}
 					</div>
 
-					<DragOverlay dropAnimation={{ duration: 150, easing: "ease" }}>
+					<DragOverlay
+						dropAnimation={{ duration: 150, easing: "ease" }}
+					>
 						{activeTask ? (
 							<div className="w-[272px]">
-								<TaskCardContent task={activeTask} projects={projects} isDragging />
+								<TaskCardContent
+									task={activeTask}
+									projects={projects}
+									isDragging
+								/>
 							</div>
 						) : null}
 					</DragOverlay>

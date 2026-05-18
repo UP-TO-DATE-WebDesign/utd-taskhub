@@ -19,27 +19,49 @@ import {
 	deleteAttachment,
 } from "../controllers/task-attachment.controller.js";
 import { requireAuth } from "../middlewares/auth.middleware.js";
-import {
-	requireProjectMember,
-} from "../middlewares/project.middleware.js";
+import { requireProjectMember } from "../middlewares/project.middleware.js";
 import { requireProjectPermission } from "../middlewares/permission.middleware.js";
 
 const router = express.Router({ mergeParams: true });
 
-router.get("/", requireAuth, requireProjectMember, requireProjectPermission("tasks.read"), getTasks);
+router.get(
+	"/",
+	requireAuth,
+	requireProjectMember,
+	requireProjectPermission("tasks.read"),
+	getTasks,
+);
 
-router.get("/:taskId", requireAuth, requireProjectMember, requireProjectPermission("tasks.read"), getTaskById);
+router.get(
+	"/:taskId",
+	requireAuth,
+	requireProjectMember,
+	requireProjectPermission("tasks.read"),
+	getTaskById,
+);
 
-router.post("/", requireAuth, requireProjectMember, requireProjectPermission("tasks.create"), createTask);
+router.post(
+	"/",
+	requireAuth,
+	requireProjectMember,
+	requireProjectPermission("tasks.create"),
+	createTask,
+);
 
-router.patch("/:taskId", requireAuth, requireProjectMember, requireProjectPermission("tasks.update"), updateTask);
+router.patch(
+	"/:taskId",
+	requireAuth,
+	requireProjectMember,
+	requireProjectPermission("tasks.update"),
+	updateTask,
+);
 
 router.delete(
 	"/:taskId",
 	requireAuth,
 	requireProjectMember,
 	requireProjectPermission("tasks.delete"),
-	deleteTask
+	deleteTask,
 );
 
 router.patch(
@@ -47,13 +69,36 @@ router.patch(
 	requireAuth,
 	requireProjectMember,
 	requireProjectPermission("tasks.move"),
-	moveTask
+	moveTask,
 );
 
-router.get("/:taskId/comments", requireAuth, requireProjectMember, requireProjectPermission("comments.read"), makeGetComments("taskId"));
-router.post("/:taskId/comments", requireAuth, requireProjectMember, requireProjectPermission("comments.create"), makeCreateComment("taskId"));
-router.patch("/:taskId/comments/:commentId", requireAuth, requireProjectMember, requireProjectPermission("comments.update_own"), makeUpdateComment("taskId"));
-router.delete("/:taskId/comments/:commentId", requireAuth, requireProjectMember, makeDeleteComment("taskId"));
+router.get(
+	"/:taskId/comments",
+	requireAuth,
+	requireProjectMember,
+	requireProjectPermission("comments.read"),
+	makeGetComments("taskId"),
+);
+router.post(
+	"/:taskId/comments",
+	requireAuth,
+	requireProjectMember,
+	requireProjectPermission("comments.create"),
+	makeCreateComment("taskId"),
+);
+router.patch(
+	"/:taskId/comments/:commentId",
+	requireAuth,
+	requireProjectMember,
+	requireProjectPermission("comments.update_own"),
+	makeUpdateComment("taskId"),
+);
+router.delete(
+	"/:taskId/comments/:commentId",
+	requireAuth,
+	requireProjectMember,
+	makeDeleteComment("taskId"),
+);
 
 router.get(
 	"/:taskId/attachments",
