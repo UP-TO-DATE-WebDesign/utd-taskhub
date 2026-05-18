@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
 	Select,
 	SelectContent,
@@ -48,6 +48,12 @@ export function InlineAssignee({
 	const readView = assignee ? (
 		<div className="flex items-center gap-2">
 			<Avatar className="h-8 w-8">
+				{assignee.avatar_url ? (
+					<AvatarImage
+						src={assignee.avatar_url}
+						alt={assignee.full_name ?? assignee.email}
+					/>
+				) : null}
 				<AvatarFallback
 					className={`text-[10px] text-white ${profileColorClass(assignee.id)}`}
 				>
