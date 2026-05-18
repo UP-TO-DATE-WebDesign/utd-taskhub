@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, Pencil, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,7 @@ import { NewTaskDialog } from "@/components/task-page/NewTaskDialog";
 import { AddMemberDialog } from "@/components/task-page/AddMemberDialog";
 import { OverviewTab } from "@/components/task-page/OverviewTab";
 import { TasksTab } from "@/components/task-page/TasksTab";
+import { ProjectTaskFilters } from "@/components/task-page/ProjectTaskFilters";
 import { TeamsTab } from "@/components/task-page/TeamsTab";
 import { TaskDetailDialogV2 } from "@/components/tasks/TaskDetailDialogV2";
 import { COLUMN_LABELS, toUiTask, type UiTask } from "@/components/tasks/types";
@@ -69,6 +70,31 @@ export default function ProjectPage() {
 
 	const [childParent, setChildParent] = useState<UiTask | null>(null);
 	const [viewTask, setViewTask] = useState<UiTask | null>(null);
+
+	const [search, setSearch] = useState("");
+	const [filterSprint, setFilterSprint] = useState("all");
+	const [filterUser, setFilterUser] = useState("all");
+
+	const filteredTasks = useMemo(() => {
+		const lc = search.toLowerCase();
+		return tasks.filter((t) => {
+			if (filterSprint !== "all" && t.sprint?.id !== filterSprint)
+				return false;
+			if (filterUser !== "all" && t.assigned_to?.id !== filterUser)
+				return false;
+			if (search && !t.title.toLowerCase().includes(lc)) return false;
+			return true;
+		});
+	}, [tasks, filterSprint, filterUser, search]);
+
+	const isFiltered =
+		filterSprint !== "all" || filterUser !== "all" || search.length > 0;
+
+	const handleClearFilters = () => {
+		setSearch("");
+		setFilterSprint("all");
+		setFilterUser("all");
+	};
 
 	useEffect(() => {
 		if (!id) return;
@@ -289,11 +315,26 @@ export default function ProjectPage() {
 
 			{/* ── TASKS TAB ────────────────────────────────────────── */}
 			{activeTab === "Tasks" && (
-				<TasksTab
-					tasks={tasks}
-					tasksLoading={tasksLoading}
-					onViewTask={(task) => setViewTask(toUiTask(task))}
-				/>
+				<>
+					<ProjectTaskFilters
+						search={search}
+						filterSprint={filterSprint}
+						filterUser={filterUser}
+						sprints={allSprints}
+						sprintsLoading={tasksLoading}
+						members={members}
+						isFiltered={isFiltered}
+						onSearchChange={setSearch}
+						onFilterSprintChange={setFilterSprint}
+						onFilterUserChange={setFilterUser}
+						onClearFilters={handleClearFilters}
+					/>
+					<TasksTab
+						tasks={filteredTasks}
+						tasksLoading={tasksLoading}
+						onViewTask={(task) => setViewTask(toUiTask(task))}
+					/>
+				</>
 			)}
 
 			{/* ── TEAMS TAB ────────────────────────────────────────── */}
