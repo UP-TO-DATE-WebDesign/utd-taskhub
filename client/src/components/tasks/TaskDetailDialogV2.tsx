@@ -26,7 +26,15 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
+import {
+	Dialog,
+	DialogContent,
+	DialogClose,
+	DialogHeader,
+	DialogTitle,
+	DialogDescription,
+	DialogFooter,
+} from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import {
 	ProjectDescriptionEditor,
@@ -132,6 +140,7 @@ export function TaskDetailDialogV2({
 	const [saving, setSaving] = useState(false);
 	const [statusSaving, setStatusSaving] = useState(false);
 	const [showNotesEditor, setShowNotesEditor] = useState(false);
+	const [confirmingDelete, setConfirmingDelete] = useState(false);
 	const { can } = usePermission();
 	const canEdit = !!onUpdate && can("Create & edit tasks");
 	const canEditStatus = !!onChangeStatus && can("Create & edit tasks");
@@ -140,6 +149,7 @@ export function TaskDetailDialogV2({
 		if (task) {
 			setNotes(task.developer_notes ?? "");
 			setShowNotesEditor(false);
+			setConfirmingDelete(false);
 		}
 	}, [task]);
 
@@ -204,6 +214,7 @@ export function TaskDetailDialogV2({
 	}
 
 	return (
+		<>
 		<Dialog
 			open={!!task}
 			onOpenChange={(isOpen) => {
@@ -249,7 +260,7 @@ export function TaskDetailDialogV2({
 									variant="destructive_outline"
 									size="sm"
 									className="text-foreground hover:text-danger"
-									onClick={() => onDelete(task)}
+									onClick={() => setConfirmingDelete(true)}
 								>
 									<Trash2 className="h-3.5 w-3.5" />
 									<span className="text-[12px]">Delete</span>
@@ -628,6 +639,44 @@ export function TaskDetailDialogV2({
 				</div>
 			</DialogContent>
 		</Dialog>
+
+		<Dialog
+			open={confirmingDelete && !!task}
+			onOpenChange={(o) => {
+				if (!o) setConfirmingDelete(false);
+			}}
+		>
+			<DialogContent className="max-w-[420px]">
+				<DialogHeader>
+					<DialogTitle>Delete Task</DialogTitle>
+					<DialogDescription>
+						This will permanently delete{" "}
+						<span className="font-medium text-foreground">
+							{task?.title}
+						</span>
+						. This action cannot be undone.
+					</DialogDescription>
+				</DialogHeader>
+				<DialogFooter>
+					<DialogClose asChild>
+						<Button variant="outline">Cancel</Button>
+					</DialogClose>
+					<Button
+						variant="destructive"
+						className="bg-danger text-white hover:bg-danger/90"
+						onClick={() => {
+							if (!task || !onDelete) return;
+							setConfirmingDelete(false);
+							onDelete(task);
+						}}
+					>
+						<Trash2 className="h-4 w-4 mr-1.5" />
+						Delete
+					</Button>
+				</DialogFooter>
+			</DialogContent>
+		</Dialog>
+		</>
 	);
 }
 
@@ -733,6 +782,7 @@ function InlineDescription({
 	}, [value]);
 
 	async function commit() {
+		if (saving) return;
 		if (draft === value) {
 			setEditing(false);
 			return;
@@ -782,6 +832,7 @@ function InlineDescription({
 
 	return (
 		<div
+			className="relative"
 			onKeyDown={(e) => {
 				if (e.key === "Escape") {
 					e.preventDefault();
@@ -791,26 +842,16 @@ function InlineDescription({
 			}}
 		>
 			<ProjectDescriptionEditor
+				inline
+				autoFocus
 				value={draft}
 				onChange={setDraft}
+				onBlur={commit}
 				placeholder="Describe the task..."
 			/>
-			<div className="flex justify-end gap-2 mt-2">
-				<Button
-					variant="outline"
-					size="sm"
-					onClick={cancel}
-					disabled={saving}
-				>
-					Cancel
-				</Button>
-				<Button size="sm" onClick={commit} disabled={saving}>
-					{saving && (
-						<Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
-					)}
-					Save
-				</Button>
-			</div>
+			{saving && (
+				<Loader2 className="absolute right-1 top-1 h-3.5 w-3.5 animate-spin text-muted" />
+			)}
 		</div>
 	);
 }

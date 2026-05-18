@@ -207,8 +207,7 @@ export function ProjectActivityFeed({ projectId }: ProjectActivityFeedProps) {
 				const res = await listProjectActivity(projectId, {
 					page: opts.page,
 					limit: PAGE_SIZE,
-					entityType:
-						opts.filter === "all" ? undefined : opts.filter,
+					entityType: opts.filter === "all" ? undefined : opts.filter,
 				});
 				setTotalPages(res.totalPages);
 				setEntries((prev) =>
@@ -244,7 +243,16 @@ export function ProjectActivityFeed({ projectId }: ProjectActivityFeedProps) {
 
 	if (loading) {
 		return (
-			<Card className="p-5 w-full">
+			<Card className="p-5 w-full flex flex-col gap-4">
+				<div className="flex flex-wrap items-center gap-2">
+					<Skeleton className="h-6 px-3 text-xs w-10" />
+					<Skeleton className="h-6 px-3 text-xs w-14" />
+					<Skeleton className="h-6 px-3 text-xs w-14" />
+					<Skeleton className="h-6 px-3 text-xs w-15" />
+					<Skeleton className="h-6 px-3 text-xs w-15" />
+					<Skeleton className="h-6 px-3 text-xs w-15" />
+				</div>
+				<Skeleton className="h-6 px-3 text-xs w-14" />
 				<div className="space-y-4">
 					{Array.from({ length: 6 }).map((_, i) => (
 						<div key={i} className="flex items-start gap-3">

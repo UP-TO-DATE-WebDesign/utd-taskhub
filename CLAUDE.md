@@ -88,3 +88,13 @@ Database/Auth:
 - Only output the code, no conversational filler
 - When asked for a commit message, return only the commit message text.
 - Avoid em dashes.
+
+# Architecture Reminder
+
+- Avoid monolithic files/components
+- Split features into reusable components, hooks, services, and utils
+- Keep components focused on a single responsibility
+- Move business logic out of JSX
+- Reuse existing UI components whenever possible
+- Prefer scalable, maintainable structure over quick implementations
+- Refactor large files automatically into smaller modules

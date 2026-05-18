@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
 	Bold,
 	Italic,
@@ -159,7 +159,15 @@ function ToolbarSeparator() {
 	return <div className="mx-1 h-5 w-px bg-border" />;
 }
 
-function DescriptionToolbar() {
+function AutoFocusPlugin() {
+	const [editor] = useLexicalComposerContext();
+	useEffect(() => {
+		editor.focus();
+	}, [editor]);
+	return null;
+}
+
+function DescriptionToolbar({ floating = false }: { floating?: boolean }) {
 	const [editor] = useLexicalComposerContext();
 
 	function toggleCodeBlock() {
@@ -180,7 +188,17 @@ function DescriptionToolbar() {
 	}
 
 	return (
-		<div className="flex items-center gap-1 border-b border-border bg-muted-subtle/40 px-2 py-2">
+		<div
+			className={cn(
+				"flex items-center gap-1",
+				floating
+					? "absolute -top-12 left-0 z-10 rounded-md border border-border bg-surface px-1 py-1 shadow-md opacity-0 pointer-events-none transition-opacity group-focus-within:opacity-100 group-focus-within:pointer-events-auto"
+					: "border-b border-border bg-muted-subtle/40 px-2 py-2",
+			)}
+			onMouseDown={(e) => {
+				e.preventDefault();
+			}}
+		>
 			<ToolbarButton
 				label="Undo"
 				onClick={() => editor.dispatchCommand(UNDO_COMMAND, undefined)}
@@ -270,10 +288,16 @@ export function ProjectDescriptionEditor({
 	value,
 	onChange,
 	placeholder = "Describe the project goals and scope...",
+	inline = false,
+	autoFocus = false,
+	onBlur,
 }: {
 	value: string;
 	onChange: (value: string) => void;
 	placeholder?: string;
+	inline?: boolean;
+	autoFocus?: boolean;
+	onBlur?: () => void;
 }) {
 	const [initialConfig] = useState(() => ({
 		namespace: "ProjectDescription",
@@ -296,19 +320,50 @@ export function ProjectDescriptionEditor({
 
 	return (
 		<LexicalComposer initialConfig={initialConfig}>
-			<div className="overflow-hidden rounded-lg border border-border-strong bg-surface focus-within:border-primary focus-within:ring-2 focus-within:ring-primary">
-				<DescriptionToolbar />
+			<div
+				className={cn(
+					inline
+						? "group relative"
+						: "overflow-hidden rounded-lg border border-border-strong bg-surface focus-within:border-primary focus-within:ring-2 focus-within:ring-primary",
+				)}
+				onBlur={
+					onBlur
+						? (e) => {
+								if (
+									!e.currentTarget.contains(
+										e.relatedTarget as Node | null,
+									)
+								) {
+									onBlur();
+								}
+							}
+						: undefined
+				}
+			>
+				<DescriptionToolbar floating={inline} />
 				<div className="relative">
 					<RichTextPlugin
 						contentEditable={
 							<ContentEditable
 								aria-placeholder={placeholder}
 								placeholder={
-									<div className="pointer-events-none absolute left-3 top-3 text-sm text-muted">
+									<div
+										className={cn(
+											"pointer-events-none absolute text-sm text-muted",
+											inline
+												? "left-1 top-0.5"
+												: "left-3 top-3",
+										)}
+									>
 										{placeholder}
 									</div>
 								}
-								className="min-h-50 w-full resize-none px-3 py-2 text-sm leading-relaxed text-foreground outline-none"
+								className={cn(
+									"w-full resize-none text-sm leading-relaxed text-foreground outline-none",
+									inline
+										? "-mx-1 min-h-[1.5rem] rounded px-1 py-0.5"
+										: "min-h-50 px-3 py-2",
+								)}
 							/>
 						}
 						ErrorBoundary={LexicalErrorBoundary}
@@ -316,6 +371,7 @@ export function ProjectDescriptionEditor({
 				</div>
 				<HistoryPlugin />
 				<ImagePastePlugin />
+				{autoFocus && <AutoFocusPlugin />}
 				<OnChangePlugin
 					onChange={(editorState: EditorState) => {
 						onChange(JSON.stringify(editorState.toJSON()));
