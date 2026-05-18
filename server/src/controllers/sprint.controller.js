@@ -369,6 +369,145 @@ export async function endSprint(req, res, next) {
 	}
 }
 
+const VALID_START_ACTIONS = ["move", "keep"];
+
+function validateStartSprintPayload(taskActions) {
+	const errors = [];
+	if (!Array.isArray(taskActions)) {
+		errors.push("taskActions must be an array.");
+		return errors;
+	}
+	taskActions.forEach((entry, idx) => {
+		if (!entry || typeof entry !== "object") {
+			errors.push(`taskActions[${idx}] must be an object.`);
+			return;
+		}
+		if (!entry.taskId || !UUID_RE.test(entry.taskId)) {
+			errors.push(`taskActions[${idx}].taskId must be a valid UUID.`);
+		}
+		if (!VALID_START_ACTIONS.includes(entry.action)) {
+			errors.push(
+				`taskActions[${idx}].action must be one of: ${VALID_START_ACTIONS.join(", ")}.`,
+			);
+		}
+	});
+	return errors;
+}
+
+export async function startSprint(req, res, next) {
+	try {
+		const roleKey = req.profile?.global_role?.key ?? req.profile?.role;
+		if (roleKey !== "admin" && roleKey !== "manager") {
+			return res.status(403).json({
+				success: false,
+				message: "Only admins and managers can start a sprint.",
+			});
+		}
+
+		const { sprintId } = req.params;
+		const { taskActions = [] } = req.body ?? {};
+
+		const errors = validateStartSprintPayload(taskActions);
+		if (errors.length > 0) {
+			return res.status(400).json({
+				success: false,
+				message: "Validation failed.",
+				errors,
+			});
+		}
+
+		const { data: sprint, error: sprintErr } = await supabase
+			.from("sprints")
+			.select("id, status")
+			.eq("id", sprintId)
+			.maybeSingle();
+
+		if (sprintErr) throw sprintErr;
+		if (!sprint) {
+			return res
+				.status(404)
+				.json({ success: false, message: "Sprint not found." });
+		}
+		if (sprint.status !== "planned") {
+			return res.status(400).json({
+				success: false,
+				message: "Only planned sprints can be started.",
+			});
+		}
+
+		const { data: existingActive, error: actErr } = await supabase
+			.from("sprints")
+			.select("id")
+			.eq("status", "active")
+			.maybeSingle();
+		if (actErr) throw actErr;
+		if (existingActive) {
+			return res.status(400).json({
+				success: false,
+				message: "Another sprint is already active.",
+			});
+		}
+
+		const moveIds = taskActions
+			.filter((a) => a.action === "move")
+			.map((a) => a.taskId);
+
+		const updatedTaskIds = [];
+		if (moveIds.length > 0) {
+			const { data: validTasks, error: vErr } = await supabase
+				.from("tasks")
+				.select("id")
+				.in("id", moveIds);
+			if (vErr) throw vErr;
+			const validSet = new Set((validTasks ?? []).map((t) => t.id));
+			for (const taskId of moveIds) {
+				if (!validSet.has(taskId)) {
+					return res.status(400).json({
+						success: false,
+						message: `Task ${taskId} not found.`,
+					});
+				}
+			}
+
+			const { error: updErr } = await supabase
+				.from("tasks")
+				.update({ sprint_id: sprintId })
+				.in("id", moveIds);
+			if (updErr) throw updErr;
+			updatedTaskIds.push(...moveIds);
+		}
+
+		const { data: updatedSprint, error: startErr } = await supabase
+			.from("sprints")
+			.update({ status: "active" })
+			.eq("id", sprintId)
+			.select(SPRINT_SELECT)
+			.maybeSingle();
+
+		if (startErr) throw startErr;
+
+		getActiveProfileIds(req.profile.id)
+			.then((ids) =>
+				createNotifications({
+					userIds: ids,
+					type: NotificationType.SPRINT_STARTED,
+					title: "Sprint started",
+					body: updatedSprint?.name ?? "Sprint started",
+					data: { sprint_id: sprintId },
+				}),
+			)
+			.catch((e) => console.error("[notif]", e));
+
+		res.status(200).json({
+			success: true,
+			message: "Sprint started.",
+			data: { sprint: updatedSprint, updatedTaskIds },
+		});
+	} catch (error) {
+		next(error);
+	}
+}
+
 export async function deleteSprint(req, res, next) {
 	try {
 		const { sprintId } = req.params;

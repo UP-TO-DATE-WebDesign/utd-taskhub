@@ -1,17 +1,31 @@
 import { useState } from "react";
 import { Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { Sprint } from "@/services/sprint.service";
+import type { UiTask } from "@/components/tasks/types";
+import type {
+	Sprint,
+	StartSprintResponse,
+} from "@/services/sprint.service";
+import { usePermission } from "@/hooks/usePermission";
 import { StartSprintModal } from "./StartSprintModal";
+
+const ALLOWED_ROLES = new Set(["admin", "manager"]);
 
 interface Props {
 	nextSprint: Sprint | null;
-	onStarted: (updated: Sprint) => void;
+	candidateTasks: UiTask[];
+	onStarted: (result: StartSprintResponse) => void;
 }
 
-export function StartSprintButton({ nextSprint, onStarted }: Props) {
+export function StartSprintButton({
+	nextSprint,
+	candidateTasks,
+	onStarted,
+}: Props) {
 	const [open, setOpen] = useState(false);
+	const { roleKey } = usePermission();
 	if (!nextSprint) return null;
+	if (!roleKey || !ALLOWED_ROLES.has(roleKey)) return null;
 
 	return (
 		<>
@@ -27,6 +41,7 @@ export function StartSprintButton({ nextSprint, onStarted }: Props) {
 				open={open}
 				onClose={() => setOpen(false)}
 				sprint={nextSprint}
+				candidateTasks={candidateTasks}
 				onStarted={onStarted}
 			/>
 		</>

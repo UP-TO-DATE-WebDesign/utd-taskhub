@@ -31,6 +31,7 @@ import {
 	listSprints,
 	type Sprint,
 	type EndSprintResponse,
+	type StartSprintResponse,
 } from "@/services/sprint.service";
 import { listProfiles, type Profile } from "@/services/profile.service";
 import { PermissionGate } from "@/components/PermissionGate";
@@ -302,6 +303,16 @@ export default function TasksPage() {
 		return planned[0] ?? null;
 	}, [filterSprintOptions, activeSprint]);
 
+	const startCandidateTasks = useMemo<UiTask[]>(() => {
+		if (!nextPlannedSprint) return [];
+		return COLUMN_IDS.flatMap((c) => columns[c]).filter(
+			(t) =>
+				t.sprint?.id !== nextPlannedSprint.id &&
+				t.apiStatus !== "done" &&
+				t.apiStatus !== "cancelled",
+		);
+	}, [columns, nextPlannedSprint]);
+
 	const activeTask = useMemo(
 		() =>
 			activeTaskId
@@ -400,13 +411,31 @@ export default function TasksPage() {
 		[],
 	);
 
-	const handleSprintStarted = useCallback((started: Sprint) => {
-		setFilterSprintOptions((prev) =>
-			prev.map((s) => (s.id === started.id ? started : s)),
-		);
-		setFilterSprint(started.id);
-		didApplyDefaultSprintFilterRef.current = true;
-	}, []);
+	const handleSprintStarted = useCallback(
+		async (result: StartSprintResponse) => {
+			try {
+				const [tasks, sprints] = await Promise.all([
+					listAllTasks(),
+					listSprints(),
+				]);
+				setColumns(
+					buildColumns(
+						tasks
+							.map(toUiTask)
+							.filter((u): u is UiTask => u !== null),
+					),
+				);
+				setFilterSprintOptions(sprints);
+				setFilterSprint(result.sprint.id);
+				didApplyDefaultSprintFilterRef.current = true;
+			} catch {
+				toast.error("Sprint started, but failed to refresh board.", {
+					description: "Reload the page to see latest state.",
+				});
+			}
+		},
+		[],
+	);
 
 	const handleSprintEnded = useCallback(async (_result: EndSprintResponse) => {
 		try {
@@ -489,6 +518,7 @@ export default function TasksPage() {
 				<div className="flex items-center gap-2">
 					<StartSprintButton
 						nextSprint={nextPlannedSprint}
+						candidateTasks={startCandidateTasks}
 						onStarted={handleSprintStarted}
 					/>
 					<EndSprintButton

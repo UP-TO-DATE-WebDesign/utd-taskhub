@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
 	Dialog,
 	DialogContent,
@@ -121,12 +121,19 @@ function projectSprintName(project: Project) {
 	return project.sprint?.name || project.sprint_name || "No sprint";
 }
 
-type TeamMember = { initials: string; color: string };
+type TeamMember = {
+	initials: string;
+	color: string;
+	avatarUrl: string | null;
+	name: string;
+};
 
 function membersToTeam(members: Project["project_members"]): TeamMember[] {
 	return members.map((m, i) => ({
 		initials: getInitials(m.profiles?.full_name ?? null),
 		color: avatarColor(i),
+		avatarUrl: m.profiles?.avatar_url ?? null,
+		name: m.profiles?.full_name ?? "",
 	}));
 }
 
@@ -153,6 +160,9 @@ function TeamAvatars({ team, max = 4 }: { team: TeamMember[]; max?: number }) {
 					key={i}
 					className={`h-6 w-6 border-2 border-surface ${i > 0 ? "-ml-2" : ""}`}
 				>
+					{m.avatarUrl && (
+						<AvatarImage src={m.avatarUrl} alt={m.name} />
+					)}
 					<AvatarFallback
 						className={`text-[9px] text-white ${m.color}`}
 					>

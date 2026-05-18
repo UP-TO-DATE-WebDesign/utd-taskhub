@@ -83,3 +83,30 @@ export async function endSprint(
   );
   return res.data;
 }
+
+export type StartSprintActionKind = "move" | "keep";
+
+export interface StartSprintTaskAction {
+  taskId: string;
+  action: StartSprintActionKind;
+}
+
+export interface StartSprintPayload {
+  taskActions: StartSprintTaskAction[];
+}
+
+export interface StartSprintResponse {
+  sprint: Sprint;
+  updatedTaskIds: string[];
+}
+
+export async function startSprint(
+  sprintId: string,
+  payload: StartSprintPayload,
+): Promise<StartSprintResponse> {
+  const res = await api.post<{ success: boolean; data: StartSprintResponse }>(
+    `/sprints/${sprintId}/start`,
+    payload,
+  );
+  return res.data;
+}
