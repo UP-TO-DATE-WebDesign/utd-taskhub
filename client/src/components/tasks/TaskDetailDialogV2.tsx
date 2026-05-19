@@ -246,7 +246,7 @@ export function TaskDetailDialogV2({
 									<Button
 										variant="primary_outline"
 										size="sm"
-										className="text-foreground"
+										className="text-foreground hidden!"
 										onClick={() => onEdit(task)}
 									>
 										<Pencil className="h-3.5 w-3.5" />
@@ -610,7 +610,9 @@ export function TaskDetailDialogV2({
 											sprints={sprints}
 											loading={sprintsLoading}
 											canEdit={canEdit}
-											onSave={(v) => persist({ sprint_id: v })}
+											onSave={(v) =>
+												persist({ sprint_id: v })
+											}
 										/>
 									)}
 								</div>

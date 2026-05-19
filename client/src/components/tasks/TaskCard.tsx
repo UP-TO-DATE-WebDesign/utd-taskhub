@@ -171,7 +171,7 @@ function SortableTaskCardBase({
 				</Tooltip>
 			</div>
 			<div
-				className="absolute top-16 right-2 z-10 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity rounded"
+				className="absolute top-16 right-2 z-10 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity rounded hidden!"
 				onClick={(e) => e.stopPropagation()}
 			>
 				<Tooltip>
