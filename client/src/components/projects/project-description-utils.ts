@@ -1,7 +1,7 @@
 export type SerializedDescriptionNode = {
 	type?: string;
 	text?: string;
-	format?: number;
+	format?: number | string;
 	children?: SerializedDescriptionNode[];
 	src?: string;
 	alt?: string;

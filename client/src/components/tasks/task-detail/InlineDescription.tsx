@@ -62,7 +62,7 @@ export function InlineDescription({
 				)}
 			>
 				{hasText ? (
-					<div className="text-muted">
+					<div className="text-stone-600">
 						<ProjectDescriptionPreview value={value} />
 					</div>
 				) : (

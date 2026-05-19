@@ -47,9 +47,23 @@ import {
 import { ImageNode } from "./ImageNode";
 import { ImagePastePlugin } from "./ImagePastePlugin";
 
+const ALIGN_CLASS: Record<string, string> = {
+	left: "text-left",
+	center: "text-center",
+	right: "text-right",
+	justify: "text-justify",
+	start: "text-start",
+	end: "text-end",
+};
+
+function alignClass(format: number | string | undefined): string {
+	if (typeof format !== "string") return "";
+	return ALIGN_CLASS[format] ?? "";
+}
+
 function renderText(node: SerializedDescriptionNode, key: string): ReactNode {
 	const text = node.text ?? "";
-	const format = node.format ?? 0;
+	const format = typeof node.format === "number" ? node.format : 0;
 	return (
 		<span
 			key={key}
@@ -69,6 +83,9 @@ function renderText(node: SerializedDescriptionNode, key: string): ReactNode {
 }
 
 function renderNode(node: SerializedDescriptionNode, key: string): ReactNode {
+	if (node.type === "linebreak") {
+		return <br key={key} />;
+	}
 	if (node.type === "image" && typeof node.src === "string") {
 		return (
 			<img
@@ -86,9 +103,16 @@ function renderNode(node: SerializedDescriptionNode, key: string): ReactNode {
 		renderNode(child, `${key}-${index}`),
 	);
 	if (node.type === "paragraph") {
+		const isEmpty = node.children.length === 0;
 		return (
-			<p key={key} className="mb-2 last:mb-0">
-				{children}
+			<p
+				key={key}
+				className={cn(
+					"mb-2 last:mb-0 whitespace-pre-wrap break-words",
+					alignClass(node.format),
+				)}
+			>
+				{isEmpty ? <br /> : children}
 			</p>
 		);
 	}
@@ -96,7 +120,10 @@ function renderNode(node: SerializedDescriptionNode, key: string): ReactNode {
 		return (
 			<pre
 				key={key}
-				className="block rounded-md bg-slate-900 text-slate-100 px-3 py-2 my-2 font-mono text-xs whitespace-pre overflow-x-auto"
+				className={cn(
+					"block rounded-md bg-slate-900 text-slate-100 px-3 py-2 my-2 font-mono text-xs whitespace-pre-wrap break-words overflow-x-auto",
+					alignClass(node.format),
+				)}
 			>
 				<code>{children}</code>
 			</pre>
@@ -121,7 +148,11 @@ export function ProjectDescriptionPreview({
 	if (!value) return <span className={className}>{fallback}</span>;
 	const parsed = parseLexicalDescription(value);
 	if (!parsed) {
-		return <span className={className}>{value}</span>;
+		return (
+			<div className={cn("whitespace-pre-wrap break-words", className)}>
+				{value}
+			</div>
+		);
 	}
 
 	const children = parsed.root.children?.map((child, index) =>
