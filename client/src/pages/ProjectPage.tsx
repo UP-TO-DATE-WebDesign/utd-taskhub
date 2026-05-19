@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Pencil, Loader2 } from "lucide-react";
+import { ArrowLeft, Plus, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -23,6 +23,7 @@ import { useAuth } from "@/context/AuthContext";
 import { ProjectDescriptionPreview } from "@/components/projects/project-description";
 import { GeneralSection as ProjectGeneralSection } from "@/components/project-settings/GeneralSection";
 import { ProjectActivityFeed } from "@/components/projects/ProjectActivityFeed";
+import { ProjectPageSkeleton } from "@/components/projects/ProjectPageSkeleton";
 import { DangerZoneSection as ProjectDangerZoneSection } from "@/components/project-settings/DangerZoneSection";
 import { EditProjectDialog } from "@/components/task-page/EditProjectDialog";
 import { NewTaskDialog } from "@/components/task-page/NewTaskDialog";
@@ -207,12 +208,7 @@ export default function ProjectPage() {
 	);
 
 	if (loading) {
-		return (
-			<div className="mx-auto max-w-[1280px] px-6 py-16 flex items-center justify-center gap-2 text-muted">
-				<Loader2 className="h-5 w-5 animate-spin" />
-				<span className="text-sm">Loading project...</span>
-			</div>
-		);
+		return <ProjectPageSkeleton />;
 	}
 
 	if (error || !project) {
