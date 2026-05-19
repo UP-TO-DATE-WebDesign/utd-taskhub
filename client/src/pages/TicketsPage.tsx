@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
 	Plus,
 	Loader2,
@@ -68,6 +68,7 @@ import { PermissionGate } from "@/components/PermissionGate";
 import { useAuth } from "@/context/AuthContext";
 import { usePermission } from "@/hooks/usePermission";
 import { TicketsTableSkeleton } from "@/components/tickets/TicketsTableSkeleton";
+import { useApiSWR } from "@/hooks/useApiSWR";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -1160,10 +1161,6 @@ export default function TicketsPage() {
 	const [projectsLoading, setProjectsLoading] = useState(true);
 	const [selectedProjectId, setSelectedProjectId] = useState<string>("");
 
-	const [tickets, setTickets] = useState<Ticket[]>([]);
-	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState<string | null>(null);
-
 	const [filters, setFilters] = useState<Filters>({
 		status: "",
 		type: "",
@@ -1188,34 +1185,30 @@ export default function TicketsPage() {
 			.finally(() => setProjectsLoading(false));
 	}, []);
 
-	const fetchTickets = useCallback(async () => {
-		if (!selectedProjectId) return;
-		setLoading(true);
-		setError(null);
-		try {
-			const params = {
-				status: filters.status || undefined,
-				type: filters.type || undefined,
-				priority: filters.priority || undefined,
-			};
-			const data = await listTickets(
-				selectedProjectId,
-				params as Parameters<typeof listTickets>[1],
-			);
-			setTickets(data);
-		} catch (err: unknown) {
-			const msg =
-				err instanceof Error ? err.message : "Failed to load tickets.";
-			setError(msg);
-		} finally {
-			setLoading(false);
-		}
-	}, [selectedProjectId, filters]);
+	const ticketParams = useMemo(
+		() => ({
+			status: filters.status || undefined,
+			type: filters.type || undefined,
+			priority: filters.priority || undefined,
+		}),
+		[filters.status, filters.type, filters.priority],
+	);
 
-	useEffect(() => {
-		if (selectedProjectId) fetchTickets();
-		else setTickets([]);
-	}, [selectedProjectId, fetchTickets]);
+	const ticketsKey = selectedProjectId
+		? (["tickets", selectedProjectId, ticketParams] as const)
+		: null;
+
+	const {
+		data: tickets = [],
+		error,
+		isLoading: loading,
+		mutate: mutateTickets,
+	} = useApiSWR<Ticket[]>(ticketsKey, () =>
+		listTickets(
+			selectedProjectId,
+			ticketParams as Parameters<typeof listTickets>[1],
+		),
+	);
 
 	async function handleDelete(ticket: Ticket) {
 		if (!window.confirm(`Delete "${ticket.title}"? This cannot be undone.`))
@@ -1224,7 +1217,7 @@ export default function TicketsPage() {
 		try {
 			await deleteTicket(selectedProjectId, ticket.id);
 			toast.success("Ticket deleted.");
-			fetchTickets();
+			mutateTickets();
 		} catch (err: unknown) {
 			const msg =
 				err instanceof Error ? err.message : "Failed to delete ticket.";
@@ -1384,8 +1377,8 @@ export default function TicketsPage() {
 					<p className="text-base font-medium text-foreground mb-1">
 						Something went wrong
 					</p>
-					<p className="text-sm text-muted mb-4">{error}</p>
-					<Button variant="outline" onClick={fetchTickets}>
+					<p className="text-sm text-muted mb-4">{error.message}</p>
+					<Button variant="outline" onClick={() => mutateTickets()}>
 						Retry
 					</Button>
 				</div>
@@ -1474,7 +1467,7 @@ export default function TicketsPage() {
 				mode="create"
 				projectId={selectedProjectId}
 				onClose={() => setCreateOpen(false)}
-				onSaved={fetchTickets}
+				onSaved={() => mutateTickets()}
 			/>
 
 			<TicketDialog
@@ -1483,7 +1476,7 @@ export default function TicketsPage() {
 				ticket={editTicket ?? undefined}
 				projectId={selectedProjectId}
 				onClose={() => setEditTicket(null)}
-				onSaved={fetchTickets}
+				onSaved={() => mutateTickets()}
 			/>
 
 			<ConvertDialog
@@ -1491,7 +1484,7 @@ export default function TicketsPage() {
 				ticket={convertTicket}
 				projectId={selectedProjectId}
 				onClose={() => setConvertTicket(null)}
-				onConverted={fetchTickets}
+				onConverted={() => mutateTickets()}
 			/>
 
 			<CloseTicketDialog
@@ -1499,7 +1492,7 @@ export default function TicketsPage() {
 				ticket={closingTicket}
 				projectId={selectedProjectId}
 				onClose={() => setClosingTicket(null)}
-				onClosed={fetchTickets}
+				onClosed={() => mutateTickets()}
 			/>
 		</div>
 	);

@@ -7,6 +7,7 @@ import App from "./App.tsx";
 import "@mantine/core/styles.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { MantineProvider } from "@mantine/core";
+import { SWRConfig } from "swr";
 
 if (import.meta.env.VITE_SENTRY_DSN) {
 	Sentry.init({
@@ -27,7 +28,19 @@ createRoot(document.getElementById("root")!).render(
 		<Sentry.ErrorBoundary fallback={<div className="p-6">Something went wrong.</div>}>
 			<AuthProvider>
 				<MantineProvider>
-					<App />
+					<SWRConfig
+						value={{
+							revalidateOnFocus: true,
+							revalidateOnReconnect: true,
+							dedupingInterval: 5000,
+							errorRetryCount: 2,
+							errorRetryInterval: 2000,
+							shouldRetryOnError: (err) =>
+								!/Session expired/i.test(err.message),
+						}}
+					>
+						<App />
+					</SWRConfig>
 				</MantineProvider>
 			</AuthProvider>
 		</Sentry.ErrorBoundary>
