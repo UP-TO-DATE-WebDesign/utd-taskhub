@@ -14,7 +14,7 @@ import {
 	type DragEndEvent,
 } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates, arrayMove } from "@dnd-kit/sortable";
-import { Plus, Loader2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
@@ -55,6 +55,7 @@ import { EditTaskDialog } from "@/components/tasks/EditTaskDialog";
 import { TaskDetailDialogV2 } from "@/components/tasks/TaskDetailDialogV2";
 import { EndSprintButton } from "@/components/tasks/end-sprint/EndSprintButton";
 import { StartSprintButton } from "@/components/tasks/start-sprint/StartSprintButton";
+import { TasksPageSkeleton } from "@/components/tasks/TasksPageSkeleton";
 import { useSearchParams } from "react-router-dom";
 
 export default function TasksPage() {
@@ -573,11 +574,7 @@ export default function TasksPage() {
 	// ── Loading / Error ───────────────────────────────────────────────────────
 
 	if (loading) {
-		return (
-			<div className="flex items-center justify-center py-24">
-				<Loader2 className="h-6 w-6 animate-spin text-muted" />
-			</div>
-		);
+		return <TasksPageSkeleton />;
 	}
 
 	if (error) {
