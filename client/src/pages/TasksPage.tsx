@@ -23,6 +23,7 @@ import {
 	updateTask,
 	deleteTask,
 	getTaskDetails,
+	type Task,
 	type ApiTaskStatus,
 	type CreateTaskPayload,
 	type UpdateTaskPayload,
@@ -44,7 +45,6 @@ import {
 	COLUMN_LABELS,
 	toUiTask,
 	buildColumns,
-	emptyColumns,
 	columnIdToApiStatus,
 } from "@/components/tasks/types";
 import { TaskCardContent, BoardColumn } from "@/components/tasks/TaskCard";
@@ -57,17 +57,41 @@ import { EndSprintButton } from "@/components/tasks/end-sprint/EndSprintButton";
 import { StartSprintButton } from "@/components/tasks/start-sprint/StartSprintButton";
 import { TasksPageSkeleton } from "@/components/tasks/TasksPageSkeleton";
 import { useSearchParams } from "react-router-dom";
+import { useApiSWR } from "@/hooks/useApiSWR";
 
 export default function TasksPage() {
 	const [searchParams, setSearchParams] = useSearchParams();
 
 	const taskId = searchParams.get("taskId");
 	const projectId = searchParams.get("projectId");
-	const [columns, setColumns] = useState<Columns>(emptyColumns);
-	const [projects, setProjects] = useState<Project[]>([]);
-	const [profiles, setProfiles] = useState<Profile[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
+
+	const {
+		data: rawTasks = [],
+		error: tasksError,
+		isLoading: tasksLoading,
+		mutate: mutateTasks,
+	} = useApiSWR<Task[]>(["tasks"], () => listAllTasks());
+	const {
+		data: projects = [],
+		error: projectsError,
+		isLoading: projectsLoading,
+	} = useApiSWR<Project[]>(["projects"], () => listProjects());
+	const {
+		data: profiles = [],
+		error: profilesError,
+		isLoading: profilesLoading,
+	} = useApiSWR<Profile[]>(["profiles"], () => listProfiles());
+
+	const columns = useMemo<Columns>(
+		() =>
+			buildColumns(
+				rawTasks.map(toUiTask).filter((u): u is UiTask => u !== null),
+			),
+		[rawTasks],
+	);
+
+	const loading = tasksLoading || projectsLoading || profilesLoading;
+	const error = tasksError ?? projectsError ?? profilesError ?? null;
 
 	const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
 	const [dialogOpen, setDialogOpen] = useState(false);
@@ -90,41 +114,6 @@ export default function TasksPage() {
 	columnsRef.current = columns;
 	const dragSrcColRef = useRef<ColumnId | null>(null);
 	const didApplyDefaultSprintFilterRef = useRef(false);
-
-	// ── Data loading ─────────────────────────────────────────────────────────
-
-	useEffect(() => {
-		let cancelled = false;
-		async function load() {
-			setLoading(true);
-			setError(null);
-			try {
-				const [tasks, projs, profs] = await Promise.all([
-					listAllTasks(),
-					listProjects(),
-					listProfiles(),
-				]);
-				if (cancelled) return;
-				setProjects(projs);
-				setProfiles(profs);
-				setColumns(
-					buildColumns(
-						tasks
-							.map(toUiTask)
-							.filter((u): u is UiTask => u !== null),
-					),
-				);
-			} catch (e) {
-				if (!cancelled) setError((e as Error).message);
-			} finally {
-				if (!cancelled) setLoading(false);
-			}
-		}
-		load();
-		return () => {
-			cancelled = true;
-		};
-	}, []);
 
 	//open task details when taskId and projectId is present on url search params
 	useEffect(() => {
@@ -207,95 +196,90 @@ export default function TasksPage() {
 		dragSrcColRef.current = findColumnId(active.id as string);
 	}, []);
 
-	const onDragOver = useCallback(({ active, over }: DragOverEvent) => {
-		if (!over) return;
-		const activeId = active.id as string;
-		const overId = over.id as string;
-		if (activeId === overId) return;
+	const onDragOver = useCallback(
+		({ active, over }: DragOverEvent) => {
+			if (!over) return;
+			const activeId = active.id as string;
+			const overId = over.id as string;
+			if (activeId === overId) return;
 
-		const srcColId = findColumnId(activeId);
-		const dstColId = (
-			COLUMN_IDS.includes(overId as ColumnId)
-				? overId
-				: findColumnId(overId)
-		) as ColumnId | null;
+			const srcColId = findColumnId(activeId);
+			const dstColId = (
+				COLUMN_IDS.includes(overId as ColumnId)
+					? overId
+					: findColumnId(overId)
+			) as ColumnId | null;
 
-		if (!srcColId || !dstColId || srcColId === dstColId) return;
+			if (!srcColId || !dstColId || srcColId === dstColId) return;
 
-		setColumns((prev) => {
-			const srcTasks = [...prev[srcColId]];
-			const dstTasks = [...prev[dstColId]];
-			const srcIdx = srcTasks.findIndex((t) => t.id === activeId);
-			if (srcIdx < 0) return prev;
-			const moved = { ...srcTasks[srcIdx], columnId: dstColId };
-			const newSrc = srcTasks.filter((t) => t.id !== activeId);
-			const overIdx = dstTasks.findIndex((t) => t.id === overId);
-			const insertAt = overIdx >= 0 ? overIdx : dstTasks.length;
-			const newDst = [
-				...dstTasks.slice(0, insertAt),
-				moved,
-				...dstTasks.slice(insertAt),
-			];
-			return { ...prev, [srcColId]: newSrc, [dstColId]: newDst };
-		});
-	}, []);
-
-	const onDragEnd = useCallback(({ active, over }: DragEndEvent) => {
-		setActiveTaskId(null);
-		if (!over) return;
-
-		const activeId = active.id as string;
-		const overId = over.id as string;
-		const srcCol = dragSrcColRef.current;
-		const curCol = findColumnId(activeId);
-
-		if (srcCol && curCol && srcCol !== curCol) {
-			const task = columnsRef.current[curCol].find(
-				(t) => t.id === activeId,
+			mutateTasks(
+				(curr) =>
+					curr?.map((t) =>
+						t.id === activeId
+							? { ...t, status: columnIdToApiStatus(dstColId) }
+							: t,
+					),
+				{ revalidate: false },
 			);
-			if (task) {
-				updateTask(task.project_id, task.id, {
-					status: columnIdToApiStatus(curCol),
-				})
-					.then(() =>
-						toast.success("Task updated", {
-							description: `Moved to ${COLUMN_LABELS[curCol]}`,
-						}),
-					)
-					.catch(() => {
-						toast.error("Failed to move task", {
-							description: "Please try again.",
+		},
+		[mutateTasks],
+	);
+
+	const onDragEnd = useCallback(
+		({ active, over }: DragEndEvent) => {
+			setActiveTaskId(null);
+			if (!over) return;
+
+			const activeId = active.id as string;
+			const overId = over.id as string;
+			const srcCol = dragSrcColRef.current;
+			const curCol = findColumnId(activeId);
+
+			if (srcCol && curCol && srcCol !== curCol) {
+				const task = columnsRef.current[curCol].find(
+					(t) => t.id === activeId,
+				);
+				if (task) {
+					updateTask(task.project_id, task.id, {
+						status: columnIdToApiStatus(curCol),
+					})
+						.then(() => {
+							toast.success("Task updated", {
+								description: `Moved to ${COLUMN_LABELS[curCol]}`,
+							});
+							mutateTasks();
+						})
+						.catch(() => {
+							toast.error("Failed to move task", {
+								description: "Please try again.",
+							});
+							mutateTasks();
 						});
-						listAllTasks().then((tasks) =>
-							setColumns(
-								buildColumns(
-									tasks
-										.map(toUiTask)
-										.filter((u): u is UiTask => u !== null),
-								),
-							),
-						);
-					});
+				}
+				return;
 			}
-			return;
-		}
 
-		if (activeId === overId) return;
-		const colId = findColumnId(activeId);
-		if (!colId) return;
-		const overIsTask = !COLUMN_IDS.includes(overId as ColumnId);
-		if (!overIsTask) return;
-		const overColId = findColumnId(overId);
-		if (!overColId || overColId !== colId) return;
+			if (activeId === overId) return;
+			const colId = findColumnId(activeId);
+			if (!colId) return;
+			const overIsTask = !COLUMN_IDS.includes(overId as ColumnId);
+			if (!overIsTask) return;
+			const overColId = findColumnId(overId);
+			if (!overColId || overColId !== colId) return;
 
-		setColumns((prev) => {
-			const items = prev[colId];
-			const fromIdx = items.findIndex((t) => t.id === activeId);
-			const toIdx = items.findIndex((t) => t.id === overId);
-			if (fromIdx < 0 || toIdx < 0 || fromIdx === toIdx) return prev;
-			return { ...prev, [colId]: arrayMove(items, fromIdx, toIdx) };
-		});
-	}, []);
+			mutateTasks(
+				(curr) => {
+					if (!curr) return curr;
+					const fromIdx = curr.findIndex((t) => t.id === activeId);
+					const toIdx = curr.findIndex((t) => t.id === overId);
+					if (fromIdx < 0 || toIdx < 0 || fromIdx === toIdx) return curr;
+					return arrayMove(curr, fromIdx, toIdx);
+				},
+				{ revalidate: false },
+			);
+		},
+		[mutateTasks],
+	);
 
 	// ── Filtering ────────────────────────────────────────────────────────────
 
@@ -408,53 +392,44 @@ export default function TasksPage() {
 	const handleCreateTask = useCallback(
 		async (projectId: string, payload: CreateTaskPayload) => {
 			const apiTask = await createTask(projectId, payload);
-			const ui = toUiTask(apiTask);
-			if (!ui) return;
-			setColumns((prev) => ({
-				...prev,
-				[ui.columnId]: [ui, ...prev[ui.columnId]],
-			}));
+			mutateTasks();
 			toast.success("Task created", { description: apiTask.title });
 		},
-		[],
+		[mutateTasks],
 	);
 
-	const handleDeleteTask = useCallback(async (task: UiTask) => {
-		setColumns((prev) => ({
-			...prev,
-			[task.columnId]: prev[task.columnId].filter(
-				(t) => t.id !== task.id,
-			),
-		}));
-		try {
-			await deleteTask(task.project_id, task.id);
-			toast.success("Task deleted", { description: task.title });
-		} catch {
-			setColumns((prev) => ({
-				...prev,
-				[task.columnId]: [task, ...prev[task.columnId]],
-			}));
-			toast.error("Failed to delete task", {
-				description: "Please try again.",
-			});
-		}
-	}, []);
+	const handleDeleteTask = useCallback(
+		async (task: UiTask) => {
+			mutateTasks(
+				(curr) => curr?.filter((t) => t.id !== task.id),
+				{ revalidate: false },
+			);
+			try {
+				await deleteTask(task.project_id, task.id);
+				toast.success("Task deleted", { description: task.title });
+				mutateTasks();
+			} catch {
+				mutateTasks();
+				toast.error("Failed to delete task", {
+					description: "Please try again.",
+				});
+			}
+		},
+		[mutateTasks],
+	);
 
-	const handleSaveNotes = useCallback(async (task: UiTask, notes: string) => {
-		const apiTask = await updateTask(task.project_id, task.id, {
-			developer_notes: notes,
-		});
-		const updated = toUiTask(apiTask);
-		if (!updated) return;
-		setColumns((prev) => ({
-			...prev,
-			[updated.columnId]: prev[updated.columnId].map((t) =>
-				t.id === updated.id ? updated : t,
-			),
-		}));
-		setViewTask(updated);
-		toast.success("Notes saved");
-	}, []);
+	const handleSaveNotes = useCallback(
+		async (task: UiTask, notes: string) => {
+			const apiTask = await updateTask(task.project_id, task.id, {
+				developer_notes: notes,
+			});
+			const updated = toUiTask(apiTask);
+			mutateTasks();
+			if (updated) setViewTask(updated);
+			toast.success("Notes saved");
+		},
+		[mutateTasks],
+	);
 
 	const handleChangeStatus = useCallback(
 		async (task: UiTask, status: ApiTaskStatus) => {
@@ -462,120 +437,65 @@ export default function TasksPage() {
 				status,
 			});
 			const updated = toUiTask(apiTask);
+			mutateTasks();
 			if (!updated) {
-				setColumns((prev) => ({
-					...prev,
-					[task.columnId]: prev[task.columnId].filter(
-						(t) => t.id !== task.id,
-					),
-				}));
 				setViewTask(null);
 				toast.success("Status updated");
 				return;
 			}
-			setColumns((prev) => {
-				const withoutOld = {
-					...prev,
-					[task.columnId]: prev[task.columnId].filter(
-						(t) => t.id !== task.id,
-					),
-				};
-				return {
-					...withoutOld,
-					[updated.columnId]: [
-						updated,
-						...withoutOld[updated.columnId].filter(
-							(t) => t.id !== updated.id,
-						),
-					],
-				};
-			});
 			setViewTask(updated);
 			toast.success("Status updated", {
 				description: COLUMN_LABELS[updated.columnId],
 			});
 		},
-		[],
+		[mutateTasks],
 	);
 
 	const handleSprintStarted = useCallback(
 		async (result: StartSprintResponse) => {
 			try {
-				const [tasks, sprints] = await Promise.all([
-					listAllTasks(),
-					listSprints(),
-				]);
-				setColumns(
-					buildColumns(
-						tasks
-							.map(toUiTask)
-							.filter((u): u is UiTask => u !== null),
-					),
-				);
+				const sprints = await listSprints();
 				setFilterSprintOptions(sprints);
 				setFilterSprint(result.sprint.id);
 				didApplyDefaultSprintFilterRef.current = true;
+				mutateTasks();
 			} catch {
 				toast.error("Sprint started, but failed to refresh board.", {
 					description: "Reload the page to see latest state.",
 				});
 			}
 		},
-		[],
+		[mutateTasks],
 	);
 
 	const handleSprintEnded = useCallback(
 		async (_result: EndSprintResponse) => {
 			try {
-				const [tasks, sprints] = await Promise.all([
-					listAllTasks(),
-					listSprints(),
-				]);
-				setColumns(
-					buildColumns(
-						tasks
-							.map(toUiTask)
-							.filter((u): u is UiTask => u !== null),
-					),
-				);
+				const sprints = await listSprints();
 				setFilterSprintOptions(sprints);
 				setFilterSprint("all");
 				didApplyDefaultSprintFilterRef.current = true;
+				mutateTasks();
 			} catch {
 				toast.error("Sprint ended, but failed to refresh board.", {
 					description: "Reload the page to see latest state.",
 				});
 			}
 		},
-		[],
+		[mutateTasks],
 	);
 
 	const handleEditTask = useCallback(
 		async (task: UiTask, payload: UpdateTaskPayload) => {
 			const apiTask = await updateTask(task.project_id, task.id, payload);
 			const updated = toUiTask(apiTask);
-			if (!updated) return;
-			setColumns((prev) => {
-				const withoutOld = {
-					...prev,
-					[task.columnId]: prev[task.columnId].filter(
-						(t) => t.id !== task.id,
-					),
-				};
-				return {
-					...withoutOld,
-					[updated.columnId]: [
-						updated,
-						...withoutOld[updated.columnId].filter(
-							(t) => t.id !== updated.id,
-						),
-					],
-				};
-			});
-			setViewTask((vt) => (vt && vt.id === updated.id ? updated : vt));
+			mutateTasks();
+			if (updated) {
+				setViewTask((vt) => (vt && vt.id === updated.id ? updated : vt));
+			}
 			toast.success("Task updated", { description: apiTask.title });
 		},
-		[],
+		[mutateTasks],
 	);
 
 	// ── Loading / Error ───────────────────────────────────────────────────────
@@ -590,7 +510,7 @@ export default function TasksPage() {
 				<p className="text-sm font-medium text-foreground mb-1">
 					Failed to load tasks
 				</p>
-				<p className="text-xs text-muted">{error}</p>
+				<p className="text-xs text-muted">{error.message}</p>
 			</div>
 		);
 	}

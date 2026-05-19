@@ -7,7 +7,6 @@ import {
 	ListChecks,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
 	Select,
@@ -16,11 +15,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import {
-	Dialog,
-	DialogContent,
-	DialogClose,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import {
 	type UpdateTaskPayload,
@@ -113,10 +108,10 @@ export function EditTaskDialogV2({
 	}, [open, projectId]);
 
 	const assignee = assigneeId
-		? profiles.find((p) => p.id === assigneeId) ?? null
+		? (profiles.find((p) => p.id === assigneeId) ?? null)
 		: null;
 	const sprint = sprintId
-		? sprints.find((s) => s.id === sprintId) ?? null
+		? (sprints.find((s) => s.id === sprintId) ?? null)
 		: null;
 
 	async function handleSave() {
@@ -266,7 +261,9 @@ export function EditTaskDialogV2({
 							</p>
 							<Select
 								value={status}
-								onValueChange={(v) => setStatus(v as ApiTaskStatus)}
+								onValueChange={(v) =>
+									setStatus(v as ApiTaskStatus)
+								}
 							>
 								<SelectTrigger className="h-8 text-xs">
 									<SelectValue />
@@ -336,7 +333,8 @@ export function EditTaskDialogV2({
 													id: sprint.id,
 													name: sprint.name,
 													status: sprint.status,
-													start_date: sprint.start_date,
+													start_date:
+														sprint.start_date,
 													end_date: sprint.end_date,
 												}
 											: null
