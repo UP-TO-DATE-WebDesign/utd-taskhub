@@ -45,6 +45,7 @@ import {
 	type UpdateTaskPayload,
 } from "@/services/task.service";
 import { type Profile } from "@/services/profile.service";
+import { listSprints, type Sprint } from "@/services/sprint.service";
 import { type UiTask, STATUS_BADGE } from "./types";
 import { TaskAttachments } from "./TaskAttachments";
 import { TaskComments } from "./TaskComments";
@@ -56,6 +57,7 @@ import {
 	InlineDueDate,
 	InlineEstimatedTime,
 	InlineTags,
+	InlineSprint,
 } from "./task-detail";
 import { STATUS_OPTIONS } from "./task-detail/constants";
 
@@ -107,6 +109,8 @@ export function TaskDetailDialogV2({
 	const [statusSaving, setStatusSaving] = useState(false);
 	const [showNotesEditor, setShowNotesEditor] = useState(false);
 	const [confirmingDelete, setConfirmingDelete] = useState(false);
+	const [sprints, setSprints] = useState<Sprint[]>([]);
+	const [sprintsLoading, setSprintsLoading] = useState(false);
 	const { can } = usePermission();
 	const canEdit = !!onUpdate && can("Create & edit tasks");
 	const canEditStatus = !!onChangeStatus && can("Create & edit tasks");
@@ -118,6 +122,25 @@ export function TaskDetailDialogV2({
 			setConfirmingDelete(false);
 		}
 	}, [task]);
+
+	useEffect(() => {
+		if (!task) return;
+		let active = true;
+		setSprintsLoading(true);
+		listSprints()
+			.then((data) => {
+				if (active) setSprints(data);
+			})
+			.catch(() => {
+				if (active) setSprints([]);
+			})
+			.finally(() => {
+				if (active) setSprintsLoading(false);
+			});
+		return () => {
+			active = false;
+		};
+	}, [task?.project_id]);
 
 	const project = projects.find((p) => p.id === task?.project_id);
 
@@ -581,9 +604,15 @@ export function TaskDetailDialogV2({
 									<p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-1">
 										Sprint
 									</p>
-									<p className="text-sm font-medium text-foreground">
-										{task?.sprint?.name ?? "—"}
-									</p>
+									{task && (
+										<InlineSprint
+											sprint={task.sprint}
+											sprints={sprints}
+											loading={sprintsLoading}
+											canEdit={canEdit}
+											onSave={(v) => persist({ sprint_id: v })}
+										/>
+									)}
 								</div>
 							</div>
 

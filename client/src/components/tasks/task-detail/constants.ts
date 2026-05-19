@@ -34,3 +34,5 @@ export const PRIORITY_CHIP: Record<ApiTaskPriority, string> = {
 };
 
 export const UNASSIGNED_VALUE = "__unassigned__";
+
+export const NO_SPRINT_VALUE = "__no_sprint__";
