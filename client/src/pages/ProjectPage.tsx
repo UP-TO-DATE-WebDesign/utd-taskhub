@@ -14,9 +14,11 @@ import { listProfiles, type Profile } from "@/services/profile.service";
 import {
 	listTasks,
 	updateTask,
+	createTask,
 	type ApiTaskStatus,
 	type Task,
 	type UpdateTaskPayload,
+	type CreateTaskPayload,
 } from "@/services/task.service";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
@@ -26,7 +28,7 @@ import { ProjectActivityFeed } from "@/components/projects/ProjectActivityFeed";
 import { ProjectPageSkeleton } from "@/components/projects/ProjectPageSkeleton";
 import { DangerZoneSection as ProjectDangerZoneSection } from "@/components/project-settings/DangerZoneSection";
 import { EditProjectDialog } from "@/components/task-page/EditProjectDialog";
-import { NewTaskDialog } from "@/components/task-page/NewTaskDialog";
+import { NewTaskDialogV2 } from "@/components/tasks/NewTaskDialogV2";
 import { AddMemberDialog } from "@/components/task-page/AddMemberDialog";
 import { OverviewTab } from "@/components/task-page/OverviewTab";
 import { TasksTab } from "@/components/task-page/TasksTab";
@@ -405,12 +407,17 @@ export default function ProjectPage() {
 					);
 				}}
 			/>
-			<NewTaskDialog
+			<NewTaskDialogV2
 				open={newTaskOpen}
 				onClose={() => setNewTaskOpen(false)}
-				projectId={project.id}
-				members={members}
-				onCreated={(task) => setTasks((prev) => [task, ...prev])}
+				projects={[project]}
+				profiles={profiles}
+				lockedProjectId={project.id}
+				onCreate={async (pid: string, payload: CreateTaskPayload) => {
+					const task = await createTask(pid, payload);
+					setTasks((prev) => [task, ...prev]);
+					toast.success("Task created");
+				}}
 			/>
 			<TaskDetailDialogV2
 				task={viewTask}

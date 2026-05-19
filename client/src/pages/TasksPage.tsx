@@ -50,7 +50,7 @@ import {
 import { TaskCardContent, BoardColumn } from "@/components/tasks/TaskCard";
 import { TaskTable } from "@/components/tasks/TaskTable";
 import { TaskFilters } from "@/components/tasks/TaskFilters";
-import { NewTaskDialog } from "@/components/tasks/NewTaskDialog";
+import { NewTaskDialogV2 } from "@/components/tasks/NewTaskDialogV2";
 import { EditTaskDialog } from "@/components/tasks/EditTaskDialog";
 import { TaskDetailDialogV2 } from "@/components/tasks/TaskDetailDialogV2";
 import { EndSprintButton } from "@/components/tasks/end-sprint/EndSprintButton";
@@ -708,7 +708,7 @@ export default function TasksPage() {
 				/>
 			)}
 
-			<NewTaskDialog
+			<NewTaskDialogV2
 				open={dialogOpen}
 				onClose={() => {
 					setDialogOpen(false);

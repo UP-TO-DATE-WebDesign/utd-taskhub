@@ -7,37 +7,34 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { type Sprint } from "@/services/sprint.service";
-import { type UiTask } from "../types";
-import { NO_SPRINT_VALUE } from "./constants";
+import { type Project } from "@/services/project.service";
 import { reportError } from "./utils";
 
-export function InlineSprint({
-	sprint,
-	sprints,
-	loading,
+export function InlineProject({
+	projectId,
+	projects,
 	canEdit,
+	locked,
 	onSave,
 }: {
-	sprint: UiTask["sprint"];
-	sprints: Sprint[];
-	loading: boolean;
+	projectId: string;
+	projects: Project[];
 	canEdit: boolean;
-	onSave: (v: string | null) => Promise<void>;
+	locked?: boolean;
+	onSave: (v: string) => Promise<void>;
 }) {
 	const [editing, setEditing] = useState(false);
 	const [saving, setSaving] = useState(false);
-	const currentId = sprint?.id ?? "";
+	const current = projects.find((p) => p.id === projectId);
 
 	async function pick(v: string) {
-		const next = v === NO_SPRINT_VALUE ? null : v;
-		if ((next ?? "") === currentId) {
+		if (v === projectId) {
 			setEditing(false);
 			return;
 		}
 		setSaving(true);
 		try {
-			await onSave(next);
+			await onSave(v);
 		} catch (e) {
 			reportError(e);
 		} finally {
@@ -48,11 +45,11 @@ export function InlineSprint({
 
 	const readView = (
 		<span className="text-sm font-medium text-foreground">
-			{sprint?.name ?? "—"}
+			{current?.name ?? "—"}
 		</span>
 	);
 
-	if (!canEdit) return readView;
+	if (!canEdit || locked) return readView;
 
 	if (!editing) {
 		return (
@@ -70,23 +67,19 @@ export function InlineSprint({
 		<div className="flex items-center gap-2">
 			<Select
 				defaultOpen
-				value={currentId || NO_SPRINT_VALUE}
+				value={projectId}
 				onValueChange={pick}
 				onOpenChange={(o) => {
 					if (!o) setEditing(false);
 				}}
-				disabled={loading}
 			>
 				<SelectTrigger className="h-8 text-xs">
-					<SelectValue
-						placeholder={loading ? "Loading..." : "Select sprint"}
-					/>
+					<SelectValue placeholder="Select project" />
 				</SelectTrigger>
 				<SelectContent>
-					<SelectItem value={NO_SPRINT_VALUE}>No sprint</SelectItem>
-					{sprints.map((s) => (
-						<SelectItem key={s.id} value={s.id}>
-							{s.name}
+					{projects.map((p) => (
+						<SelectItem key={p.id} value={p.id}>
+							{p.name}
 						</SelectItem>
 					))}
 				</SelectContent>
