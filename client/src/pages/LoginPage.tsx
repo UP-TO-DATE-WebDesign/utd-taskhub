@@ -26,7 +26,6 @@ export default function LoginPage() {
 	const [showPassword, setShowPassword] = useState(false);
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
-	const [remember, setRemember] = useState(true);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
 
@@ -47,7 +46,7 @@ export default function LoginPage() {
 		}
 		setLoading(true);
 		try {
-			await login(email, password, remember);
+			await login(email, password, true);
 			navigate("/");
 		} catch (err) {
 			setError(err instanceof Error ? err.message : "Login failed.");
@@ -217,18 +216,6 @@ export default function LoginPage() {
 								</button>
 							</div>
 						</div>
-
-						<label className="flex cursor-pointer items-start gap-2.5">
-							<Checkbox
-								id="remember"
-								checked={remember}
-								onCheckedChange={(v) => setRemember(!!v)}
-								className="mt-0.5 shrink-0"
-							/>
-							<span className="text-sm leading-snug text-muted-foreground">
-								Remember me for 30 days
-							</span>
-						</label>
 
 						<Button
 							type="submit"

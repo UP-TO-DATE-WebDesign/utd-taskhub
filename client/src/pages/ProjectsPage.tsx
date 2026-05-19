@@ -51,6 +51,7 @@ import {
 import { ProjectIcon } from "@/components/projects/project-icon-picker";
 import { toast } from "sonner";
 import { usePermission } from "@/hooks/usePermission";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -892,9 +893,67 @@ export default function ProjectsPage() {
 
 			{/* Loading */}
 			{loading && (
-				<div className="flex items-center justify-center py-24 gap-2 text-muted">
-					<Loader2 className="h-5 w-5 animate-spin" />
-					<span className="text-sm">Loading projects...</span>
+				<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+					<div className="rounded-xl aspect-3.5/2 border border-border bg-white p-5">
+						<div className="flex w-full">
+							<div className="flex flex-col gap-1 w-full">
+								<Skeleton className="h-5 w-3/5 mb-2" />
+								<Skeleton className="h-3 w-2/4" />
+								<Skeleton className="h-3 w-1/4" />
+							</div>
+							<Skeleton className="w-1/5 h-4" />
+						</div>
+						<div className="flex flex-col gap-2 w-full mt-20">
+							<Skeleton className="h-3 w-full" />
+							<Skeleton className="h-px w-full" />
+							<div className="flex items-center gap-1">
+								<Skeleton className="w-4 h-4 rounded-full" />
+								<Skeleton className="w-4 h-4 rounded-full" />
+								<Skeleton className="w-4 h-4 rounded-full" />
+								<Skeleton className="w-10 h-4 ml-auto" />
+							</div>
+						</div>
+					</div>
+					<div className="rounded-xl aspect-3.5/2 border border-border bg-white p-5">
+						<div className="flex w-full">
+							<div className="flex flex-col gap-1 w-full">
+								<Skeleton className="h-5 w-3/5 mb-2" />
+								<Skeleton className="h-3 w-2/4" />
+								<Skeleton className="h-3 w-1/4" />
+							</div>
+							<Skeleton className="w-1/5 h-4" />
+						</div>
+						<div className="flex flex-col gap-2 w-full mt-20">
+							<Skeleton className="h-3 w-full" />
+							<Skeleton className="h-px w-full" />
+							<div className="flex items-center gap-1">
+								<Skeleton className="w-4 h-4 rounded-full" />
+								<Skeleton className="w-4 h-4 rounded-full" />
+								<Skeleton className="w-4 h-4 rounded-full" />
+								<Skeleton className="w-10 h-4 ml-auto" />
+							</div>
+						</div>
+					</div>
+					<div className="rounded-xl aspect-3.5/2 border border-border bg-white p-5">
+						<div className="flex w-full">
+							<div className="flex flex-col gap-1 w-full">
+								<Skeleton className="h-5 w-3/5 mb-2" />
+								<Skeleton className="h-3 w-2/4" />
+								<Skeleton className="h-3 w-1/4" />
+							</div>
+							<Skeleton className="w-1/5 h-4" />
+						</div>
+						<div className="flex flex-col gap-2 w-full mt-20">
+							<Skeleton className="h-3 w-full" />
+							<Skeleton className="h-px w-full" />
+							<div className="flex items-center gap-1">
+								<Skeleton className="w-4 h-4 rounded-full" />
+								<Skeleton className="w-4 h-4 rounded-full" />
+								<Skeleton className="w-4 h-4 rounded-full" />
+								<Skeleton className="w-10 h-4 ml-auto" />
+							</div>
+						</div>
+					</div>
 				</div>
 			)}
 

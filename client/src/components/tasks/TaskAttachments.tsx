@@ -8,6 +8,7 @@ import {
 	uploadTaskAttachment,
 	deleteTaskAttachment,
 } from "@/services/task-attachment.service";
+import { Skeleton } from "../ui/skeleton";
 
 const MAX_BYTES = 10 * 1024 * 1024;
 
@@ -142,8 +143,10 @@ export function TaskAttachments({ projectId, taskId, canEdit }: Props) {
 
 	if (loading) {
 		return (
-			<div className="flex items-center justify-center py-6">
-				<Loader2 className="h-5 w-5 animate-spin text-muted" />
+			<div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+				<Skeleton className="aspect-4/3" />
+				<Skeleton className="aspect-4/3" />
+				<Skeleton className="aspect-4/3" />
 			</div>
 		);
 	}
