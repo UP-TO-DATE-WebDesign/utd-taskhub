@@ -1,73 +1,106 @@
-# React + TypeScript + Vite
+# TaskHub v2 - Client
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend for TaskHub v2, a task and project management app.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Projects with members and role-based permissions
+- Tasks with rich-text descriptions, comments, attachments, and activity history
+- Kanban board with drag-and-drop
+- Sprints and capacity planning
+- Tickets
+- Users, profiles, and admin tools
+- Email-based invitations
+- Real-time notifications
+- Dashboard with charts and reports
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React 19
+- TypeScript
+- Vite
+- Tailwind CSS v4
+- shadcn/ui (Radix primitives)
+- Redux Toolkit
+- React Router v7
+- Lexical (rich text)
+- dnd-kit (drag and drop)
+- Recharts
+- Sentry
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Install dependencies:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Create `.env` with backend URL:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
 ```
+VITE_API_URL=http://localhost:5050/api/v1
+VITE_SENTRY_DSN=
+VITE_SUPPORT_EMAIL=
+```
+
+Run dev server:
+
+```bash
+npm run dev
+```
+
+## Scripts
+
+- `npm run dev` - start Vite dev server
+- `npm run build` - type-check and build for production
+- `npm run preview` - preview production build
+- `npm run lint` - run ESLint
+
+## Project Structure
+
+```
+client/
+├── src/
+│   ├── assets/              static assets
+│   ├── components/          UI by feature
+│   │   ├── auth-components/
+│   │   ├── projects/
+│   │   ├── project-settings/
+│   │   ├── sprints/
+│   │   ├── task-page/
+│   │   ├── tasks/
+│   │   ├── tickets/
+│   │   ├── users/
+│   │   ├── workspace-settings/
+│   │   ├── ui/              shadcn/ui primitives
+│   │   ├── PermissionGate.tsx
+│   │   ├── ProtectedRoute.tsx
+│   │   └── RoleGuard.tsx
+│   ├── context/             React context providers
+│   ├── data/                static data and constants
+│   ├── hooks/               reusable hooks
+│   ├── layouts/             route layouts
+│   ├── lib/                 api client, utils
+│   ├── pages/               route components
+│   │   └── admin/
+│   ├── services/            API service modules (one per resource)
+│   ├── types/               shared TS types
+│   ├── App.tsx
+│   └── main.tsx
+├── public/
+├── index.html
+├── vite.config.ts
+└── package.json
+```
+
+## Architecture Notes
+
+- API calls go through service files; no direct Supabase calls from the client.
+- Components follow shadcn/ui patterns with Radix primitives.
+- State managed via Redux Toolkit.
+- All views include loading, empty, and error states.
+
+## Related
+
+- `../server` - Express + Supabase backend
