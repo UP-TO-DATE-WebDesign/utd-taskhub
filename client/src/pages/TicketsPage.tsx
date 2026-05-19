@@ -30,6 +30,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { SearchSelect } from "@/components/ui/search-select";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -262,7 +263,9 @@ function TicketDialog({
 		}
 		if (!/^[A-Z0-9][A-Z0-9-]{0,29}$/.test(trimmed)) {
 			setCodeStatus("invalid");
-			setCodeMessage("Use uppercase letters, digits, dashes (e.g. WEB-001).");
+			setCodeMessage(
+				"Use uppercase letters, digits, dashes (e.g. WEB-001).",
+			);
 			return;
 		}
 		setCodeStatus("checking");
@@ -272,7 +275,7 @@ function TicketDialog({
 				const res = await checkTicketCode(
 					projectId,
 					trimmed,
-					mode === "edit" ? ticket?.id : undefined
+					mode === "edit" ? ticket?.id : undefined,
 				);
 				if (res.available) {
 					setCodeStatus("available");
@@ -280,7 +283,7 @@ function TicketDialog({
 				} else {
 					setCodeStatus("taken");
 					setCodeMessage(
-						res.reason ?? "Already used in this project."
+						res.reason ?? "Already used in this project.",
 					);
 				}
 			} catch {
@@ -371,7 +374,8 @@ function TicketDialog({
 								setTicketCode(e.target.value.toUpperCase())
 							}
 							className={
-								codeStatus === "taken" || codeStatus === "invalid"
+								codeStatus === "taken" ||
+								codeStatus === "invalid"
 									? "border-danger focus:ring-danger font-mono"
 									: "font-mono"
 							}
@@ -381,9 +385,9 @@ function TicketDialog({
 								codeStatus === "available"
 									? "text-success"
 									: codeStatus === "taken" ||
-									  codeStatus === "invalid"
-									? "text-danger"
-									: "text-muted-foreground"
+										  codeStatus === "invalid"
+										? "text-danger"
+										: "text-muted-foreground"
 							}`}
 						>
 							{codeStatus === "checking" && "Checking…"}
@@ -521,36 +525,34 @@ function TicketDialog({
 						<label className="text-sm font-medium text-muted-foreground mb-1.5 block">
 							Assigned To
 						</label>
-						<Select
+						<SearchSelect
 							value={assignedTo || UNASSIGNED_VALUE}
 							onValueChange={(v) =>
 								setAssignedTo(v === UNASSIGNED_VALUE ? "" : v)
 							}
 							disabled={membersLoading}
-						>
-							<SelectTrigger>
-								<SelectValue
-									placeholder={
-										membersLoading
-											? "Loading members..."
-											: "Unassigned"
-									}
-								/>
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value={UNASSIGNED_VALUE}>
-									Unassigned
-								</SelectItem>
-								{members.map((m) => (
-									<SelectItem
-										key={m.profiles.id}
-										value={m.profiles.id}
-									>
-										{m.profiles.full_name ?? m.profiles.email}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
+							placeholder={
+								membersLoading
+									? "Loading members..."
+									: "Unassigned"
+							}
+							searchPlaceholder="Search members..."
+							options={[
+								{
+									value: UNASSIGNED_VALUE,
+									label: "Unassigned",
+								},
+								...members.map((m) => ({
+									value: m.profiles.id,
+									label:
+										m.profiles.full_name ??
+										m.profiles.email,
+									description: m.profiles.full_name
+										? m.profiles.email
+										: undefined,
+								})),
+							]}
+						/>
 					</div>
 				</div>
 
@@ -777,39 +779,36 @@ function ConvertDialog({
 							<label className="text-sm font-medium text-muted-foreground mb-1.5 block">
 								Assigned To
 							</label>
-							<Select
+							<SearchSelect
 								value={assignedTo || UNASSIGNED_VALUE}
 								onValueChange={(v) =>
 									setAssignedTo(
-										v === UNASSIGNED_VALUE ? "" : v
+										v === UNASSIGNED_VALUE ? "" : v,
 									)
 								}
 								disabled={membersLoading}
-							>
-								<SelectTrigger>
-									<SelectValue
-										placeholder={
-											membersLoading
-												? "Loading members..."
-												: "Unassigned"
-										}
-									/>
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value={UNASSIGNED_VALUE}>
-										Unassigned
-									</SelectItem>
-									{members.map((m) => (
-										<SelectItem
-											key={m.profiles.id}
-											value={m.profiles.id}
-										>
-											{m.profiles.full_name ??
-												m.profiles.email}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
+								placeholder={
+									membersLoading
+										? "Loading members..."
+										: "Unassigned"
+								}
+								searchPlaceholder="Search members..."
+								options={[
+									{
+										value: UNASSIGNED_VALUE,
+										label: "Unassigned",
+									},
+									...members.map((m) => ({
+										value: m.profiles.id,
+										label:
+											m.profiles.full_name ??
+											m.profiles.email,
+										description: m.profiles.full_name
+											? m.profiles.email
+											: undefined,
+									})),
+								]}
+							/>
 						</div>
 
 						<div>
