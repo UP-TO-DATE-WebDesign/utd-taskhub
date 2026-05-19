@@ -43,6 +43,7 @@ import {
 } from "@/services/user.service";
 import { listRoles, type Role } from "@/services/role.service";
 import { toast } from "sonner";
+import { UsersPageSkeleton } from "@/components/users/UsersPageSkeleton";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -745,12 +746,7 @@ export default function UsersPage() {
 			</div>
 
 			{/* Loading */}
-			{loading && (
-				<div className="flex items-center justify-center py-24 gap-2 text-muted">
-					<Loader2 className="h-5 w-5 animate-spin" />
-					<span className="text-sm">Loading users...</span>
-				</div>
-			)}
+			{loading && <UsersPageSkeleton view={view} />}
 
 			{/* Error */}
 			{!loading && error && (

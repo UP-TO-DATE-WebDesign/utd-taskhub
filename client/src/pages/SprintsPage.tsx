@@ -31,6 +31,7 @@ import {
 	type SprintStatus,
 } from "@/services/sprint.service";
 import { toast } from "sonner";
+import { SprintsListSkeleton } from "@/components/sprints/SprintsListSkeleton";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -428,10 +429,7 @@ export default function SprintsPage() {
 
 			{/* Content */}
 			{loading ? (
-				<div className="flex items-center justify-center gap-2 text-muted py-24">
-					<Loader2 className="h-5 w-5 animate-spin" />
-					<span className="text-sm">Loading sprints...</span>
-				</div>
+				<SprintsListSkeleton />
 			) : sprints.length === 0 ? (
 				<Card className="p-12 text-center">
 					<p className="text-sm font-medium text-foreground mb-1">No sprints yet</p>
