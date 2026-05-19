@@ -59,7 +59,7 @@ import { TasksPageSkeleton } from "@/components/tasks/TasksPageSkeleton";
 import { useSearchParams } from "react-router-dom";
 
 export default function TasksPage() {
-	const [searchParams] = useSearchParams();
+	const [searchParams, setSearchParams] = useSearchParams();
 
 	const taskId = searchParams.get("taskId");
 	const projectId = searchParams.get("projectId");
@@ -171,6 +171,13 @@ export default function TasksPage() {
 			active = false;
 		};
 	}, []);
+
+	const removeParams = () => {
+		const newParams = new URLSearchParams(searchParams);
+		newParams.delete("taskId");
+		newParams.delete("projectId");
+		setSearchParams(newParams);
+	};
 
 	// ── DnD ──────────────────────────────────────────────────────────────────
 
@@ -727,7 +734,10 @@ export default function TasksPage() {
 				projects={projects}
 				profiles={profiles}
 				allTasks={allTasks}
-				onClose={() => setViewTask(null)}
+				onClose={() => {
+					removeParams();
+					setViewTask(null);
+				}}
 				onSaveNotes={handleSaveNotes}
 				onUpdate={handleEditTask}
 				onChangeStatus={handleChangeStatus}
