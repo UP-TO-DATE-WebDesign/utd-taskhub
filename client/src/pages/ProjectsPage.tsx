@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
 	Plus,
@@ -52,6 +52,7 @@ import { ProjectIcon } from "@/components/projects/project-icon-picker";
 import { toast } from "sonner";
 import { usePermission } from "@/hooks/usePermission";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useApiSWR } from "@/hooks/useApiSWR";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -689,78 +690,46 @@ export default function ProjectsPage() {
 	const navigate = useNavigate();
 	const { can } = usePermission();
 	const canCreateProject = can("Create projects");
-	const [projects, setProjects] = useState<Project[]>([]);
-	const [profiles, setProfiles] = useState<Profile[]>([]);
-	const [sprints, setSprints] = useState<Sprint[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [profilesLoading, setProfilesLoading] = useState(true);
-	const [sprintsLoading, setSprintsLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
 	const [dialogOpen, setDialogOpen] = useState(false);
 	const [filter, setFilter] = useState<ProjectStatus | "all">("all");
 	const [sprintFilter, setSprintFilter] = useState("all");
 	const [search, setSearch] = useState("");
 	const [view, setView] = useState<"grid" | "list">("grid");
 
-	const fetchProjects = useCallback(async () => {
-		if (sprintsLoading) return;
+	const projectParams = useMemo(() => {
+		const params: {
+			status?: string;
+			search?: string;
+			sprint_id?: string;
+		} = {};
+		if (filter !== "all") params.status = filter;
+		if (sprintFilter !== "all") params.sprint_id = sprintFilter;
+		if (search) params.search = search;
+		return params;
+	}, [filter, sprintFilter, search]);
 
-		try {
-			setLoading(true);
-			setError(null);
-			const params: {
-				status?: string;
-				search?: string;
-				sprint_id?: string;
-			} = {};
-			if (filter !== "all") params.status = filter;
-			if (sprintFilter !== "all") params.sprint_id = sprintFilter;
-			if (search) params.search = search;
-			const data = await listProjects(params);
-			setProjects(data);
-		} catch {
-			setError("Failed to load projects.");
-		} finally {
-			setLoading(false);
-		}
-	}, [filter, search, sprintFilter, sprintsLoading]);
+	const {
+		data: projects = [],
+		error: projectsError,
+		isLoading: projectsLoading,
+		mutate: mutateProjects,
+	} = useApiSWR<Project[]>(["projects", projectParams], () =>
+		listProjects(projectParams),
+	);
+	const { data: sprints = [], isLoading: sprintsLoading } = useApiSWR<
+		Sprint[]
+	>(["sprints"], () => listSprints());
+	const { data: profiles = [], isLoading: profilesLoading } = useApiSWR<
+		Profile[]
+	>(["profiles"], () => listProfiles());
 
-	useEffect(() => {
-		fetchProjects();
-	}, [fetchProjects]);
-
-	useEffect(() => {
-		let active = true;
-
-		listSprints()
-			.then((data) => {
-				if (!active) return;
-				setSprints(data);
-				setSprintFilter("all");
-			})
-			.catch(() => {
-				if (!active) return;
-				setSprints([]);
-				setSprintFilter("all");
-			})
-			.finally(() => {
-				if (active) setSprintsLoading(false);
-			});
-
-		return () => {
-			active = false;
-		};
-	}, []);
-
-	useEffect(() => {
-		listProfiles()
-			.then(setProfiles)
-			.catch(() => setProfiles([]))
-			.finally(() => setProfilesLoading(false));
-	}, []);
+	const loading = projectsLoading;
+	const error = projectsError
+		? projectsError.message || "Failed to load projects."
+		: null;
 
 	async function handleCreate(project: Project) {
-		await fetchProjects();
+		await mutateProjects();
 		void project;
 	}
 
@@ -964,7 +933,7 @@ export default function ProjectsPage() {
 						Something went wrong
 					</p>
 					<p className="text-sm text-muted mb-4">{error}</p>
-					<Button variant="outline" onClick={fetchProjects}>
+					<Button variant="outline" onClick={() => mutateProjects()}>
 						Retry
 					</Button>
 				</div>
