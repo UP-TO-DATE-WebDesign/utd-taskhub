@@ -34,6 +34,7 @@ import { OverviewTab } from "@/components/task-page/OverviewTab";
 import { TasksTab } from "@/components/task-page/TasksTab";
 import { ProjectTaskFilters } from "@/components/task-page/ProjectTaskFilters";
 import { TeamsTab } from "@/components/task-page/TeamsTab";
+import { WorkflowStagesTab } from "@/components/task-page/WorkflowStagesTab";
 import { TaskDetailDialogV2 } from "@/components/tasks/TaskDetailDialogV2";
 import { COLUMN_LABELS, toUiTask, type UiTask } from "@/components/tasks/types";
 
@@ -46,7 +47,14 @@ const STATUS_BADGE = {
 	"on-hold": { variant: "cancelled" as const, label: "On Hold" },
 };
 
-const TABS = ["Overview", "Tasks", "Teams", "Activity", "Settings"] as const;
+const TABS = [
+	"Overview",
+	"Tasks",
+	"Teams",
+	"Workflow Stages",
+	"Activity",
+	"Settings",
+] as const;
 type Tab = (typeof TABS)[number];
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
@@ -354,6 +362,11 @@ export default function ProjectPage() {
 						)
 					}
 				/>
+			)}
+
+			{/* ── WORKFLOW STAGES TAB ──────────────────────────────── */}
+			{activeTab === "Workflow Stages" && (
+				<WorkflowStagesTab projectId={project.id} />
 			)}
 
 			{/* ── ACTIVITY TAB ─────────────────────────────────────── */}

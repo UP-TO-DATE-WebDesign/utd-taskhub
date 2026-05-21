@@ -21,6 +21,7 @@ import sprintRoutes from "./routes/sprint.routes.js";
 import systemLogRoutes from "./routes/system-log.routes.js";
 import workspaceSettingsRoutes from "./routes/workspace-settings.routes.js";
 import taskTypeRoutes from "./routes/task-type.routes.js";
+import workflowStageRoutes from "./routes/workflow-stage.routes.js";
 import notificationRoutes from "./routes/notifications.routes.js";
 import adminReportRoutes from "./routes/admin-report.routes.js";
 import adminReportRealRoutes from "./routes/admin-report-real.routes.js";
@@ -107,6 +108,10 @@ app.use(`/api/${env.apiVersion}/roles`, roleRoutes);
 app.use(`/api/${env.apiVersion}/system-logs`, systemLogRoutes);
 app.use(`/api/${env.apiVersion}/workspace-settings`, workspaceSettingsRoutes);
 app.use(`/api/${env.apiVersion}/task-types`, taskTypeRoutes);
+app.use(
+	`/api/${env.apiVersion}/projects/:projectId/workflow-stages`,
+	workflowStageRoutes,
+);
 app.use(`/api/${env.apiVersion}/notifications`, notificationRoutes);
 app.use(`/api/${env.apiVersion}/admin`, adminReportRealRoutes);
 app.use(`/api/${env.apiVersion}/admin`, adminReportRoutes);
