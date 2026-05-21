@@ -1,5 +1,11 @@
-import { useState } from "react";
-import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import {
+	Link,
+	NavLink,
+	Outlet,
+	useLocation,
+	useNavigate,
+} from "react-router-dom";
 import { Bell, User, LogOut, Menu, ChevronDown } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -65,7 +71,21 @@ export default function AppLayout() {
 	const { user, logout } = useAuth();
 	const { can } = usePermission();
 	const navigate = useNavigate();
+	const location = useLocation();
 	const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+	useEffect(() => {
+		setMobileNavOpen(false);
+	}, [location.pathname]);
+
+	useEffect(() => {
+		if (!mobileNavOpen) return;
+		function onKey(e: KeyboardEvent) {
+			if (e.key === "Escape") setMobileNavOpen(false);
+		}
+		window.addEventListener("keydown", onKey);
+		return () => window.removeEventListener("keydown", onKey);
+	}, [mobileNavOpen]);
 	const { notifications, unreadCount, markRead, markAllRead } =
 		useNotificationStream();
 
@@ -122,7 +142,7 @@ export default function AppLayout() {
 						<img
 							src="/logo.svg"
 							alt="TaskHub"
-							className="h-8 w-auto max-w-[132px]"
+							className="h-7 w-auto max-w-[110px] sm:h-8 sm:max-w-[132px]"
 						/>
 					</Link>
 
@@ -246,7 +266,7 @@ export default function AppLayout() {
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<button
-									className="flex items-center gap-2 rounded-md py-1 px-2 border border-border/50 transition-colors hover:bg-muted-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+									className="flex items-center gap-2 rounded-md p-1 sm:py-1 sm:px-2 sm:border sm:border-border/50 transition-colors hover:bg-muted-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
 									aria-label="Open account menu"
 								>
 									<Avatar className="h-7 w-7">
@@ -268,7 +288,7 @@ export default function AppLayout() {
 											{role}
 										</div>
 									</div>
-									<ChevronDown className="h-3 w-3 text-muted-foreground" />
+									<ChevronDown className="hidden h-3 w-3 text-muted-foreground sm:block" />
 								</button>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align="end" className="w-48">
@@ -286,11 +306,11 @@ export default function AppLayout() {
 											</AvatarFallback>
 										</Avatar>
 									</div>
-									<p className="text-sm font-bold	text-primary">
+									<p className="text-sm font-bold text-primary">
 										{displayName}
 									</p>
 									<div>
-										<p className="text-xs font-light text-muted-foreground break-after-all break-all text-center">
+										<p className="text-xs font-light text-muted-foreground break-all text-center">
 											{user?.email ?? "alex@taskhub.io"}
 										</p>
 									</div>
@@ -320,7 +340,7 @@ export default function AppLayout() {
 				{mobileNavOpen && (
 					<nav
 						id="mobile-header-menu"
-						className="border-t border-border bg-surface px-4 py-2 shadow-sm md:hidden"
+						className="max-h-[calc(100vh-3.5rem)] overflow-y-auto border-t border-border bg-surface px-4 py-2 shadow-sm md:hidden"
 						aria-label="Mobile navigation"
 					>
 						<div className="mx-auto flex max-w-[1280px] flex-col gap-1">
