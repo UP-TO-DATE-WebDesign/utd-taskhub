@@ -33,6 +33,13 @@ export const PRIORITY_CHIP: Record<ApiTaskPriority, string> = {
 	urgent: "bg-red-100 text-red-700",
 };
 
+export const PRIORITY_COLOR: Record<ApiTaskPriority, string> = {
+	low: "#475569",
+	medium: "#0058be",
+	high: "#c2410c",
+	urgent: "#b91c1c",
+};
+
 export const UNASSIGNED_VALUE = "__unassigned__";
 
 export const NO_SPRINT_VALUE = "__no_sprint__";

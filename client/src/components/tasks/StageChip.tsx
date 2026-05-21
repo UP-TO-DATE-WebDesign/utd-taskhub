@@ -1,10 +1,4 @@
-export function StageChip({
-	label,
-	color,
-}: {
-	label: string;
-	color: string;
-}) {
+export function StageChip({ label, color }: { label: string; color: string }) {
 	return (
 		<span
 			className="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium"
@@ -26,7 +20,7 @@ export function StageChip({
 export function StageDot({ color }: { color: string }) {
 	return (
 		<span
-			className="inline-block h-2 w-2 rounded-full"
+			className="inline-block h-2 w-2 rounded-full mb-0.5"
 			style={{ backgroundColor: color }}
 		/>
 	);

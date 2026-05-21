@@ -13,7 +13,6 @@ import {
 	Link,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
 	Select,
@@ -42,14 +41,14 @@ import { usePermission } from "@/hooks/usePermission";
 import { type Project } from "@/services/project.service";
 import type { WorkflowStage } from "@/services/workflow-stage.service";
 import { SYSTEM_STAGES } from "./system-stages";
-import { StageChip } from "./StageChip";
+import { StageChip, StageDot } from "./StageChip";
 import {
 	type ApiTaskStatus,
 	type UpdateTaskPayload,
 } from "@/services/task.service";
 import { type Profile } from "@/services/profile.service";
 import { listSprints, type Sprint } from "@/services/sprint.service";
-import { type UiTask, STATUS_BADGE } from "./types";
+import { type UiTask } from "./types";
 import { TaskAttachments } from "./TaskAttachments";
 import { TaskComments } from "./TaskComments";
 import {
@@ -147,6 +146,10 @@ export function TaskDetailDialogV2({
 	}, [task?.project_id]);
 
 	const project = projects.find((p) => p.id === task?.project_id);
+	const stageList = stages ?? SYSTEM_STAGES;
+	const currentStage = task
+		? stageList.find((s) => s.key === task.apiStatus)
+		: undefined;
 
 	const children = useMemo(
 		() =>
@@ -223,13 +226,6 @@ export function TaskDetailDialogV2({
 							<DialogClose className="rounded-md p-1 text-danger hover:text-foreground hover:bg-muted-subtle"></DialogClose>
 							{task && (
 								<>
-									<InlineTaskType
-										value={task.task_type}
-										canEdit={canEdit}
-										onSave={(id) =>
-											persist({ task_type_id: id })
-										}
-									/>
 									<InlinePriority
 										value={task.priority}
 										canEdit={canEdit}
@@ -405,20 +401,33 @@ export function TaskDetailDialogV2({
 													>
 														{child.title}
 													</button>
-													<Badge
-														variant={
-															STATUS_BADGE[
-																child.apiStatus
-															].variant
-														}
-														className="text-[9px] shrink-0"
-													>
-														{
-															STATUS_BADGE[
-																child.apiStatus
-															].label
-														}
-													</Badge>
+													{(() => {
+														const childStage =
+															stageList.find(
+																(s) =>
+																	s.key ===
+																	child.apiStatus,
+															);
+														if (!childStage)
+															return null;
+														return (
+															<span
+																className="inline-flex items-center gap-1.5 text-[10px] font-medium shrink-0"
+																style={{
+																	color: childStage.color,
+																}}
+															>
+																<StageDot
+																	color={
+																		childStage.color
+																	}
+																/>
+																{
+																	childStage.name
+																}
+															</span>
+														);
+													})()}
 												</div>
 											);
 										})}
@@ -533,6 +542,17 @@ export function TaskDetailDialogV2({
 
 						{/* Sidebar */}
 						<aside className="border-l border-border bg-muted-subtle/30 overflow-y-auto px-5 py-6 space-y-5 max-h-[80vh]">
+							{canEditStatus && task ? (
+								<InlineTaskType
+									value={task.task_type}
+									canEdit={canEdit}
+									onSave={(id) =>
+										persist({ task_type_id: id })
+									}
+								/>
+							) : (
+								""
+							)}
 							{/* Status */}
 							<div>
 								<p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-2">
@@ -546,43 +566,52 @@ export function TaskDetailDialogV2({
 											disabled={statusSaving}
 										>
 											<SelectTrigger className="h-8 text-xs">
-												<SelectValue />
+												{currentStage ? (
+													<span
+														className="inline-flex items-center gap-2 font-medium"
+														style={{
+															color: currentStage.color,
+														}}
+													>
+														<StageDot
+															color={
+																currentStage.color
+															}
+														/>
+														&nbsp;&nbsp;
+														{currentStage.name}
+													</span>
+												) : (
+													<SelectValue placeholder="Select status" />
+												)}
 											</SelectTrigger>
 											<SelectContent>
-												{(stages ?? SYSTEM_STAGES).map(
-													(stage) => (
-														<SelectItem
-															key={stage.key}
-															value={stage.key}
-														>
-															<StageChip
-																label={stage.name}
-																color={stage.color}
-															/>
-														</SelectItem>
-													),
-												)}
+												{stageList.map((stage) => (
+													<SelectItem
+														key={stage.key}
+														value={stage.key}
+													>
+														<StageChip
+															label={stage.name}
+															color={stage.color}
+														/>
+													</SelectItem>
+												))}
 											</SelectContent>
 										</Select>
 										{statusSaving && (
 											<Loader2 className="h-3.5 w-3.5 animate-spin text-muted" />
 										)}
 									</div>
-								) : (
-									<Badge
-										variant={
-											STATUS_BADGE[
-												task?.apiStatus ?? "todo"
-											].variant
-										}
+								) : currentStage ? (
+									<span
+										className="inline-flex items-center gap-2 text-xs font-medium"
+										style={{ color: currentStage.color }}
 									>
-										{
-											STATUS_BADGE[
-												task?.apiStatus ?? "todo"
-											].label
-										}
-									</Badge>
-								)}
+										<StageDot color={currentStage.color} />
+										{currentStage.name}
+									</span>
+								) : null}
 							</div>
 
 							<Separator />

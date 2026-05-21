@@ -5,11 +5,13 @@ import {
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
-	SelectValue,
 } from "@/components/ui/select";
 import { type ApiTaskPriority } from "@/services/task.service";
-import { cn } from "@/lib/utils";
-import { PRIORITY_CHIP, PRIORITY_LABEL, PRIORITY_OPTIONS } from "./constants";
+import {
+	PRIORITY_COLOR,
+	PRIORITY_LABEL,
+	PRIORITY_OPTIONS,
+} from "./constants";
 import { reportError } from "./utils";
 
 export function InlinePriority({
@@ -40,14 +42,18 @@ export function InlinePriority({
 		}
 	}
 
+	const color = PRIORITY_COLOR[value];
+
 	if (!canEdit) {
 		return (
 			<span
-				className={cn(
-					"text-[10px] font-bold tracking-wider px-2 py-1 rounded",
-					PRIORITY_CHIP[value],
-				)}
+				className="inline-flex items-center gap-1.5 text-[10px] font-bold tracking-wider"
+				style={{ color }}
 			>
+				<span
+					className="inline-block h-2 w-2 rounded-full"
+					style={{ backgroundColor: color }}
+				/>
 				{PRIORITY_LABEL[value]}
 			</span>
 		);
@@ -58,11 +64,13 @@ export function InlinePriority({
 			<button
 				type="button"
 				onClick={() => setEditing(true)}
-				className={cn(
-					"text-[10px]! font-bold! tracking-wider px-3 py-1 rounded-xl cursor-pointer hover:opacity-80 transition-opacity",
-					PRIORITY_CHIP[value],
-				)}
+				className="inline-flex items-center gap-1.5 text-[10px] font-bold tracking-wider cursor-pointer hover:opacity-80 transition-opacity"
+				style={{ color }}
 			>
+				<span
+					className="inline-block h-2 w-2 rounded-full"
+					style={{ backgroundColor: color }}
+				/>
 				{PRIORITY_LABEL[value]}
 			</button>
 		);
@@ -78,13 +86,33 @@ export function InlinePriority({
 					if (!o) setEditing(false);
 				}}
 			>
-				<SelectTrigger className="h-6 text-[10px]! text-center! px-2 py-1 min-w-35">
-					<SelectValue />
+				<SelectTrigger className="h-6 text-[10px]! px-2 py-1 min-w-35">
+					<span
+						className="inline-flex items-center gap-1.5 font-bold tracking-wider"
+						style={{ color }}
+					>
+						<span
+							className="inline-block h-2 w-2 rounded-full"
+							style={{ backgroundColor: color }}
+						/>
+						{PRIORITY_LABEL[value]}
+					</span>
 				</SelectTrigger>
 				<SelectContent>
 					{PRIORITY_OPTIONS.map((p) => (
 						<SelectItem key={p} value={p}>
-							{PRIORITY_LABEL[p]}
+							<span
+								className="inline-flex items-center gap-1.5 text-[10px] font-bold tracking-wider"
+								style={{ color: PRIORITY_COLOR[p] }}
+							>
+								<span
+									className="inline-block h-2 w-2 rounded-full"
+									style={{
+										backgroundColor: PRIORITY_COLOR[p],
+									}}
+								/>
+								{PRIORITY_LABEL[p]}
+							</span>
 						</SelectItem>
 					))}
 				</SelectContent>

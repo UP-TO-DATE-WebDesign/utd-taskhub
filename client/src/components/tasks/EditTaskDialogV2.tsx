@@ -28,7 +28,7 @@ import { listSprints, type Sprint } from "@/services/sprint.service";
 import { type UiTask } from "./types";
 import type { WorkflowStage } from "@/services/workflow-stage.service";
 import { SYSTEM_STAGES } from "./system-stages";
-import { StageChip } from "./StageChip";
+import { StageChip, StageDot } from "./StageChip";
 import {
 	InlineTitle,
 	InlineDescription,
@@ -262,29 +262,53 @@ export function EditTaskDialogV2({
 							<p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-2">
 								Status
 							</p>
-							<Select
-								value={status}
-								onValueChange={(v) =>
-									setStatus(v as ApiTaskStatus)
-								}
-							>
-								<SelectTrigger className="h-8 text-xs">
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									{(stages ?? SYSTEM_STAGES).map((stage) => (
-										<SelectItem
-											key={stage.key}
-											value={stage.key}
-										>
-											<StageChip
-												label={stage.name}
-												color={stage.color}
-											/>
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
+							{(() => {
+								const stageList = stages ?? SYSTEM_STAGES;
+								const currentStage = stageList.find(
+									(s) => s.key === status,
+								);
+								return (
+									<Select
+										value={status}
+										onValueChange={(v) =>
+											setStatus(v as ApiTaskStatus)
+										}
+									>
+										<SelectTrigger className="h-8 text-xs">
+											{currentStage ? (
+												<span
+													className="inline-flex items-center gap-2 font-medium"
+													style={{
+														color: currentStage.color,
+													}}
+												>
+													<StageDot
+														color={
+															currentStage.color
+														}
+													/>
+													{currentStage.name}
+												</span>
+											) : (
+												<SelectValue placeholder="Select status" />
+											)}
+										</SelectTrigger>
+										<SelectContent>
+											{stageList.map((stage) => (
+												<SelectItem
+													key={stage.key}
+													value={stage.key}
+												>
+													<StageChip
+														label={stage.name}
+														color={stage.color}
+													/>
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+								);
+							})()}
 						</div>
 
 						<Separator />

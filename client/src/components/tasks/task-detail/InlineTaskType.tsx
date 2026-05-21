@@ -58,13 +58,10 @@ export function InlineTaskType({
 
 	const chip = value ? (
 		<span
-			className="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[11px] font-medium"
-			style={{
-				background: `${value.color}1a`,
-				color: value.color,
-			}}
+			className="inline-flex items-center gap-1.5 text-base font-medium"
+			style={{ color: value.color }}
 		>
-			<Icon name={value.icon as IconName} className="h-3 w-3" />
+			<Icon name={value.icon as IconName} className="h-4 w-4" />
 			{value.name}
 		</span>
 	) : (
@@ -101,17 +98,15 @@ export function InlineTaskType({
 				<SelectContent>
 					{types.map((t) => (
 						<SelectItem key={t.id} value={t.id}>
-							<span className="inline-flex items-center gap-2">
-								<span
-									className="inline-flex h-4 w-4 items-center justify-center rounded text-white"
-									style={{ background: t.color }}
-								>
-									<Icon
-										name={t.icon as IconName}
-										className="h-2.5 w-2.5"
-									/>
-								</span>
-								<span className="text-xs">{t.name}</span>
+							<span
+								className="inline-flex items-center gap-1.5 text-base font-medium"
+								style={{ color: t.color }}
+							>
+								<Icon
+									name={t.icon as IconName}
+									className="h-3 w-3"
+								/>
+								{t.name}
 							</span>
 						</SelectItem>
 					))}

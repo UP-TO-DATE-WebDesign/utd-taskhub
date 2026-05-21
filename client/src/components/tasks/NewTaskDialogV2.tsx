@@ -16,11 +16,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import {
-	Dialog,
-	DialogContent,
-	DialogClose,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import {
 	type CreateTaskPayload,
@@ -34,7 +30,7 @@ import { listTaskTypes, type TaskType } from "@/services/task-type.service";
 import { Icon, type IconName } from "@/components/ui/icon-picker";
 import type { WorkflowStage } from "@/services/workflow-stage.service";
 import { SYSTEM_STAGES } from "./system-stages";
-import { StageChip } from "./StageChip";
+import { StageChip, StageDot } from "./StageChip";
 import {
 	InlineTitle,
 	InlineDescription,
@@ -72,7 +68,7 @@ export function NewTaskDialogV2({
 	const [priority, setPriority] = useState<ApiTaskPriority>("medium");
 	const [status, setStatus] = useState<ApiTaskStatus>("todo");
 	const [projectId, setProjectId] = useState<string>(
-		lockedProjectId ?? (projects[0]?.id ?? ""),
+		lockedProjectId ?? projects[0]?.id ?? "",
 	);
 	const [sprintId, setSprintId] = useState<string | null>(null);
 	const [assigneeId, setAssigneeId] = useState<string | null>(null);
@@ -91,7 +87,7 @@ export function NewTaskDialogV2({
 		setDescription("");
 		setPriority("medium");
 		setStatus("todo");
-		setProjectId(lockedProjectId ?? (projects[0]?.id ?? ""));
+		setProjectId(lockedProjectId ?? projects[0]?.id ?? "");
 		setSprintId(null);
 		setAssigneeId(null);
 		setDueDate(null);
@@ -141,10 +137,10 @@ export function NewTaskDialogV2({
 	}, [open, projectId]);
 
 	const assignee = assigneeId
-		? profiles.find((p) => p.id === assigneeId) ?? null
+		? (profiles.find((p) => p.id === assigneeId) ?? null)
 		: null;
 	const sprint = sprintId
-		? sprints.find((s) => s.id === sprintId) ?? null
+		? (sprints.find((s) => s.id === sprintId) ?? null)
 		: null;
 
 	async function handleCreate() {
@@ -243,7 +239,8 @@ export function NewTaskDialogV2({
 							</div>
 							<div className="rounded-lg border border-dashed border-border px-4 py-6 text-center">
 								<p className="text-xs text-muted">
-									Subtasks can be added after the task is created
+									Subtasks can be added after the task is
+									created
 								</p>
 							</div>
 						</section>
@@ -258,7 +255,8 @@ export function NewTaskDialogV2({
 							</div>
 							<div className="rounded-lg border border-dashed border-border px-4 py-6 text-center">
 								<p className="text-xs text-muted">
-									Attachments can be added after the task is created
+									Attachments can be added after the task is
+									created
 								</p>
 							</div>
 						</section>
@@ -311,14 +309,18 @@ export function NewTaskDialogV2({
 											<span className="inline-flex items-center gap-2">
 												<span
 													className="inline-flex h-4 w-4 items-center justify-center rounded text-white"
-													style={{ background: t.color }}
+													style={{
+														background: t.color,
+													}}
 												>
 													<Icon
-														name={t.icon as IconName}
+														name={
+															t.icon as IconName
+														}
 														className="h-2.5 w-2.5"
 													/>
 												</span>
-												<span className="text-xs">
+												<span className="text-base">
 													{t.name}
 												</span>
 											</span>
@@ -335,29 +337,53 @@ export function NewTaskDialogV2({
 							<p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-2">
 								Status
 							</p>
-							<Select
-								value={status}
-								onValueChange={(v) =>
-									setStatus(v as ApiTaskStatus)
-								}
-							>
-								<SelectTrigger className="h-8 text-xs">
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									{(stages ?? SYSTEM_STAGES).map((stage) => (
-										<SelectItem
-											key={stage.key}
-											value={stage.key}
-										>
-											<StageChip
-												label={stage.name}
-												color={stage.color}
-											/>
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
+							{(() => {
+								const stageList = stages ?? SYSTEM_STAGES;
+								const currentStage = stageList.find(
+									(s) => s.key === status,
+								);
+								return (
+									<Select
+										value={status}
+										onValueChange={(v) =>
+											setStatus(v as ApiTaskStatus)
+										}
+									>
+										<SelectTrigger className="h-8 text-xs">
+											{currentStage ? (
+												<span
+													className="inline-flex items-center gap-2 font-medium"
+													style={{
+														color: currentStage.color,
+													}}
+												>
+													<StageDot
+														color={
+															currentStage.color
+														}
+													/>
+													{currentStage.name}
+												</span>
+											) : (
+												<SelectValue placeholder="Select status" />
+											)}
+										</SelectTrigger>
+										<SelectContent>
+											{stageList.map((stage) => (
+												<SelectItem
+													key={stage.key}
+													value={stage.key}
+												>
+													<StageChip
+														label={stage.name}
+														color={stage.color}
+													/>
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+								);
+							})()}
 						</div>
 
 						<Separator />
@@ -416,7 +442,8 @@ export function NewTaskDialogV2({
 													id: sprint.id,
 													name: sprint.name,
 													status: sprint.status,
-													start_date: sprint.start_date,
+													start_date:
+														sprint.start_date,
 													end_date: sprint.end_date,
 												}
 											: null
