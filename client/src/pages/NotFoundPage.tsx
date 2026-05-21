@@ -23,7 +23,7 @@ export default function NotFoundPage() {
   const location = useLocation()
 
   return (
-    <div className="mx-auto flex min-h-[calc(100svh-8rem)] max-w-[1280px] items-center px-6 py-8">
+    <div className="mx-auto flex min-h-[calc(100svh-8rem)] max-w-[1280px] items-center px-4 py-8 sm:px-6">
       <div className="grid w-full gap-6 lg:grid-cols-[1fr_420px] lg:items-center">
         <div>
           <div className="mb-8 flex items-center gap-2">

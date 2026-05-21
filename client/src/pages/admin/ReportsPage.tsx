@@ -204,7 +204,7 @@ export default function ReportsPage() {
 	/* ------------------------------ Loading ------------------------------ */
 	if (loading) {
 		return (
-			<div className="mx-auto max-w-[1280px] px-6 py-8">
+			<div className="mx-auto max-w-[1280px] px-4 py-8 sm:px-6">
 				<div className="mb-8 flex items-start justify-between">
 					<div>
 						<h1 className="text-3xl font-semibold tracking-tight text-foreground">
@@ -244,7 +244,7 @@ export default function ReportsPage() {
 	/* ------------------------------- Error ------------------------------- */
 	if (error) {
 		return (
-			<div className="mx-auto max-w-[1280px] px-6 py-8">
+			<div className="mx-auto max-w-[1280px] px-4 py-8 sm:px-6">
 				<Card className="border-danger/20 bg-danger-subtle p-5">
 					<div className="flex items-start gap-3 text-danger">
 						<AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
@@ -304,7 +304,7 @@ export default function ReportsPage() {
 	];
 
 	return (
-		<div className="mx-auto max-w-[1280px] px-6 py-8">
+		<div className="mx-auto max-w-[1280px] px-4 py-8 sm:px-6">
 			{/* Page header */}
 			<div className="mb-8 flex flex-col items-start justify-between gap-3 md:flex-row md:items-center">
 				<div>

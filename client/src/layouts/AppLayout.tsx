@@ -123,9 +123,9 @@ export default function AppLayout() {
 	return (
 		<div className="flex min-h-screen flex-col bg-background">
 			<header className="sticky top-0 z-40 border-b border-border bg-surface/80 backdrop-blur-sm">
-				<div className="mx-auto flex h-14 max-w-[1280px] items-center gap-2 px-4 sm:px-5 md:gap-6 md:px-6">
+				<div className="mx-auto flex h-14 max-w-[1280px] items-center gap-2 px-4 sm:px-5 lg:gap-6 lg:px-6">
 					<button
-						className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted-subtle hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-primary md:hidden"
+						className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted-subtle hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-primary lg:hidden"
 						aria-label="Open navigation menu"
 						aria-controls="mobile-header-menu"
 						aria-expanded={mobileNavOpen}
@@ -137,7 +137,7 @@ export default function AppLayout() {
 					<Link
 						to="/"
 						aria-label="TaskHub home"
-						className="mr-2 flex min-w-0 shrink-0 items-center gap-2 md:mr-4"
+						className="mr-2 flex min-w-0 shrink-0 items-center gap-2 lg:mr-4"
 					>
 						<img
 							src="/logo.svg"
@@ -146,7 +146,7 @@ export default function AppLayout() {
 						/>
 					</Link>
 
-					<nav className="hidden items-center gap-1 md:flex">
+					<nav className="hidden items-center gap-1 lg:flex">
 						{visibleNavLinks.map((link) => (
 							<NavLink
 								key={link.to}
@@ -280,7 +280,7 @@ export default function AppLayout() {
 											{initials}
 										</AvatarFallback>
 									</Avatar>
-									<div className="hidden leading-none text-left md:block">
+									<div className="hidden leading-none text-left lg:block">
 										<div className="text-xs font-medium text-foreground">
 											{displayName}
 										</div>
@@ -340,7 +340,7 @@ export default function AppLayout() {
 				{mobileNavOpen && (
 					<nav
 						id="mobile-header-menu"
-						className="max-h-[calc(100vh-3.5rem)] overflow-y-auto border-t border-border bg-surface px-4 py-2 shadow-sm md:hidden"
+						className="max-h-[calc(100vh-3.5rem)] overflow-y-auto border-t border-border bg-surface px-4 py-2 shadow-sm lg:hidden"
 						aria-label="Mobile navigation"
 					>
 						<div className="mx-auto flex max-w-[1280px] flex-col gap-1">

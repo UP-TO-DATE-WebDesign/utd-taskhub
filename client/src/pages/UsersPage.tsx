@@ -677,9 +677,9 @@ export default function UsersPage() {
 	});
 
 	return (
-		<div className="mx-auto max-w-[1280px] px-6 py-8">
+		<div className="mx-auto max-w-[1280px] px-4 py-8 sm:px-6">
 			{/* Header */}
-			<div className="flex items-center justify-between mb-8">
+			<div className="flex flex-col gap-4 mb-8 sm:flex-row sm:items-center sm:justify-between">
 				<div>
 					<h1 className="text-3xl font-semibold text-foreground tracking-tight">
 						Users
@@ -688,7 +688,7 @@ export default function UsersPage() {
 						{users.length} member{users.length !== 1 ? "s" : ""}
 					</p>
 				</div>
-				<div className="flex items-center gap-2">
+				<div className="flex flex-wrap items-center gap-2">
 					<Button
 						variant="outline"
 						className="flex items-center gap-2"
@@ -708,14 +708,14 @@ export default function UsersPage() {
 			</div>
 
 			{/* Search + View toggle */}
-			<div className="flex items-center justify-between gap-4 mb-6">
-				<div className="relative">
+			<div className="flex flex-col gap-3 mb-6 sm:flex-row sm:items-center sm:justify-between">
+				<div className="relative w-full sm:w-auto">
 					<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted pointer-events-none" />
 					<Input
 						placeholder="Search users..."
 						value={search}
 						onChange={(e) => setSearch(e.target.value)}
-						className="pl-8 w-64 h-9 text-sm"
+						className="pl-8 w-full h-9 text-sm sm:w-64"
 					/>
 				</div>
 
@@ -776,7 +776,7 @@ export default function UsersPage() {
 
 			{/* Grid view */}
 			{!loading && !error && view === "grid" && filtered.length > 0 && (
-				<div className="grid grid-cols-3 gap-4">
+				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
 					{filtered.map((u, i) => (
 						<UserCard
 							key={u.id}
@@ -791,7 +791,8 @@ export default function UsersPage() {
 			{/* List view */}
 			{!loading && !error && view === "list" && filtered.length > 0 && (
 				<Card className="p-0 overflow-hidden">
-					<table className="w-full text-sm">
+					<div className="overflow-x-auto">
+					<table className="min-w-[560px] w-full text-sm">
 						<thead>
 							<tr className="border-b border-border">
 								{["User", "Role", "Status", "Joined", ""].map(
@@ -821,6 +822,7 @@ export default function UsersPage() {
 							))}
 						</tbody>
 					</table>
+					</div>
 				</Card>
 			)}
 

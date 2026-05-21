@@ -1234,9 +1234,9 @@ export default function TicketsPage() {
 	const hasFilters = filters.status || filters.type || filters.priority;
 
 	return (
-		<div className="mx-auto max-w-[1280px] px-6 py-8">
+		<div className="mx-auto max-w-[1280px] px-4 py-8 sm:px-6">
 			{/* Header */}
-			<div className="flex items-center justify-between mb-8">
+			<div className="flex flex-col gap-4 mb-8 sm:flex-row sm:items-center sm:justify-between">
 				<div>
 					<h1 className="text-3xl font-semibold text-foreground tracking-tight">
 						Tickets
@@ -1262,7 +1262,7 @@ export default function TicketsPage() {
 			{/* Project selector + Filters */}
 			<div className="flex flex-wrap items-center gap-3 mb-6">
 				{/* Project */}
-				<div className="min-w-[200px]">
+				<div className="w-full sm:w-auto sm:min-w-[200px]">
 					{projectsLoading ? (
 						<div className="h-9 rounded-md border border-border bg-muted-subtle animate-pulse" />
 					) : (

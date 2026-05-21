@@ -144,7 +144,7 @@ export default function DashboardPage() {
 
 	if (loading)
 		return (
-			<div className="mx-auto max-w-[1280px] px-6 py-8">
+			<div className="mx-auto max-w-[1280px] px-4 py-8 sm:px-6">
 				{/* Header */}
 				<div className="flex items-start justify-between mb-8">
 					<div>
@@ -315,7 +315,7 @@ export default function DashboardPage() {
 	];
 
 	return (
-		<div className="mx-auto max-w-[1280px] px-6 py-8">
+		<div className="mx-auto max-w-[1280px] px-4 py-8 sm:px-6">
 			{/* Page header */}
 			<div className="flex items-start justify-between mb-8">
 				<div>
@@ -520,7 +520,8 @@ export default function DashboardPage() {
 								View All
 							</button>
 						</div>
-						<table className="w-full text-sm">
+						<div className="overflow-x-auto">
+						<table className="min-w-[520px] w-full text-sm">
 							<thead>
 								<tr className="border-b border-border">
 									<th
@@ -630,6 +631,7 @@ export default function DashboardPage() {
 								)}
 							</tbody>
 						</table>
+						</div>
 					</Card>
 
 					{/* Tasks by Status */}

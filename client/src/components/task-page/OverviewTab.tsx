@@ -36,7 +36,7 @@ export function OverviewTab({
 
 	return (
 		<div className="space-y-6">
-			<div className="grid grid-cols-[280px_1fr] gap-4">
+			<div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-4">
 				{/* Completion Progress */}
 				<Card className="p-5">
 					<p className="text-[10px] font-medium uppercase tracking-widest text-muted mb-4">
@@ -140,7 +140,7 @@ export function OverviewTab({
 			</div>
 
 			{/* Tags + Team */}
-			<div className="grid grid-cols-[1fr_320px] gap-4">
+			<div className="grid grid-cols-1 md:grid-cols-[1fr_320px] gap-4">
 				<Card className="p-5">
 					<h2 className="text-base font-semibold text-foreground mb-4">
 						Tags

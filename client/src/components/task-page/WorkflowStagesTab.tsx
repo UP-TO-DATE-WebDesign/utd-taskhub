@@ -161,9 +161,8 @@ export function WorkflowStagesTab({ projectId }: { projectId: string }) {
 		data: stages = [],
 		isLoading,
 		mutate,
-	} = useApiSWR<WorkflowStage[]>(
-		["workflow-stages", projectId],
-		() => listWorkflowStages(projectId),
+	} = useApiSWR<WorkflowStage[]>(["workflow-stages", projectId], () =>
+		listWorkflowStages(projectId),
 	);
 
 	const [dialogOpen, setDialogOpen] = useState(false);
@@ -290,7 +289,7 @@ export function WorkflowStagesTab({ projectId }: { projectId: string }) {
 				</Button>
 			</div>
 
-			<Card className="p-0 overflow-hidden">
+			<Card className="p-0 overflow-auto">
 				<table className="w-full text-sm">
 					<thead>
 						<tr className="border-b border-border bg-muted-subtle/40">
@@ -446,11 +445,7 @@ export function WorkflowStagesTab({ projectId }: { projectId: string }) {
 							Cancel
 						</Button>
 						<Button onClick={handleSave} disabled={saving}>
-							{saving
-								? "Saving…"
-								: editing
-									? "Save"
-									: "Create"}
+							{saving ? "Saving…" : editing ? "Save" : "Create"}
 						</Button>
 					</DialogFooter>
 				</DialogContent>

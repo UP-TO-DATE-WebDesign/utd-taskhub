@@ -73,7 +73,7 @@ export default function SettingsPage() {
 	}
 
 	return (
-		<div className="mx-auto max-w-[1280px] px-6 py-8">
+		<div className="mx-auto max-w-[1280px] px-4 py-8 sm:px-6">
 			<div className="mb-8">
 				<h1 className="text-2xl font-semibold text-foreground">
 					Workspace Settings
@@ -84,9 +84,34 @@ export default function SettingsPage() {
 				</p>
 			</div>
 
+			{/* Mobile/tablet nav strip */}
+			<div className="mb-6 overflow-x-auto lg:hidden">
+				<div className="flex gap-1 border-b border-border pb-2">
+					{navItems.map(({ id, label, icon: Icon, danger }) => (
+						<button
+							key={id}
+							onClick={() => scrollToSection(id)}
+							className={cn(
+								"flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 text-sm transition-colors",
+								activeSection === id
+									? danger
+										? "bg-danger-subtle text-danger font-medium"
+										: "bg-primary-subtle text-primary font-medium"
+									: danger
+										? "text-danger hover:bg-danger-subtle"
+										: "text-muted-foreground hover:bg-muted-subtle hover:text-foreground",
+							)}
+						>
+							<Icon className="h-3.5 w-3.5 shrink-0" />
+							{label}
+						</button>
+					))}
+				</div>
+			</div>
+
 			<div className="flex gap-8 items-start">
-				{/* Sidebar */}
-				<nav className="w-52 shrink-0 sticky top-22">
+				{/* Sidebar — desktop only */}
+				<nav className="hidden w-52 shrink-0 sticky top-22 lg:block">
 					<ul className="space-y-0.5">
 						{navItems.map(({ id, label, icon: Icon, danger }) => (
 							<li key={id}>

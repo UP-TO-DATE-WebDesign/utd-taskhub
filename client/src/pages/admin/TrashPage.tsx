@@ -162,7 +162,7 @@ export default function TrashPage() {
 	}
 
 	return (
-		<div className="mx-auto max-w-[1280px] px-6 py-8">
+		<div className="mx-auto max-w-[1280px] px-4 py-8 sm:px-6">
 			<div className="mb-8 flex flex-col items-start justify-between gap-3 md:flex-row md:items-center">
 				<div>
 					<h1 className="text-3xl font-semibold tracking-tight text-foreground">

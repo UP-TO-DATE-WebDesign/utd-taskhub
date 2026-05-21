@@ -2,10 +2,7 @@ import { Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-	type Task,
-	type ApiTaskPriority,
-} from "@/services/task.service";
+import { type Task, type ApiTaskPriority } from "@/services/task.service";
 import type { WorkflowStage } from "@/services/workflow-stage.service";
 import {
 	profileColorClass,
@@ -39,7 +36,7 @@ export function TasksTab({
 	onViewTask: (task: UiTask | null) => void;
 }) {
 	return (
-		<Card className="p-0 overflow-hidden">
+		<Card className="p-0 overflow-auto">
 			<table className="w-full text-sm">
 				<thead>
 					<tr className="border-b border-border bg-muted-subtle/40">

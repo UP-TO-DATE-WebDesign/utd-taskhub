@@ -112,7 +112,9 @@ export default function TasksPage() {
 	const [editTask, setEditTask] = useState<UiTask | null>(null);
 	const [viewTask, setViewTask] = useState<UiTask | null>(null);
 	const [childParent, setChildParent] = useState<UiTask | null>(null);
-	const [view, setView] = useState<"board" | "list">("board");
+	const [view, setView] = useState<"board" | "list">(
+		window.innerWidth < 768 ? "list" : "board",
+	);
 
 	const [filterSprint, setFilterSprint] = useState("all");
 	const [filterSprintOptions, setFilterSprintOptions] = useState<Sprint[]>(
@@ -539,9 +541,9 @@ export default function TasksPage() {
 	// ── Render ───────────────────────────────────────────────────────────────
 
 	return (
-		<div className="mx-auto max-w-[1280px] px-6 py-8">
+		<div className="mx-auto max-w-[1280px] px-4 py-8 sm:px-6">
 			{/* Header */}
-			<div className="flex items-center justify-between mb-8">
+			<div className="flex flex-col gap-4 mb-8 sm:flex-row sm:items-center sm:justify-between">
 				<div>
 					<h1 className="text-3xl font-semibold text-foreground tracking-tight">
 						Tasks
@@ -554,7 +556,7 @@ export default function TasksPage() {
 						tasks across all projects
 					</p>
 				</div>
-				<div className="flex items-center gap-2">
+				<div className="flex flex-wrap items-center gap-2">
 					<StartSprintButton
 						nextSprint={nextPlannedSprint}
 						candidateTasks={startCandidateTasks}

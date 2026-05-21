@@ -230,7 +230,7 @@ export default function ProjectPage() {
 
 	if (error || !project) {
 		return (
-			<div className="mx-auto max-w-[1280px] px-6 py-16 text-center">
+			<div className="mx-auto max-w-[1280px] px-4 py-16 text-center sm:px-6">
 				<p className="text-base font-medium text-foreground mb-2">
 					Project not found
 				</p>
@@ -251,7 +251,7 @@ export default function ProjectPage() {
 		myMembership?.role === "manager";
 
 	return (
-		<div className="mx-auto max-w-[1280px] px-6 py-8">
+		<div className="mx-auto max-w-[1280px] px-4 py-8 sm:px-6">
 			{/* Back */}
 			<button
 				onClick={() => navigate("/projects")}
@@ -262,10 +262,10 @@ export default function ProjectPage() {
 			</button>
 
 			{/* Header */}
-			<div className="flex items-start justify-between gap-6 mb-6">
-				<div className="flex-1">
-					<div className="flex items-center gap-3 mb-2">
-						<h1 className="text-3xl font-semibold text-foreground tracking-tight">
+			<div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+				<div className="flex-1 min-w-0">
+					<div className="flex flex-wrap items-center gap-3 mb-2">
+						<h1 className="text-2xl font-semibold text-foreground tracking-tight sm:text-3xl">
 							{project.name}
 						</h1>
 						<Badge variant={statusVariant}>{statusLabel}</Badge>
@@ -275,7 +275,7 @@ export default function ProjectPage() {
 						className="text-sm text-muted leading-relaxed max-w-2xl"
 					/>
 				</div>
-				<div className="flex items-center gap-2 shrink-0">
+				<div className="flex flex-wrap items-center gap-2">
 					{canEditProject && (
 						<Button
 							variant="outline"
@@ -297,13 +297,13 @@ export default function ProjectPage() {
 			</div>
 
 			{/* Tabs */}
-			<div className="flex flex-wrap items-center gap-0 border-b border-border mb-8">
+			<div className="flex overflow-x-auto border-b border-border mb-8">
 				{TABS.map((tab) => (
 					<button
 						key={tab}
 						onClick={() => setActiveTab(tab)}
 						className={cn(
-							"px-4 py-2.5 text-sm transition-colors -mb-px border-b-2",
+							"shrink-0 whitespace-nowrap px-4 py-2.5 text-sm transition-colors -mb-px border-b-2",
 							activeTab === tab
 								? "text-primary font-medium border-primary"
 								: "text-muted-foreground hover:text-foreground border-transparent",

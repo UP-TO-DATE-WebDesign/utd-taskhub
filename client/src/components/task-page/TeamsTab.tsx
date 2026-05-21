@@ -43,7 +43,7 @@ export function TeamsTab({
 				</Button>
 			</div>
 
-			<Card className="p-0 overflow-hidden">
+			<Card className="p-0 overflow-auto">
 				<table className="w-full text-sm">
 					<thead>
 						<tr className="border-b border-border bg-muted-subtle/40">

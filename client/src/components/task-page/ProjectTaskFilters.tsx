@@ -38,15 +38,15 @@ export function ProjectTaskFilters({
 	onClearFilters,
 }: ProjectTaskFiltersProps) {
 	return (
-		<div className="flex items-center gap-3 mb-6 flex-wrap">
+		<div className="flex flex-wrap items-center gap-3 mb-6">
 			{/* Search */}
-			<div className="relative">
+			<div className="relative w-full sm:w-auto">
 				<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted pointer-events-none" />
 				<Input
 					placeholder="Search tasks..."
 					value={search}
 					onChange={(e) => onSearchChange(e.target.value)}
-					className="pl-8 w-56 h-9 text-sm"
+					className="pl-8 w-full h-9 text-sm sm:w-56"
 				/>
 			</div>
 

@@ -410,9 +410,9 @@ export default function SprintsPage() {
 	}
 
 	return (
-		<div className="mx-auto max-w-[1280px] px-6 py-8">
+		<div className="mx-auto max-w-[1280px] px-4 py-8 sm:px-6">
 			{/* Header */}
-			<div className="flex items-center justify-between mb-8">
+			<div className="flex flex-col gap-4 mb-8 sm:flex-row sm:items-center sm:justify-between">
 				<div>
 					<h1 className="text-2xl font-semibold text-foreground tracking-tight">
 						Sprints
@@ -421,7 +421,7 @@ export default function SprintsPage() {
 						Org-level sprints span one work week (Mon – Fri). Assign projects to a sprint from the project page.
 					</p>
 				</div>
-				<Button className="flex items-center gap-2" onClick={() => setNewOpen(true)}>
+				<Button className="flex w-full items-center gap-2 sm:w-auto" onClick={() => setNewOpen(true)}>
 					<Plus className="h-4 w-4" />
 					New Sprint
 				</Button>
@@ -450,9 +450,9 @@ export default function SprintsPage() {
 						return (
 							<Card
 								key={sprint.id}
-								className="flex items-center gap-4 px-5 py-4"
+								className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:gap-4"
 							>
-								<div className="flex-1 min-w-0">
+								<div className="min-w-0 flex-1">
 									<p className="text-sm font-semibold text-foreground">
 										{sprint.name}
 									</p>
@@ -461,7 +461,8 @@ export default function SprintsPage() {
 									</p>
 								</div>
 
-								<Badge variant={variant}>{label}</Badge>
+								<div className="flex items-center justify-between gap-3 sm:contents">
+									<Badge variant={variant} className="shrink-0">{label}</Badge>
 
 								{isDeleting ? (
 									<div className="flex items-center gap-2 shrink-0">
@@ -523,6 +524,7 @@ export default function SprintsPage() {
 										</Button>
 									</div>
 								)}
+								</div>
 							</Card>
 						);
 					})}
