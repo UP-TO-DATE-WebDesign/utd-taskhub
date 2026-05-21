@@ -4,6 +4,7 @@ import {
 	Users,
 	Lock,
 	FileClock,
+	Tags,
 	type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -11,6 +12,7 @@ import { GeneralSection } from "@/components/workspace-settings/GeneralSection";
 import { MembersSection } from "@/components/workspace-settings/MembersSection";
 import { RolePermissionsSection } from "@/components/workspace-settings/RolePermissionsSection";
 import { SystemLogsSection } from "@/components/workspace-settings/SystemLogsSection";
+import { TaskTypesSection } from "@/components/workspace-settings/TaskTypesSection";
 
 interface SettingsNavItem {
 	id: string;
@@ -23,6 +25,7 @@ const navItems: SettingsNavItem[] = [
 	{ id: "general", label: "General", icon: Settings },
 	{ id: "role-permissions", label: "Role Permissions", icon: Lock },
 	{ id: "members", label: "Members & Roles", icon: Users },
+	{ id: "task-types", label: "Task Types", icon: Tags },
 	{ id: "system-logs", label: "System Logs", icon: FileClock },
 	// { id: "boards", label: "Boards & Workflow", icon: LayoutDashboard },
 	// { id: "tickets", label: "Tickets", icon: Ticket },
@@ -118,6 +121,9 @@ export default function SettingsPage() {
 					</div>
 					<div id="members">
 						<MembersSection />
+					</div>
+					<div id="task-types">
+						<TaskTypesSection />
 					</div>
 					<div id="system-logs">
 						<SystemLogsSection />
