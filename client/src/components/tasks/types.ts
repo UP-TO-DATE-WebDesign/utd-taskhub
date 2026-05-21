@@ -74,7 +74,13 @@ export const COLUMN_BADGE: Record<
 export const STATUS_BADGE: Record<
 	string,
 	{
-		variant: "backlog" | "todo" | "in-progress" | "review" | "done";
+		variant:
+			| "backlog"
+			| "todo"
+			| "in-progress"
+			| "review"
+			| "done"
+			| "cancelled";
 		label: string;
 	}
 > = Object.fromEntries(

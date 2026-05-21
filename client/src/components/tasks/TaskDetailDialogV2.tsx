@@ -40,6 +40,9 @@ import { projectDescriptionText } from "@/components/projects/project-descriptio
 import { PermissionGate } from "@/components/PermissionGate";
 import { usePermission } from "@/hooks/usePermission";
 import { type Project } from "@/services/project.service";
+import type { WorkflowStage } from "@/services/workflow-stage.service";
+import { SYSTEM_STAGES } from "./system-stages";
+import { StageChip } from "./StageChip";
 import {
 	type ApiTaskStatus,
 	type UpdateTaskPayload,
@@ -59,8 +62,6 @@ import {
 	InlineTags,
 	InlineSprint,
 } from "./task-detail";
-import { STATUS_OPTIONS } from "./task-detail/constants";
-
 function shortTaskRef(task: UiTask, project?: Project): string {
 	const prefix = project?.name
 		? project.name
@@ -78,6 +79,7 @@ interface Props {
 	projects: Project[];
 	profiles?: Profile[];
 	allTasks?: UiTask[];
+	stages?: WorkflowStage[];
 	onClose: () => void;
 	onSaveNotes?: (task: UiTask, notes: string) => Promise<void>;
 	onUpdate?: (task: UiTask, payload: UpdateTaskPayload) => Promise<void>;
@@ -94,6 +96,7 @@ export function TaskDetailDialogV2({
 	projects,
 	profiles = [],
 	allTasks = [],
+	stages,
 	onClose,
 	onSaveNotes,
 	onUpdate,
@@ -538,14 +541,19 @@ export function TaskDetailDialogV2({
 												<SelectValue />
 											</SelectTrigger>
 											<SelectContent>
-												{STATUS_OPTIONS.map((s) => (
-													<SelectItem
-														key={s}
-														value={s}
-													>
-														{STATUS_BADGE[s].label}
-													</SelectItem>
-												))}
+												{(stages ?? SYSTEM_STAGES).map(
+													(stage) => (
+														<SelectItem
+															key={stage.key}
+															value={stage.key}
+														>
+															<StageChip
+																label={stage.name}
+																color={stage.color}
+															/>
+														</SelectItem>
+													),
+												)}
 											</SelectContent>
 										</Select>
 										{statusSaving && (

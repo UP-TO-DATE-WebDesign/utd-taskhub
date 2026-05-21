@@ -37,6 +37,11 @@ import { TeamsTab } from "@/components/task-page/TeamsTab";
 import { WorkflowStagesTab } from "@/components/task-page/WorkflowStagesTab";
 import { TaskDetailDialogV2 } from "@/components/tasks/TaskDetailDialogV2";
 import { COLUMN_LABELS, toUiTask, type UiTask } from "@/components/tasks/types";
+import {
+	listWorkflowStages,
+	type WorkflowStage,
+} from "@/services/workflow-stage.service";
+import { useApiSWR } from "@/hooks/useApiSWR";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -84,6 +89,11 @@ export default function ProjectPage() {
 	const [search, setSearch] = useState("");
 	const [filterSprint, setFilterSprint] = useState("all");
 	const [filterUser, setFilterUser] = useState("all");
+
+	const { data: stages = [] } = useApiSWR<WorkflowStage[]>(
+		id ? ["workflow-stages", id] : null,
+		() => listWorkflowStages(id!),
+	);
 
 	const filteredTasks = useMemo(() => {
 		const lc = search.toLowerCase();
@@ -334,6 +344,7 @@ export default function ProjectPage() {
 					<TasksTab
 						tasks={filteredTasks}
 						tasksLoading={tasksLoading}
+						stages={stages}
 						onViewTask={(task) => setViewTask(task)}
 					/>
 				</>
@@ -423,6 +434,7 @@ export default function ProjectPage() {
 				projects={[project]}
 				profiles={profiles}
 				lockedProjectId={project.id}
+				stages={stages}
 				onCreate={async (pid: string, payload: CreateTaskPayload) => {
 					const task = await createTask(pid, payload);
 					setTasks((prev) => [task, ...prev]);
@@ -434,6 +446,7 @@ export default function ProjectPage() {
 				projects={[project]}
 				profiles={profiles}
 				allTasks={[]}
+				stages={stages}
 				onClose={() => setViewTask(null)}
 				onSaveNotes={handleSaveNotes}
 				onUpdate={handleEditTask}

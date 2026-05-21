@@ -4,37 +4,18 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
 	type Task,
-	type ApiTaskStatus,
 	type ApiTaskPriority,
 } from "@/services/task.service";
+import type { WorkflowStage } from "@/services/workflow-stage.service";
 import {
 	profileColorClass,
 	toUiTask,
+	getStage,
 	type UiTask,
 } from "@/components/tasks/types";
+import { StageChip } from "@/components/tasks/StageChip";
 import { projectDescriptionText } from "@/components/projects/project-description-utils";
 import { getInitials, formatDate } from "./utils";
-
-const TASK_STATUS_BADGE: Record<
-	ApiTaskStatus,
-	{
-		variant:
-			| "backlog"
-			| "todo"
-			| "in-progress"
-			| "review"
-			| "done"
-			| "cancelled";
-		label: string;
-	}
-> = {
-	backlog: { variant: "backlog", label: "Backlog" },
-	todo: { variant: "todo", label: "Todo" },
-	in_progress: { variant: "in-progress", label: "In Progress" },
-	review: { variant: "review", label: "Review" },
-	done: { variant: "done", label: "Done" },
-	cancelled: { variant: "cancelled", label: "Cancelled" },
-};
 
 const TASK_PRIORITY_BADGE: Record<
 	ApiTaskPriority,
@@ -49,10 +30,12 @@ const TASK_PRIORITY_BADGE: Record<
 export function TasksTab({
 	tasks,
 	tasksLoading,
+	stages,
 	onViewTask,
 }: {
 	tasks: Task[];
 	tasksLoading: boolean;
+	stages?: WorkflowStage[];
 	onViewTask: (task: UiTask | null) => void;
 }) {
 	return (
@@ -99,7 +82,7 @@ export function TasksTab({
 						</tr>
 					) : (
 						tasks.map((task) => {
-							const statusInfo = TASK_STATUS_BADGE[task.status];
+							const stage = getStage(task.status, stages);
 							const priorityInfo =
 								TASK_PRIORITY_BADGE[task.priority];
 							const assignee = task.assigned_to ?? null;
@@ -125,9 +108,10 @@ export function TasksTab({
 										)}
 									</td>
 									<td className="px-5 py-4">
-										<Badge variant={statusInfo.variant}>
-											{statusInfo.label}
-										</Badge>
+										<StageChip
+											label={stage?.name ?? task.status}
+											color={stage?.color ?? "#64748b"}
+										/>
 									</td>
 									<td className="px-5 py-4">
 										<Badge variant={priorityInfo.variant}>

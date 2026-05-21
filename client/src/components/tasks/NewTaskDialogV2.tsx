@@ -30,7 +30,9 @@ import {
 import { type Project } from "@/services/project.service";
 import { type Profile } from "@/services/profile.service";
 import { listSprints, type Sprint } from "@/services/sprint.service";
-import { STATUS_BADGE } from "./types";
+import type { WorkflowStage } from "@/services/workflow-stage.service";
+import { SYSTEM_STAGES } from "./system-stages";
+import { StageChip } from "./StageChip";
 import {
 	InlineTitle,
 	InlineDescription,
@@ -42,8 +44,6 @@ import {
 	InlineSprint,
 	InlineProject,
 } from "./task-detail";
-import { STATUS_OPTIONS } from "./task-detail/constants";
-
 interface Props {
 	open: boolean;
 	onClose: () => void;
@@ -52,6 +52,7 @@ interface Props {
 	profiles: Profile[];
 	parentTaskId?: string;
 	lockedProjectId?: string;
+	stages?: WorkflowStage[];
 }
 
 export function NewTaskDialogV2({
@@ -62,6 +63,7 @@ export function NewTaskDialogV2({
 	profiles,
 	parentTaskId,
 	lockedProjectId,
+	stages,
 }: Props) {
 	const [title, setTitle] = useState("");
 	const [description, setDescription] = useState("");
@@ -282,9 +284,15 @@ export function NewTaskDialogV2({
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>
-									{STATUS_OPTIONS.map((s) => (
-										<SelectItem key={s} value={s}>
-											{STATUS_BADGE[s].label}
+									{(stages ?? SYSTEM_STAGES).map((stage) => (
+										<SelectItem
+											key={stage.key}
+											value={stage.key}
+										>
+											<StageChip
+												label={stage.name}
+												color={stage.color}
+											/>
 										</SelectItem>
 									))}
 								</SelectContent>

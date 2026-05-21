@@ -276,7 +276,7 @@ export default function TasksPage() {
 			if (activeId === overId) return;
 			const colId = findColumnId(activeId);
 			if (!colId) return;
-			const overIsTask = !COLUMN_IDS.includes(overId as ColumnId);
+			const overIsTask = !stageKeys.includes(overId);
 			if (!overIsTask) return;
 			const overColId = findColumnId(overId);
 			if (!overColId || overColId !== colId) return;
@@ -579,6 +579,7 @@ export default function TasksPage() {
 				sprints={filterSprintOptions}
 				sprintsLoading={filterSprintsLoading}
 				view={view}
+				stages={stages}
 				filterProject={filterProject}
 				filterSprint={filterSprint}
 				filterUser={filterUser}
@@ -659,6 +660,7 @@ export default function TasksPage() {
 				profiles={profiles}
 				parentTaskId={childParent?.id}
 				lockedProjectId={childParent?.project_id}
+				stages={stages}
 			/>
 
 			<EditTaskDialog
@@ -674,6 +676,7 @@ export default function TasksPage() {
 				projects={projects}
 				profiles={profiles}
 				allTasks={allTasks}
+				stages={stages}
 				onClose={() => {
 					removeParams();
 					setViewTask(null);
