@@ -261,7 +261,7 @@ function BoardColumnBase({
 	const itemIds = useMemo(() => tasks.map((t) => t.id), [tasks]);
 
 	return (
-		<div className="flex flex-col min-w-[280px] flex-1">
+		<div className="flex flex-col min-w-[280px] h-[-webkit-fill-available]">
 			<div className="flex items-center gap-2 mb-3 px-1">
 				<span
 					className="h-2 w-2 rounded-full"
@@ -278,10 +278,10 @@ function BoardColumnBase({
 			<div
 				ref={setNodeRef}
 				className={cn(
-					"flex-1 flex flex-col gap-2.5 rounded-xl p-2 min-h-[200px] transition-colors",
+					"flex-1 flex flex-col gap-2.5 rounded-xl p-2 min-h-[80vh] transition-colors h-full",
 					isOver
 						? "bg-primary-subtle/60 border border-dashed border-primary/40"
-						: "bg-muted-subtle/40",
+						: "bg-muted-subtle",
 				)}
 			>
 				<SortableContext
