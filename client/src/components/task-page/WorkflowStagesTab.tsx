@@ -1,5 +1,22 @@
 import { useState } from "react";
-import { Plus, Pencil, Trash2, Lock, Check } from "lucide-react";
+import { Plus, Pencil, Trash2, Lock, Check, GripVertical } from "lucide-react";
+import {
+	DndContext,
+	closestCenter,
+	KeyboardSensor,
+	PointerSensor,
+	useSensor,
+	useSensors,
+	type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+	arrayMove,
+	SortableContext,
+	sortableKeyboardCoordinates,
+	useSortable,
+	verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +34,7 @@ import {
 	createWorkflowStage,
 	updateWorkflowStage,
 	deleteWorkflowStage,
+	reorderWorkflowStages,
 	type WorkflowStage,
 } from "@/services/workflow-stage.service";
 
@@ -50,6 +68,94 @@ function StageChip({ label, color }: { label: string; color: string }) {
 	);
 }
 
+function StageRow({
+	stage,
+	index,
+	onEdit,
+	onDelete,
+}: {
+	stage: WorkflowStage;
+	index: number;
+	onEdit: (stage: WorkflowStage) => void;
+	onDelete: (stage: WorkflowStage) => void;
+}) {
+	const {
+		attributes,
+		listeners,
+		setNodeRef,
+		transform,
+		transition,
+		isDragging,
+	} = useSortable({ id: stage.id });
+
+	const style: React.CSSProperties = {
+		transform: CSS.Transform.toString(transform),
+		transition,
+		opacity: isDragging ? 0.5 : undefined,
+		background: isDragging ? "var(--muted-subtle)" : undefined,
+	};
+
+	return (
+		<tr
+			ref={setNodeRef}
+			style={style}
+			className="border-b border-border last:border-0 hover:bg-muted-subtle transition-colors"
+		>
+			<td className="px-3 py-4 w-10">
+				<button
+					type="button"
+					className="text-muted hover:text-foreground cursor-grab active:cursor-grabbing"
+					aria-label="Drag to reorder"
+					{...attributes}
+					{...listeners}
+				>
+					<GripVertical className="h-4 w-4" />
+				</button>
+			</td>
+			<td className="px-5 py-4 text-sm text-muted w-12">{index + 1}</td>
+			<td className="px-5 py-4">
+				<p className="text-sm font-medium text-foreground">
+					{stage.name}
+				</p>
+			</td>
+			<td className="px-5 py-4">
+				<StageChip label={stage.name} color={stage.color} />
+			</td>
+			<td className="px-5 py-4">
+				{stage.is_system ? (
+					<span className="inline-flex items-center gap-1 text-xs text-muted">
+						<Lock className="h-3 w-3" />
+						Default
+					</span>
+				) : (
+					<span className="text-xs text-foreground">Custom</span>
+				)}
+			</td>
+			<td className="px-5 py-4 text-right">
+				<div className="flex items-center justify-end gap-2">
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={() => onEdit(stage)}
+					>
+						<Pencil className="h-3.5 w-3.5" />
+					</Button>
+					{!stage.is_system && (
+						<Button
+							variant="outline"
+							size="sm"
+							className="text-danger border-danger/30 hover:bg-danger/5"
+							onClick={() => onDelete(stage)}
+						>
+							<Trash2 className="h-3.5 w-3.5" />
+						</Button>
+					)}
+				</div>
+			</td>
+		</tr>
+	);
+}
+
 export function WorkflowStagesTab({ projectId }: { projectId: string }) {
 	const {
 		data: stages = [],
@@ -65,6 +171,13 @@ export function WorkflowStagesTab({ projectId }: { projectId: string }) {
 	const [label, setLabel] = useState("");
 	const [color, setColor] = useState(COLOR_PRESETS[0]);
 	const [saving, setSaving] = useState(false);
+
+	const sensors = useSensors(
+		useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+		useSensor(KeyboardSensor, {
+			coordinateGetter: sortableKeyboardCoordinates,
+		}),
+	);
 
 	function openCreate() {
 		setEditing(null);
@@ -131,6 +244,35 @@ export function WorkflowStagesTab({ projectId }: { projectId: string }) {
 		}
 	}
 
+	async function handleDragEnd(event: DragEndEvent) {
+		const { active, over } = event;
+		if (!over || active.id === over.id) return;
+
+		const fromIdx = stages.findIndex((s) => s.id === active.id);
+		const toIdx = stages.findIndex((s) => s.id === over.id);
+		if (fromIdx < 0 || toIdx < 0) return;
+
+		const next = arrayMove(stages, fromIdx, toIdx).map((s, i) => ({
+			...s,
+			position: i,
+		}));
+
+		// optimistic
+		mutate(next, { revalidate: false });
+
+		try {
+			await reorderWorkflowStages(
+				projectId,
+				next.map((s) => ({ id: s.id, position: s.position })),
+			);
+			await mutate();
+		} catch (err) {
+			const msg = err instanceof Error ? err.message : "Reorder failed";
+			toast.error(msg);
+			await mutate();
+		}
+	}
+
 	return (
 		<div className="space-y-4">
 			<div className="flex items-center justify-between">
@@ -152,6 +294,7 @@ export function WorkflowStagesTab({ projectId }: { projectId: string }) {
 				<table className="w-full text-sm">
 					<thead>
 						<tr className="border-b border-border bg-muted-subtle/40">
+							<th className="px-3 py-3 w-10" />
 							{["#", "Stage", "Status", "Type"].map((h) => (
 								<th
 									key={h}
@@ -167,7 +310,7 @@ export function WorkflowStagesTab({ projectId }: { projectId: string }) {
 						{isLoading ? (
 							<tr>
 								<td
-									colSpan={5}
+									colSpan={6}
 									className="px-5 py-10 text-center text-sm text-muted"
 								>
 									Loading stages…
@@ -176,69 +319,33 @@ export function WorkflowStagesTab({ projectId }: { projectId: string }) {
 						) : stages.length === 0 ? (
 							<tr>
 								<td
-									colSpan={5}
+									colSpan={6}
 									className="px-5 py-10 text-center text-sm text-muted"
 								>
 									No stages yet.
 								</td>
 							</tr>
 						) : (
-							stages.map((s, i) => (
-								<tr
-									key={s.id}
-									className="border-b border-border last:border-0 hover:bg-muted-subtle transition-colors"
+							<DndContext
+								sensors={sensors}
+								collisionDetection={closestCenter}
+								onDragEnd={handleDragEnd}
+							>
+								<SortableContext
+									items={stages.map((s) => s.id)}
+									strategy={verticalListSortingStrategy}
 								>
-									<td className="px-5 py-4 text-sm text-muted w-12">
-										{i + 1}
-									</td>
-									<td className="px-5 py-4">
-										<p className="text-sm font-medium text-foreground">
-											{s.name}
-										</p>
-									</td>
-									<td className="px-5 py-4">
-										<StageChip
-											label={s.name}
-											color={s.color}
+									{stages.map((s, i) => (
+										<StageRow
+											key={s.id}
+											stage={s}
+											index={i}
+											onEdit={openEdit}
+											onDelete={handleDelete}
 										/>
-									</td>
-									<td className="px-5 py-4">
-										{s.is_system ? (
-											<span className="inline-flex items-center gap-1 text-xs text-muted">
-												<Lock className="h-3 w-3" />
-												Default
-											</span>
-										) : (
-											<span className="text-xs text-foreground">
-												Custom
-											</span>
-										)}
-									</td>
-									<td className="px-5 py-4 text-right">
-										<div className="flex items-center justify-end gap-2">
-											<Button
-												variant="outline"
-												size="sm"
-												onClick={() => openEdit(s)}
-											>
-												<Pencil className="h-3.5 w-3.5" />
-											</Button>
-											{!s.is_system && (
-												<Button
-													variant="outline"
-													size="sm"
-													className="text-danger border-danger/30 hover:bg-danger/5"
-													onClick={() =>
-														handleDelete(s)
-													}
-												>
-													<Trash2 className="h-3.5 w-3.5" />
-												</Button>
-											)}
-										</div>
-									</td>
-								</tr>
-							))
+									))}
+								</SortableContext>
+							</DndContext>
 						)}
 					</tbody>
 				</table>

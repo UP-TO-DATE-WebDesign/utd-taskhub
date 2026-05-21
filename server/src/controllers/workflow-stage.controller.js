@@ -2,6 +2,7 @@ import { supabase, supabaseAdmin } from "../config/supabase.js";
 import {
 	validateCreateWorkflowStage,
 	validateUpdateWorkflowStage,
+	validateReorderWorkflowStages,
 	slugifyKey,
 } from "../utils/workflow-stage.validator.js";
 
@@ -215,6 +216,67 @@ export async function deleteWorkflowStage(req, res, next) {
 		res.status(200).json({
 			success: true,
 			message: "Workflow stage deleted successfully.",
+		});
+	} catch (error) {
+		next(error);
+	}
+}
+
+export async function reorderWorkflowStages(req, res, next) {
+	try {
+		const { projectId } = req.params;
+
+		const errors = validateReorderWorkflowStages(req.body ?? {});
+		if (errors.length > 0) {
+			return res.status(400).json({
+				success: false,
+				message: "Validation failed.",
+				errors,
+			});
+		}
+
+		const { stages } = req.body;
+		const ids = stages.map((s) => s.id);
+
+		const { data: existing, error: fetchError } = await supabaseAdmin
+			.from("workflow_stages")
+			.select("id")
+			.eq("project_id", projectId)
+			.in("id", ids);
+
+		if (fetchError) throw fetchError;
+
+		if (!existing || existing.length !== ids.length) {
+			return res.status(400).json({
+				success: false,
+				message:
+					"One or more stage IDs do not belong to this project.",
+			});
+		}
+
+		await Promise.all(
+			stages.map(({ id, position }) =>
+				supabaseAdmin
+					.from("workflow_stages")
+					.update({ position })
+					.eq("id", id)
+					.eq("project_id", projectId),
+			),
+		);
+
+		const { data, error } = await supabaseAdmin
+			.from("workflow_stages")
+			.select(SELECT)
+			.eq("project_id", projectId)
+			.order("position", { ascending: true })
+			.order("name", { ascending: true });
+
+		if (error) throw error;
+
+		res.status(200).json({
+			success: true,
+			message: "Workflow stages reordered successfully.",
+			data: { workflow_stages: data },
 		});
 	} catch (error) {
 		next(error);

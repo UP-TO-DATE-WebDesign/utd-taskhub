@@ -3,6 +3,7 @@ import {
 	createWorkflowStage,
 	deleteWorkflowStage,
 	listWorkflowStages,
+	reorderWorkflowStages,
 	updateWorkflowStage,
 } from "../controllers/workflow-stage.controller.js";
 import { requireAuth } from "../middlewares/auth.middleware.js";
@@ -25,6 +26,9 @@ router.get(
 );
 
 router.post("/", ...canManage, createWorkflowStage);
+// /reorder must be declared before /:stageId to avoid Express
+// treating the literal "reorder" as a stageId value
+router.patch("/reorder", ...canManage, reorderWorkflowStages);
 router.patch("/:stageId", ...canManage, updateWorkflowStage);
 router.delete("/:stageId", ...canManage, deleteWorkflowStage);
 
