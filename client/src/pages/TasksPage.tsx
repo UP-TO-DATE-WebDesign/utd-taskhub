@@ -207,7 +207,8 @@ export default function TasksPage() {
 	const onDragStart = useCallback(({ active }: DragStartEvent) => {
 		setActiveTaskId(active.id as string);
 		dragSrcColRef.current = findColumnId(active.id as string);
-	}, []);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [stageKeys]);
 
 	const onDragOver = useCallback(
 		({ active, over }: DragOverEvent) => {
@@ -235,7 +236,8 @@ export default function TasksPage() {
 				{ revalidate: false },
 			);
 		},
-		[mutateTasks],
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+		[mutateTasks, stageKeys],
 	);
 
 	const onDragEnd = useCallback(
@@ -247,6 +249,7 @@ export default function TasksPage() {
 			const overId = over.id as string;
 			const srcCol = dragSrcColRef.current;
 			const curCol = findColumnId(activeId);
+			void stageKeys; // capture stageKeys so closure refreshes when stages change
 
 			if (srcCol && curCol && srcCol !== curCol) {
 				const task = columnsRef.current[curCol]?.find(
@@ -292,7 +295,8 @@ export default function TasksPage() {
 				{ revalidate: false },
 			);
 		},
-		[mutateTasks],
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+		[mutateTasks, stageKeys, stages],
 	);
 
 	// ── Filtering ────────────────────────────────────────────────────────────
