@@ -300,11 +300,11 @@ export function NewTaskDialog({
 										Backlog
 									</SelectItem>
 									<SelectItem value="todo">Todo</SelectItem>
-									<SelectItem value="in_progress">
+									<SelectItem value="in-progress">
 										In Progress
 									</SelectItem>
-									<SelectItem value="review">
-										Review
+									<SelectItem value="qa">
+										QA
 									</SelectItem>
 									<SelectItem value="done">Done</SelectItem>
 								</SelectContent>

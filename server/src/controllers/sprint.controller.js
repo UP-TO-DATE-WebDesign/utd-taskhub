@@ -175,7 +175,7 @@ export async function updateSprint(req, res, next) {
 }
 
 const VALID_END_ACTIONS = ["keep", "backlog", "move", "close_ticket"];
-const VALID_MOVE_STATUSES = ["backlog", "todo", "in_progress", "review", "done"];
+const VALID_MOVE_STATUSES = ["backlog", "todo", "in-progress", "qa", "done"];
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function validateEndSprintPayload(taskActions) {

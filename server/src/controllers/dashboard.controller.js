@@ -19,8 +19,8 @@ export async function getDashboard(req, res, next) {
 
 		const stats = {
 			my_tasks: activeTasks.length,
-			in_progress: tasks.filter((t) => t.status === "in_progress").length,
-			for_review: tasks.filter((t) => t.status === "review").length,
+			in_progress: tasks.filter((t) => t.status === "in-progress").length,
+			for_review: tasks.filter((t) => t.status === "qa").length,
 			completed: tasks.filter((t) => t.status === "done").length,
 			overdue: activeTasks.filter((t) => t.due_date && t.due_date < today)
 				.length,

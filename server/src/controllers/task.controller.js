@@ -29,6 +29,14 @@ const TASK_SELECT = `
 	estimated_time,
 	sprint_id,
 	parent_task_id,
+	task_type_id,
+	task_type:task_types (
+		id,
+		key,
+		name,
+		color,
+		icon
+	),
 	sprint:sprints (
 		id,
 		name,
@@ -131,6 +139,7 @@ export async function createTask(req, res, next) {
 			estimated_time,
 			sprint_id,
 			parent_task_id,
+			task_type_id,
 		} = req.body;
 
 		if (parent_task_id) {
@@ -168,6 +177,28 @@ export async function createTask(req, res, next) {
 		const { data: lastTask } = await positionQuery.maybeSingle();
 		const position = lastTask ? lastTask.position + 1 : 0;
 
+		let resolvedStatus = status;
+		if (!resolvedStatus) {
+			const { data: firstStage } = await supabase
+				.from("workflow_stages")
+				.select("key")
+				.eq("project_id", projectId)
+				.order("position", { ascending: true })
+				.limit(1)
+				.maybeSingle();
+			resolvedStatus = firstStage?.key ?? "backlog";
+		}
+
+		let resolvedTaskTypeId = task_type_id || null;
+		if (!resolvedTaskTypeId) {
+			const { data: defaultType } = await supabase
+				.from("task_types")
+				.select("id")
+				.eq("is_default", true)
+				.maybeSingle();
+			resolvedTaskTypeId = defaultType?.id ?? null;
+		}
+
 		const { data, error } = await supabase
 			.from("tasks")
 			.insert({
@@ -176,13 +207,14 @@ export async function createTask(req, res, next) {
 				ticket_id: ticket_id || null,
 				title: title.trim(),
 				description: description?.trim() || null,
-				status: status || "backlog",
+				status: resolvedStatus,
 				priority: priority || "medium",
 				assigned_to: assigned_to || null,
 				due_date: due_date || null,
 				estimated_time: estimated_time || 0,
 				sprint_id: sprint_id || null,
 				parent_task_id: parent_task_id || null,
+				task_type_id: resolvedTaskTypeId,
 				tags: Array.isArray(tags)
 					? tags.map((t) => t.trim()).filter(Boolean)
 					: [],
@@ -268,6 +300,7 @@ export async function updateTask(req, res, next) {
 			"sprint_id",
 			"project_id",
 			"parent_task_id",
+			"task_type_id",
 		];
 		const updateData = {};
 

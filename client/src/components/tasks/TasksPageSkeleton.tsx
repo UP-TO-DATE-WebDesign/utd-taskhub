@@ -1,13 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import { COLUMN_IDS } from "@/components/tasks/types";
 
-const COLUMN_CARD_COUNTS: Record<string, number> = {
-	backlog: 3,
-	todo: 2,
-	"in-progress": 2,
-	review: 1,
-	done: 2,
-};
+const COLUMN_CARD_COUNTS = [3, 2, 2, 1, 2];
 
 function TaskCardSkeleton() {
 	return (
@@ -71,11 +64,8 @@ export function TasksPageSkeleton() {
 
 			{/* Board columns */}
 			<div className="flex gap-4 overflow-x-auto pb-4 items-start">
-				{COLUMN_IDS.map((colId) => (
-					<BoardColumnSkeleton
-						key={colId}
-						count={COLUMN_CARD_COUNTS[colId] ?? 2}
-					/>
+				{COLUMN_CARD_COUNTS.map((count, i) => (
+					<BoardColumnSkeleton key={i} count={count} />
 				))}
 			</div>
 		</div>

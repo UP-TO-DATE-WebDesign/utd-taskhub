@@ -51,6 +51,33 @@ export function validateUpdateWorkflowStage(payload) {
 	return errors;
 }
 
+export function validateReorderWorkflowStages(payload) {
+	const errors = [];
+
+	if (!Array.isArray(payload.stages)) {
+		errors.push("stages must be an array.");
+		return errors;
+	}
+
+	if (payload.stages.length === 0) {
+		errors.push("stages array cannot be empty.");
+		return errors;
+	}
+
+	payload.stages.forEach((item, index) => {
+		if (!item.id || typeof item.id !== "string") {
+			errors.push(`stages[${index}]: id is required.`);
+		}
+		if (!Number.isInteger(item.position) || item.position < 0) {
+			errors.push(
+				`stages[${index}]: position must be a non-negative integer.`,
+			);
+		}
+	});
+
+	return errors;
+}
+
 export function slugifyKey(name) {
 	return name
 		.toLowerCase()

@@ -3,7 +3,7 @@
 // Substitutes tasks.estimated_time wherever story_points / actual_hours
 // would normally apply (those columns do not exist in the schema).
 
-const TASK_ACTIVE_STATUSES = ["backlog", "todo", "in_progress", "review"];
+const TASK_ACTIVE_STATUSES = ["backlog", "todo", "in-progress", "qa"];
 const TASK_DONE_STATUSES = ["done", "cancelled"];
 const PRIORITY_DISPLAY = {
 	urgent: "Critical",
@@ -330,10 +330,10 @@ export async function getAdminReportsReal(req, res, next) {
 					return;
 				}
 				switch (t.status) {
-					case "in_progress":
+					case "in-progress":
 						snap.inProgress += 1;
 						break;
-					case "review":
+					case "qa":
 						snap.review += 1;
 						break;
 					default:

@@ -384,7 +384,7 @@ export function NewTaskDialog({
 									<SelectItem value="in-progress">
 										In Progress
 									</SelectItem>
-									<SelectItem value="review">QA</SelectItem>
+									<SelectItem value="qa">QA</SelectItem>
 									<SelectItem value="done">Done</SelectItem>
 								</SelectContent>
 							</Select>

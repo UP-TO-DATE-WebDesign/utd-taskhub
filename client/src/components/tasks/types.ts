@@ -1,14 +1,18 @@
 import {
 	type Task as ApiTask,
 	type TaskSprint,
+	type TaskTypeRef,
 	type ApiTaskStatus,
 	type ApiTaskPriority,
 } from "@/services/task.service";
+import type { WorkflowStage } from "@/services/workflow-stage.service";
+import { SYSTEM_STAGES } from "./system-stages";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-export type ColumnId = "backlog" | "todo" | "in-progress" | "review" | "done";
-export type Columns = Record<ColumnId, UiTask[]>;
+// ColumnId is now any workflow_stages.key for the task's project.
+export type ColumnId = string;
+export type Columns = Record<string, UiTask[]>;
 
 export interface UiTask {
 	id: string;
@@ -26,28 +30,38 @@ export interface UiTask {
 	estimated_time: number;
 	sprint: TaskSprint | null;
 	parent_task_id: string | null;
+	task_type_id: string | null;
+	task_type: TaskTypeRef | null;
 }
 
-// ── Constants ─────────────────────────────────────────────────────────────────
+// ── System-stage-derived display fallbacks ────────────────────────────────────
+// These keep cross-project surfaces (sprint rows, dashboard charts) rendering
+// the 6 system stages without each callsite needing a stages prop. Per-project
+// surfaces that must show custom stages pass `stages` explicitly to the helpers
+// below.
 
-export const COLUMN_IDS: ColumnId[] = [
-	"backlog",
-	"todo",
-	"in-progress",
-	"review",
-	"done",
-];
-
-export const COLUMN_LABELS: Record<ColumnId, string> = {
-	backlog: "Backlog",
-	todo: "To Do",
-	"in-progress": "In Progress",
-	review: "QA",
-	done: "Done",
+const STATUS_VARIANT: Record<
+	string,
+	"backlog" | "todo" | "in-progress" | "review" | "done" | "cancelled"
+> = {
+	backlog: "backlog",
+	todo: "todo",
+	"in-progress": "in-progress",
+	qa: "review",
+	done: "done",
+	cancelled: "cancelled",
 };
 
+export const COLUMN_IDS: ColumnId[] = SYSTEM_STAGES.filter(
+	(s) => s.key !== "cancelled",
+).map((s) => s.key);
+
+export const COLUMN_LABELS: Record<string, string> = Object.fromEntries(
+	SYSTEM_STAGES.map((s) => [s.key, s.name]),
+);
+
 export const COLUMN_BADGE: Record<
-	ColumnId,
+	string,
 	{
 		variant: "backlog" | "todo" | "in-progress" | "review" | "done";
 		dot: string;
@@ -56,30 +70,34 @@ export const COLUMN_BADGE: Record<
 	backlog: { variant: "backlog", dot: "bg-muted" },
 	todo: { variant: "todo", dot: "bg-muted" },
 	"in-progress": { variant: "in-progress", dot: "bg-primary" },
-	review: { variant: "review", dot: "bg-secondary" },
+	qa: { variant: "review", dot: "bg-secondary" },
 	done: { variant: "done", dot: "bg-secondary" },
 };
+
+export const STATUS_BADGE: Record<
+	string,
+	{
+		variant:
+			| "backlog"
+			| "todo"
+			| "in-progress"
+			| "review"
+			| "done"
+			| "cancelled";
+		label: string;
+	}
+> = Object.fromEntries(
+	SYSTEM_STAGES.map((s) => [
+		s.key,
+		{ variant: STATUS_VARIANT[s.key] ?? "todo", label: s.name },
+	]),
+);
 
 export const PRIORITY_BORDER: Record<ApiTaskPriority, string> = {
 	urgent: "border border-danger/20 hover:border-danger/50 hover:shadow-danger/20",
 	high: "border border-warning/20 hover:border-warning/50 hover:shadow-warning/20",
 	medium: "border border-primary/20 hover:border-primary/50 hover:shadow-primary/20",
 	low: "border border-gray-500/20 hover:border-gray-500/50 hover:shadow-gray-500/20",
-};
-
-export const STATUS_BADGE: Record<
-	ApiTaskStatus,
-	{
-		variant: "backlog" | "todo" | "in-progress" | "review" | "done";
-		label: string;
-	}
-> = {
-	backlog: { variant: "backlog", label: "Backlog" },
-	todo: { variant: "todo", label: "To Do" },
-	in_progress: { variant: "in-progress", label: "In Progress" },
-	review: { variant: "review", label: "QA" },
-	done: { variant: "done", label: "Done" },
-	cancelled: { variant: "done", label: "Cancelled" },
 };
 
 export const AVATAR_COLORS = [
@@ -100,41 +118,17 @@ export const TIME_INCREMENTS: { label: string; delta: number }[] = [
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-export function apiStatusToColumnId(status: ApiTaskStatus): ColumnId | null {
-	switch (status) {
-		case "backlog":
-			return "backlog";
-		case "todo":
-			return "todo";
-		case "in_progress":
-			return "in-progress";
-		case "review":
-			return "review";
-		case "done":
-			return "done";
-		default:
-			return null;
-	}
+// Status and ColumnId are the same value (workflow_stages.key). These remain as
+// identity functions to minimize churn at call sites.
+export function apiStatusToColumnId(status: ApiTaskStatus): ColumnId {
+	return status;
 }
 
 export function columnIdToApiStatus(colId: ColumnId): ApiTaskStatus {
-	switch (colId) {
-		case "backlog":
-			return "backlog";
-		case "todo":
-			return "todo";
-		case "in-progress":
-			return "in_progress";
-		case "review":
-			return "review";
-		case "done":
-			return "done";
-	}
+	return colId;
 }
 
-export function toUiTask(t: ApiTask): UiTask | null {
-	const columnId = apiStatusToColumnId(t.status);
-	if (!columnId) return null;
+export function toUiTask(t: ApiTask): UiTask {
 	return {
 		id: t.id,
 		project_id: t.project_id,
@@ -143,7 +137,7 @@ export function toUiTask(t: ApiTask): UiTask | null {
 		description: t.description,
 		developer_notes: t.developer_notes,
 		apiStatus: t.status,
-		columnId,
+		columnId: t.status,
 		priority: t.priority,
 		assigned_to: t.assigned_to,
 		due_date: t.due_date,
@@ -151,23 +145,52 @@ export function toUiTask(t: ApiTask): UiTask | null {
 		estimated_time: t.estimated_time ?? 0,
 		sprint: t.sprint ?? null,
 		parent_task_id: t.parent_task_id ?? null,
+		task_type_id: t.task_type_id ?? null,
+		task_type: t.task_type ?? null,
 	};
 }
 
-export function emptyColumns(): Columns {
-	// return Object.fromEntries(COLUMN_IDS.map((c) => [c, []])) as Columns;
-	return {
-		backlog: [],
-		todo: [],
-		"in-progress": [],
-		review: [],
-		done: [],
-	};
+export function getStage(
+	key: string,
+	stages: WorkflowStage[] = SYSTEM_STAGES,
+): WorkflowStage | undefined {
+	return stages.find((s) => s.key === key) ?? SYSTEM_STAGES.find((s) => s.key === key);
 }
 
-export function buildColumns(tasks: UiTask[]): Columns {
-	const cols = emptyColumns();
-	for (const task of tasks) cols[task.columnId].push(task);
+export function getStageLabel(
+	key: string,
+	stages?: WorkflowStage[],
+): string {
+	return getStage(key, stages)?.name ?? key;
+}
+
+export function getStageColor(
+	key: string,
+	stages?: WorkflowStage[],
+): string {
+	return getStage(key, stages)?.color ?? "#64748b";
+}
+
+export function sortStages(stages: WorkflowStage[]): WorkflowStage[] {
+	return [...stages].sort((a, b) => a.position - b.position);
+}
+
+export function emptyColumns(stages: WorkflowStage[] = SYSTEM_STAGES): Columns {
+	const cols: Columns = {};
+	for (const s of stages) cols[s.key] = [];
+	return cols;
+}
+
+export function buildColumns(
+	tasks: UiTask[],
+	stages: WorkflowStage[] = SYSTEM_STAGES,
+): Columns {
+	const cols = emptyColumns(stages);
+	for (const task of tasks) {
+		const key = task.columnId;
+		if (!cols[key]) cols[key] = [];
+		cols[key].push(task);
+	}
 	return cols;
 }
 

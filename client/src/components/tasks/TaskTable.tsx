@@ -2,6 +2,7 @@ import { Calendar, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Icon, type IconName } from "@/components/ui/icon-picker";
 import { cn } from "@/lib/utils";
 import { type Project } from "@/services/project.service";
 import {
@@ -11,7 +12,7 @@ import {
 	profileColorClass,
 } from "./types";
 
-const TABLE_HEADERS = ["Task", "Project", "Priority", "Status", "Assignee", "Sprint", "Due"];
+const TABLE_HEADERS = ["Type", "Task", "Project", "Priority", "Status", "Assignee", "Sprint", "Due"];
 
 function ListRow({
 	task,
@@ -33,6 +34,26 @@ function ListRow({
 			onClick={() => onView(task)}
 		>
 			<td className="px-5 py-3.5">
+				{task.task_type ? (
+					<span
+						className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium"
+						style={{
+							background: `${task.task_type.color}1a`,
+							color: task.task_type.color,
+						}}
+						title={task.task_type.name}
+					>
+						<Icon
+							name={task.task_type.icon as IconName}
+							className="h-3 w-3"
+						/>
+						{task.task_type.name}
+					</span>
+				) : (
+					<span className="text-xs text-muted">—</span>
+				)}
+			</td>
+			<td className="px-4 py-3.5">
 				<p className="text-sm font-medium text-foreground">{task.title}</p>
 				{task.tags[0] && (
 					<span className="text-[10px] text-muted">{task.tags[0]}</span>

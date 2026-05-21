@@ -63,3 +63,14 @@ export async function deleteWorkflowStage(
 ): Promise<void> {
 	await api.delete(`/projects/${projectId}/workflow-stages/${id}`);
 }
+
+export async function reorderWorkflowStages(
+	projectId: string,
+	stages: { id: string; position: number }[],
+): Promise<WorkflowStage[]> {
+	const res = await api.patch<{
+		success: boolean;
+		data: { workflow_stages: WorkflowStage[] };
+	}>(`/projects/${projectId}/workflow-stages/reorder`, { stages });
+	return res.data.workflow_stages;
+}

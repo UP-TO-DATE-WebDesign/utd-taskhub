@@ -1,12 +1,9 @@
 import { api } from "@/lib/api";
 
-export type ApiTaskStatus =
-	| "backlog"
-	| "todo"
-	| "in_progress"
-	| "review"
-	| "done"
-	| "cancelled";
+// Status is now the workflow_stages.key for the task's project.
+// System keys: backlog, todo, in-progress, qa, done, cancelled.
+// Custom keys are slugified from user-defined stage names.
+export type ApiTaskStatus = string;
 export type ApiTaskPriority = "low" | "medium" | "high" | "urgent";
 
 export interface TaskProfile {
@@ -22,6 +19,14 @@ export interface TaskSprint {
 	status: string;
 	start_date: string | null;
 	end_date: string | null;
+}
+
+export interface TaskTypeRef {
+	id: string;
+	key: string;
+	name: string;
+	color: string;
+	icon: string;
 }
 
 export interface Task {
@@ -43,6 +48,8 @@ export interface Task {
 	sprint?: TaskSprint | null;
 	estimated_time?: number;
 	parent_task_id: string | null;
+	task_type_id: string | null;
+	task_type: TaskTypeRef | null;
 	created_at: string;
 	updated_at: string;
 }
@@ -59,6 +66,7 @@ export interface CreateTaskPayload {
 	sprint_id?: string;
 	estimated_time?: number; // in minutes
 	parent_task_id?: string;
+	task_type_id?: string | null;
 }
 
 export interface UpdateTaskPayload {
@@ -74,6 +82,7 @@ export interface UpdateTaskPayload {
 	sprint_id?: string | null;
 	estimated_time?: number; // in minutes
 	parent_task_id?: string | null;
+	task_type_id?: string | null;
 }
 
 export interface ListAllTasksParams {

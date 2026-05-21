@@ -1,7 +1,11 @@
-const VALID_STATUSES = ["backlog", "todo", "in_progress", "review", "done", "cancelled"];
+const STATUS_KEY_REGEX = /^[a-z][a-z0-9_-]*$/;
 const VALID_PRIORITIES = ["low", "medium", "high", "urgent"];
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function isValidStatusKey(value) {
+	return typeof value === "string" && STATUS_KEY_REGEX.test(value);
+}
 
 export function validateCreateTask(payload) {
 	const errors = [];
@@ -18,8 +22,8 @@ export function validateCreateTask(payload) {
 		}
 	}
 
-	if (payload.status !== undefined && !VALID_STATUSES.includes(payload.status)) {
-		errors.push(`status must be one of: ${VALID_STATUSES.join(", ")}.`);
+	if (payload.status !== undefined && !isValidStatusKey(payload.status)) {
+		errors.push("status must be a valid workflow stage key (lowercase, digits, hyphens, underscores).");
 	}
 
 	if (payload.priority !== undefined && !VALID_PRIORITIES.includes(payload.priority)) {
@@ -64,6 +68,12 @@ export function validateCreateTask(payload) {
 		}
 	}
 
+	if (payload.task_type_id !== undefined && payload.task_type_id !== null) {
+		if (typeof payload.task_type_id !== "string" || !UUID_REGEX.test(payload.task_type_id)) {
+			errors.push("task_type_id must be a valid UUID.");
+		}
+	}
+
 	return errors;
 }
 
@@ -82,8 +92,8 @@ export function validateUpdateTask(payload) {
 		}
 	}
 
-	if (payload.status !== undefined && !VALID_STATUSES.includes(payload.status)) {
-		errors.push(`status must be one of: ${VALID_STATUSES.join(", ")}.`);
+	if (payload.status !== undefined && !isValidStatusKey(payload.status)) {
+		errors.push("status must be a valid workflow stage key (lowercase, digits, hyphens, underscores).");
 	}
 
 	if (payload.priority !== undefined && !VALID_PRIORITIES.includes(payload.priority)) {
@@ -131,6 +141,12 @@ export function validateUpdateTask(payload) {
 	if (payload.parent_task_id !== undefined && payload.parent_task_id !== null) {
 		if (typeof payload.parent_task_id !== "string" || !UUID_REGEX.test(payload.parent_task_id)) {
 			errors.push("parent_task_id must be a valid UUID.");
+		}
+	}
+
+	if (payload.task_type_id !== undefined && payload.task_type_id !== null) {
+		if (typeof payload.task_type_id !== "string" || !UUID_REGEX.test(payload.task_type_id)) {
+			errors.push("task_type_id must be a valid UUID.");
 		}
 	}
 

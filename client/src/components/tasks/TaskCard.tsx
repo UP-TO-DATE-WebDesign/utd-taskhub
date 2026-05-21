@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Icon, type IconName } from "@/components/ui/icon-picker";
 import {
 	Tooltip,
 	TooltipContent,
@@ -26,12 +27,11 @@ import {
 	type UiTask,
 	type ColumnId,
 	COLUMN_IDS,
-	COLUMN_LABELS,
-	COLUMN_BADGE,
 	PRIORITY_BORDER,
 	getInitials,
 	profileColorClass,
 } from "./types";
+import type { WorkflowStage } from "@/services/workflow-stage.service";
 
 // ── TaskCardContent ───────────────────────────────────────────────────────────
 
@@ -59,10 +59,28 @@ function TaskCardContentBase({
 			)}
 		>
 			<div className="flex items-start justify-between gap-2">
-				<Badge variant={task.priority} className="text-[10px]">
-					{task.priority.charAt(0).toUpperCase() +
-						task.priority.slice(1)}
-				</Badge>
+				<div className="flex items-center gap-1.5 flex-wrap">
+					{task.task_type && (
+						<span
+							className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium leading-none"
+							style={{
+								background: `${task.task_type.color}1a`,
+								color: task.task_type.color,
+							}}
+							title={task.task_type.name}
+						>
+							<Icon
+								name={task.task_type.icon as IconName}
+								className="h-3 w-3"
+							/>
+							{task.task_type.name}
+						</span>
+					)}
+					<Badge variant={task.priority} className="text-[10px]">
+						{task.priority.charAt(0).toUpperCase() +
+							task.priority.slice(1)}
+					</Badge>
+				</div>
 				{task.tags[0] && (
 					<span className="text-[10px] bg-muted-subtle text-muted-foreground px-1.5 py-0.5 rounded font-medium leading-none">
 						{task.tags[0]}
@@ -244,30 +262,32 @@ export const SortableTaskCard = memo(SortableTaskCardBase);
 // ── BoardColumn ───────────────────────────────────────────────────────────────
 
 function BoardColumnBase({
-	colId,
+	stage,
 	tasks,
 	projects,
 	onEdit,
 	onDelete,
 	onView,
 }: {
-	colId: ColumnId;
+	stage: WorkflowStage;
 	tasks: UiTask[];
 	projects: Project[];
 	onEdit: (task: UiTask) => void;
 	onDelete: (task: UiTask) => void;
 	onView: (task: UiTask) => void;
 }) {
-	const { setNodeRef, isOver } = useDroppable({ id: colId });
-	const { dot } = COLUMN_BADGE[colId];
+	const { setNodeRef, isOver } = useDroppable({ id: stage.key });
 	const itemIds = useMemo(() => tasks.map((t) => t.id), [tasks]);
 
 	return (
-		<div className="flex flex-col min-w-[280px] flex-1">
+		<div className="flex flex-col min-w-[280px] h-[-webkit-fill-available]">
 			<div className="flex items-center gap-2 mb-3 px-1">
-				<span className={`h-2 w-2 rounded-full ${dot}`} />
+				<span
+					className="h-2 w-2 rounded-full"
+					style={{ backgroundColor: stage.color }}
+				/>
 				<span className="text-sm font-semibold text-foreground">
-					{COLUMN_LABELS[colId]}
+					{stage.name}
 				</span>
 				<span className="ml-auto text-xs font-medium text-muted bg-muted-subtle px-2 py-0.5 rounded-full">
 					{tasks.length}
@@ -277,10 +297,10 @@ function BoardColumnBase({
 			<div
 				ref={setNodeRef}
 				className={cn(
-					"flex-1 flex flex-col gap-2.5 rounded-xl p-2 min-h-[200px] transition-colors",
+					"flex-1 flex flex-col gap-2.5 rounded-xl p-2 min-h-[80vh] transition-colors h-full",
 					isOver
 						? "bg-primary-subtle/60 border border-dashed border-primary/40"
-						: "bg-muted-subtle/40",
+						: "bg-muted-subtle",
 				)}
 			>
 				<SortableContext

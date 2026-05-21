@@ -25,7 +25,10 @@ import {
 import { type Project } from "@/services/project.service";
 import { type Profile } from "@/services/profile.service";
 import { listSprints, type Sprint } from "@/services/sprint.service";
-import { type UiTask, STATUS_BADGE } from "./types";
+import { type UiTask } from "./types";
+import type { WorkflowStage } from "@/services/workflow-stage.service";
+import { SYSTEM_STAGES } from "./system-stages";
+import { StageChip } from "./StageChip";
 import {
 	InlineTitle,
 	InlineDescription,
@@ -37,14 +40,13 @@ import {
 	InlineSprint,
 	InlineProject,
 } from "./task-detail";
-import { STATUS_OPTIONS } from "./task-detail/constants";
-
 interface Props {
 	task: UiTask | null;
 	onClose: () => void;
 	onSave: (task: UiTask, payload: UpdateTaskPayload) => Promise<void>;
 	projects: Project[];
 	profiles: Profile[];
+	stages?: WorkflowStage[];
 }
 
 export function EditTaskDialogV2({
@@ -53,6 +55,7 @@ export function EditTaskDialogV2({
 	onSave,
 	projects,
 	profiles,
+	stages,
 }: Props) {
 	const open = !!task;
 
@@ -269,9 +272,15 @@ export function EditTaskDialogV2({
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>
-									{STATUS_OPTIONS.map((s) => (
-										<SelectItem key={s} value={s}>
-											{STATUS_BADGE[s].label}
+									{(stages ?? SYSTEM_STAGES).map((stage) => (
+										<SelectItem
+											key={stage.key}
+											value={stage.key}
+										>
+											<StageChip
+												label={stage.name}
+												color={stage.color}
+											/>
 										</SelectItem>
 									))}
 								</SelectContent>

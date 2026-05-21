@@ -219,7 +219,7 @@ const TASKS = [
 		title: "Refactor authentication middleware",
 		description:
 			"Break monolithic auth middleware into composable guards. Replace manual JWT parsing with a shared utility and add token rotation support.",
-		status: "in_progress",
+		status: "in-progress",
 		priority: "urgent",
 		tags: ["Security"],
 		project: "Internal System",
@@ -231,7 +231,7 @@ const TASKS = [
 		title: "Invoice PDF export",
 		description:
 			"Generate downloadable PDF invoices from the billing portal using a server-side renderer. Support custom branding per account.",
-		status: "in_progress",
+		status: "in-progress",
 		priority: "high",
 		tags: ["Feature"],
 		project: "Customer Portal",
@@ -243,7 +243,7 @@ const TASKS = [
 		title: "PKCE flow implementation",
 		description:
 			"Implement Proof Key for Code Exchange for all public OAuth clients. Replace implicit grant flow across mobile and SPA integrations.",
-		status: "in_progress",
+		status: "in-progress",
 		priority: "high",
 		tags: ["Security"],
 		project: "Auth Service Rewrite",
@@ -255,7 +255,7 @@ const TASKS = [
 		title: "Database migration scripts",
 		description:
 			"Write idempotent SQL migration scripts for the schema changes in v2. Include rollback procedures and test against a production snapshot.",
-		status: "in_progress",
+		status: "in-progress",
 		priority: "medium",
 		tags: ["Backend"],
 		project: "Internal System",
@@ -267,7 +267,7 @@ const TASKS = [
 		title: "Mobile offline sync",
 		description:
 			"Implement local-first data persistence using SQLite. Sync queued mutations to the server when connectivity is restored.",
-		status: "in_progress",
+		status: "in-progress",
 		priority: "high",
 		tags: ["Mobile"],
 		project: "Mobile App",
@@ -280,7 +280,7 @@ const TASKS = [
 		title: "API authentication layer",
 		description:
 			"Build a unified authentication layer that validates JWTs, checks scopes, and propagates user context to all downstream services.",
-		status: "review",
+		status: "qa",
 		priority: "high",
 		tags: ["Security"],
 		project: "Internal System",
@@ -292,7 +292,7 @@ const TASKS = [
 		title: "Session revocation endpoint",
 		description:
 			"Expose a POST /auth/revoke endpoint that invalidates active refresh tokens. Add to blocklist with a TTL matching the original expiry.",
-		status: "review",
+		status: "qa",
 		priority: "high",
 		tags: ["Backend"],
 		project: "Auth Service Rewrite",
@@ -304,7 +304,7 @@ const TASKS = [
 		title: "Accessibility audit fixes",
 		description:
 			"Address WCAG 2.1 AA violations found in the last audit. Focus on keyboard navigation, focus management, and ARIA labelling across all forms.",
-		status: "review",
+		status: "qa",
 		priority: "medium",
 		tags: ["UX"],
 		project: "Customer Portal",
@@ -316,7 +316,7 @@ const TASKS = [
 		title: "Component token documentation",
 		description:
 			"Document all design tokens in Storybook with live usage examples. Include token name, value, and which components consume each token.",
-		status: "review",
+		status: "qa",
 		priority: "low",
 		tags: ["Design"],
 		project: "Design System",

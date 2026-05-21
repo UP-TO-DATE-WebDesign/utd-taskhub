@@ -11,6 +11,8 @@ import { cn } from "@/lib/utils";
 import { type Project } from "@/services/project.service";
 import { type Sprint } from "@/services/sprint.service";
 import { type Profile } from "@/services/profile.service";
+import type { WorkflowStage } from "@/services/workflow-stage.service";
+import { SYSTEM_STAGES } from "./system-stages";
 
 export interface TaskFiltersProps {
 	projects: Project[];
@@ -24,6 +26,7 @@ export interface TaskFiltersProps {
 	filterStatus: string;
 	search: string;
 	isFiltered: boolean;
+	stages?: WorkflowStage[];
 	onFilterProjectChange: (v: string) => void;
 	onFilterSprintChange: (v: string) => void;
 	onFilterUserChange: (v: string) => void;
@@ -45,6 +48,7 @@ export function TaskFilters({
 	filterStatus,
 	search,
 	isFiltered,
+	stages,
 	onFilterProjectChange,
 	onFilterSprintChange,
 	onFilterUserChange,
@@ -135,12 +139,11 @@ export function TaskFilters({
 					</SelectTrigger>
 					<SelectContent>
 						<SelectItem value="all">All Statuses</SelectItem>
-						<SelectItem value="backlog">Backlog</SelectItem>
-						<SelectItem value="todo">To Do</SelectItem>
-						<SelectItem value="in_progress">In Progress</SelectItem>
-						<SelectItem value="review">QA</SelectItem>
-						<SelectItem value="done">Done</SelectItem>
-						<SelectItem value="cancelled">Cancelled</SelectItem>
+						{(stages ?? SYSTEM_STAGES).map((stage) => (
+							<SelectItem key={stage.key} value={stage.key}>
+								{stage.name}
+							</SelectItem>
+						))}
 					</SelectContent>
 				</Select>
 			)}
