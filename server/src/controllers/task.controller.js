@@ -168,6 +168,18 @@ export async function createTask(req, res, next) {
 		const { data: lastTask } = await positionQuery.maybeSingle();
 		const position = lastTask ? lastTask.position + 1 : 0;
 
+		let resolvedStatus = status;
+		if (!resolvedStatus) {
+			const { data: firstStage } = await supabase
+				.from("workflow_stages")
+				.select("key")
+				.eq("project_id", projectId)
+				.order("position", { ascending: true })
+				.limit(1)
+				.maybeSingle();
+			resolvedStatus = firstStage?.key ?? "backlog";
+		}
+
 		const { data, error } = await supabase
 			.from("tasks")
 			.insert({
@@ -176,7 +188,7 @@ export async function createTask(req, res, next) {
 				ticket_id: ticket_id || null,
 				title: title.trim(),
 				description: description?.trim() || null,
-				status: status || "backlog",
+				status: resolvedStatus,
 				priority: priority || "medium",
 				assigned_to: assigned_to || null,
 				due_date: due_date || null,

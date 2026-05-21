@@ -470,7 +470,7 @@ export function TaskFormDialogV2({
 										<SelectItem value="backlog">Backlog</SelectItem>
 										<SelectItem value="todo">To Do</SelectItem>
 										<SelectItem value="in-progress">In Progress</SelectItem>
-										<SelectItem value="review">QA</SelectItem>
+										<SelectItem value="qa">QA</SelectItem>
 										<SelectItem value="done">Done</SelectItem>
 									</SelectContent>
 								</Select>

@@ -26,12 +26,11 @@ import {
 	type UiTask,
 	type ColumnId,
 	COLUMN_IDS,
-	COLUMN_LABELS,
-	COLUMN_BADGE,
 	PRIORITY_BORDER,
 	getInitials,
 	profileColorClass,
 } from "./types";
+import type { WorkflowStage } from "@/services/workflow-stage.service";
 
 // ── TaskCardContent ───────────────────────────────────────────────────────────
 
@@ -244,30 +243,32 @@ export const SortableTaskCard = memo(SortableTaskCardBase);
 // ── BoardColumn ───────────────────────────────────────────────────────────────
 
 function BoardColumnBase({
-	colId,
+	stage,
 	tasks,
 	projects,
 	onEdit,
 	onDelete,
 	onView,
 }: {
-	colId: ColumnId;
+	stage: WorkflowStage;
 	tasks: UiTask[];
 	projects: Project[];
 	onEdit: (task: UiTask) => void;
 	onDelete: (task: UiTask) => void;
 	onView: (task: UiTask) => void;
 }) {
-	const { setNodeRef, isOver } = useDroppable({ id: colId });
-	const { dot } = COLUMN_BADGE[colId];
+	const { setNodeRef, isOver } = useDroppable({ id: stage.key });
 	const itemIds = useMemo(() => tasks.map((t) => t.id), [tasks]);
 
 	return (
 		<div className="flex flex-col min-w-[280px] flex-1">
 			<div className="flex items-center gap-2 mb-3 px-1">
-				<span className={`h-2 w-2 rounded-full ${dot}`} />
+				<span
+					className="h-2 w-2 rounded-full"
+					style={{ backgroundColor: stage.color }}
+				/>
 				<span className="text-sm font-semibold text-foreground">
-					{COLUMN_LABELS[colId]}
+					{stage.name}
 				</span>
 				<span className="ml-auto text-xs font-medium text-muted bg-muted-subtle px-2 py-0.5 rounded-full">
 					{tasks.length}

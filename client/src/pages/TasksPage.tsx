@@ -41,12 +41,16 @@ import {
 	type UiTask,
 	type Columns,
 	type ColumnId,
-	COLUMN_IDS,
-	COLUMN_LABELS,
 	toUiTask,
 	buildColumns,
 	columnIdToApiStatus,
+	sortStages,
 } from "@/components/tasks/types";
+import { SYSTEM_STAGES } from "@/components/tasks/system-stages";
+import {
+	listWorkflowStages,
+	type WorkflowStage,
+} from "@/services/workflow-stage.service";
 import { TaskCardContent, BoardColumn } from "@/components/tasks/TaskCard";
 import { TaskTable } from "@/components/tasks/TaskTable";
 import { TaskFilters } from "@/components/tasks/TaskFilters";
@@ -82,12 +86,22 @@ export default function TasksPage() {
 		isLoading: profilesLoading,
 	} = useApiSWR<Profile[]>(["profiles"], () => listProfiles());
 
+	const [filterProject, setFilterProject] = useState("all");
+
+	const { data: projectStages } = useApiSWR<WorkflowStage[]>(
+		filterProject !== "all" ? ["workflow-stages", filterProject] : null,
+		() => listWorkflowStages(filterProject),
+	);
+
+	const stages = useMemo<WorkflowStage[]>(
+		() => sortStages(projectStages ?? SYSTEM_STAGES),
+		[projectStages],
+	);
+	const stageKeys = useMemo(() => stages.map((s) => s.key), [stages]);
+
 	const columns = useMemo<Columns>(
-		() =>
-			buildColumns(
-				rawTasks.map(toUiTask).filter((u): u is UiTask => u !== null),
-			),
-		[rawTasks],
+		() => buildColumns(rawTasks.map(toUiTask), stages),
+		[rawTasks, stages],
 	);
 
 	const loading = tasksLoading || projectsLoading || profilesLoading;
@@ -100,7 +114,6 @@ export default function TasksPage() {
 	const [childParent, setChildParent] = useState<UiTask | null>(null);
 	const [view, setView] = useState<"board" | "list">("board");
 
-	const [filterProject, setFilterProject] = useState("all");
 	const [filterSprint, setFilterSprint] = useState("all");
 	const [filterSprintOptions, setFilterSprintOptions] = useState<Sprint[]>(
 		[],
@@ -178,8 +191,8 @@ export default function TasksPage() {
 	);
 
 	function findColumnId(taskId: string): ColumnId | null {
-		for (const colId of COLUMN_IDS) {
-			if (columnsRef.current[colId].some((t) => t.id === taskId))
+		for (const colId of stageKeys) {
+			if (columnsRef.current[colId]?.some((t) => t.id === taskId))
 				return colId;
 		}
 		return null;
@@ -205,7 +218,7 @@ export default function TasksPage() {
 
 			const srcColId = findColumnId(activeId);
 			const dstColId = (
-				COLUMN_IDS.includes(overId as ColumnId)
+				stageKeys.includes(overId)
 					? overId
 					: findColumnId(overId)
 			) as ColumnId | null;
@@ -236,16 +249,17 @@ export default function TasksPage() {
 			const curCol = findColumnId(activeId);
 
 			if (srcCol && curCol && srcCol !== curCol) {
-				const task = columnsRef.current[curCol].find(
+				const task = columnsRef.current[curCol]?.find(
 					(t) => t.id === activeId,
 				);
+				const destStage = stages.find((s) => s.key === curCol);
 				if (task) {
 					updateTask(task.project_id, task.id, {
 						status: columnIdToApiStatus(curCol),
 					})
 						.then(() => {
 							toast.success("Task updated", {
-								description: `Moved to ${COLUMN_LABELS[curCol]}`,
+								description: `Moved to ${destStage?.name ?? curCol}`,
 							});
 							mutateTasks();
 						})
@@ -285,8 +299,8 @@ export default function TasksPage() {
 
 	const filteredColumns = useMemo<Columns>(() => {
 		const lc = search.toLowerCase();
-		return COLUMN_IDS.reduce((acc, colId) => {
-			acc[colId] = columns[colId].filter((t) => {
+		return stageKeys.reduce((acc, colId) => {
+			acc[colId] = (columns[colId] ?? []).filter((t) => {
 				if (filterProject !== "all" && t.project_id !== filterProject)
 					return false;
 				if (filterSprint !== "all" && t.sprint?.id !== filterSprint)
@@ -310,19 +324,20 @@ export default function TasksPage() {
 		filterUser,
 		filterStatus,
 		search,
+		stageKeys,
 	]);
 
 	const allFilteredTasks = useMemo(
 		() =>
 			view === "list"
-				? COLUMN_IDS.flatMap((c) => filteredColumns[c])
+				? stageKeys.flatMap((c) => filteredColumns[c] ?? [])
 				: [],
-		[view, filteredColumns],
+		[view, filteredColumns, stageKeys],
 	);
 
 	const allTasks = useMemo(
-		() => COLUMN_IDS.flatMap((c) => columns[c]),
-		[columns],
+		() => stageKeys.flatMap((c) => columns[c] ?? []),
+		[columns, stageKeys],
 	);
 
 	const defaultSprintFilter = useMemo(
@@ -339,11 +354,11 @@ export default function TasksPage() {
 	const activeSprintTasks = useMemo<UiTask[]>(
 		() =>
 			activeSprint
-				? COLUMN_IDS.flatMap((c) => columns[c]).filter(
+				? stageKeys.flatMap((c) => columns[c] ?? []).filter(
 						(t) => t.sprint?.id === activeSprint.id,
 					)
 				: [],
-		[columns, activeSprint],
+		[columns, activeSprint, stageKeys],
 	);
 
 	const nextPlannedSprint = useMemo<Sprint | null>(() => {
@@ -362,22 +377,22 @@ export default function TasksPage() {
 
 	const startCandidateTasks = useMemo<UiTask[]>(() => {
 		if (!nextPlannedSprint) return [];
-		return COLUMN_IDS.flatMap((c) => columns[c]).filter(
+		return stageKeys.flatMap((c) => columns[c] ?? []).filter(
 			(t) =>
 				t.sprint?.id !== nextPlannedSprint.id &&
 				t.apiStatus !== "done" &&
 				t.apiStatus !== "cancelled",
 		);
-	}, [columns, nextPlannedSprint]);
+	}, [columns, nextPlannedSprint, stageKeys]);
 
 	const activeTask = useMemo(
 		() =>
 			activeTaskId
-				? (COLUMN_IDS.flatMap((c) => columns[c]).find(
+				? (stageKeys.flatMap((c) => columns[c] ?? []).find(
 						(t) => t.id === activeTaskId,
 					) ?? null)
 				: null,
-		[activeTaskId, columns],
+		[activeTaskId, columns, stageKeys],
 	);
 
 	const isFiltered =
@@ -445,7 +460,9 @@ export default function TasksPage() {
 			}
 			setViewTask(updated);
 			toast.success("Status updated", {
-				description: COLUMN_LABELS[updated.columnId],
+				description:
+					stages.find((s) => s.key === updated.columnId)?.name ??
+					updated.columnId,
 			});
 		},
 		[mutateTasks],
@@ -526,7 +543,10 @@ export default function TasksPage() {
 						Tasks
 					</h1>
 					<p className="text-sm text-muted mt-1">
-						{COLUMN_IDS.reduce((s, c) => s + columns[c].length, 0)}{" "}
+						{stageKeys.reduce(
+							(s, c) => s + (columns[c]?.length ?? 0),
+							0,
+						)}{" "}
 						tasks across all projects
 					</p>
 				</div>
@@ -590,11 +610,11 @@ export default function TasksPage() {
 					onDragEnd={onDragEnd}
 				>
 					<div className="flex gap-4 overflow-x-auto pb-4 items-start">
-						{COLUMN_IDS.map((colId) => (
+						{stages.map((stage) => (
 							<BoardColumn
-								key={colId}
-								colId={colId}
-								tasks={filteredColumns[colId]}
+								key={stage.key}
+								stage={stage}
+								tasks={filteredColumns[stage.key] ?? []}
 								projects={projects}
 								onEdit={setEditTask}
 								onDelete={handleDeleteTask}

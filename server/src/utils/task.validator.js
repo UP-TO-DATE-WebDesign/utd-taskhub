@@ -1,7 +1,11 @@
-const VALID_STATUSES = ["backlog", "todo", "in_progress", "review", "done", "cancelled"];
+const STATUS_KEY_REGEX = /^[a-z][a-z0-9_-]*$/;
 const VALID_PRIORITIES = ["low", "medium", "high", "urgent"];
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function isValidStatusKey(value) {
+	return typeof value === "string" && STATUS_KEY_REGEX.test(value);
+}
 
 export function validateCreateTask(payload) {
 	const errors = [];
@@ -18,8 +22,8 @@ export function validateCreateTask(payload) {
 		}
 	}
 
-	if (payload.status !== undefined && !VALID_STATUSES.includes(payload.status)) {
-		errors.push(`status must be one of: ${VALID_STATUSES.join(", ")}.`);
+	if (payload.status !== undefined && !isValidStatusKey(payload.status)) {
+		errors.push("status must be a valid workflow stage key (lowercase, digits, hyphens, underscores).");
 	}
 
 	if (payload.priority !== undefined && !VALID_PRIORITIES.includes(payload.priority)) {
@@ -82,8 +86,8 @@ export function validateUpdateTask(payload) {
 		}
 	}
 
-	if (payload.status !== undefined && !VALID_STATUSES.includes(payload.status)) {
-		errors.push(`status must be one of: ${VALID_STATUSES.join(", ")}.`);
+	if (payload.status !== undefined && !isValidStatusKey(payload.status)) {
+		errors.push("status must be a valid workflow stage key (lowercase, digits, hyphens, underscores).");
 	}
 
 	if (payload.priority !== undefined && !VALID_PRIORITIES.includes(payload.priority)) {

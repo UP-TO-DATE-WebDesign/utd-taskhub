@@ -1,8 +1,8 @@
 const ALLOWED_STATUS_KEYS = [
 	"backlog",
 	"todo",
-	"in_progress",
-	"review",
+	"in-progress",
+	"qa",
 	"done",
 	"cancelled",
 ];

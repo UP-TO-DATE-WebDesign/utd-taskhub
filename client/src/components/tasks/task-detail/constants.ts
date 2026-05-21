@@ -6,8 +6,8 @@ import {
 export const STATUS_OPTIONS: ApiTaskStatus[] = [
 	"backlog",
 	"todo",
-	"in_progress",
-	"review",
+	"in-progress",
+	"qa",
 	"done",
 	"cancelled",
 ];

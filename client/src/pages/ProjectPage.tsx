@@ -208,10 +208,7 @@ export default function ProjectPage() {
 			});
 			setViewTask(toUiTask(apiTask));
 			toast.success("Status updated", {
-				description:
-					COLUMN_LABELS[
-						status.replace("_", "-") as keyof typeof COLUMN_LABELS
-					],
+				description: COLUMN_LABELS[status] ?? status,
 			});
 		},
 		[],

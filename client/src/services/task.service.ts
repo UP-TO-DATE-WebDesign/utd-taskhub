@@ -1,12 +1,9 @@
 import { api } from "@/lib/api";
 
-export type ApiTaskStatus =
-	| "backlog"
-	| "todo"
-	| "in_progress"
-	| "review"
-	| "done"
-	| "cancelled";
+// Status is now the workflow_stages.key for the task's project.
+// System keys: backlog, todo, in-progress, qa, done, cancelled.
+// Custom keys are slugified from user-defined stage names.
+export type ApiTaskStatus = string;
 export type ApiTaskPriority = "low" | "medium" | "high" | "urgent";
 
 export interface TaskProfile {

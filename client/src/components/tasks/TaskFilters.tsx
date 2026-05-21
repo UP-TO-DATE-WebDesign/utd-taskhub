@@ -137,8 +137,8 @@ export function TaskFilters({
 						<SelectItem value="all">All Statuses</SelectItem>
 						<SelectItem value="backlog">Backlog</SelectItem>
 						<SelectItem value="todo">To Do</SelectItem>
-						<SelectItem value="in_progress">In Progress</SelectItem>
-						<SelectItem value="review">QA</SelectItem>
+						<SelectItem value="in-progress">In Progress</SelectItem>
+						<SelectItem value="qa">QA</SelectItem>
 						<SelectItem value="done">Done</SelectItem>
 						<SelectItem value="cancelled">Cancelled</SelectItem>
 					</SelectContent>
