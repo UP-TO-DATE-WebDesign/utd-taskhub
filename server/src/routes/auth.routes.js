@@ -6,6 +6,8 @@ import {
 	logout,
 	me,
 	completeInvite,
+	forgotPassword,
+	resetPassword,
 	startGoogleSignIn,
 	googleSignInCallback,
 } from "../controllers/auth.controller.js";
@@ -19,6 +21,8 @@ router.post("/login", sensitiveAuthLimiter, login);
 router.post("/refresh", refreshSession);
 router.post("/logout", requireAuth, logout);
 router.post("/complete-invite", requireAuth, completeInvite);
+router.post("/forgot-password", sensitiveAuthLimiter, forgotPassword);
+router.post("/reset-password", sensitiveAuthLimiter, resetPassword);
 router.get("/me", requireAuth, me);
 
 router.get("/google", startGoogleSignIn);

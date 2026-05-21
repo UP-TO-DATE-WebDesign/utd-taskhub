@@ -10,6 +10,11 @@ import {
 	validateLogin,
 	validateRefreshSession,
 } from "../utils/auth.validator.js";
+import {
+	sendPasswordResetEmail,
+	consumeResetToken,
+	markResetTokenUsed,
+} from "../services/password-reset.service.js";
 
 const PKCE_COOKIE_NAME = "sb_pkce";
 const PKCE_COOKIE_MAX_AGE_MS = 10 * 60 * 1000;
@@ -251,6 +256,82 @@ export async function me(req, res, next) {
 			data: {
 				user: req.profile,
 			},
+		});
+	} catch (error) {
+		next(error);
+	}
+}
+
+export async function forgotPassword(req, res, next) {
+	try {
+		const { email } = req.body;
+		if (!email || typeof email !== "string") {
+			return res.status(400).json({
+				success: false,
+				message: "Email is required.",
+			});
+		}
+
+		// Fire-and-forget. Do not leak existence; do not block on send failures.
+		sendPasswordResetEmail(email).catch((err) =>
+			console.error("[forgot-password] send failed", err),
+		);
+
+		return res.status(200).json({
+			success: true,
+			message:
+				"If an account exists for this email, a reset link has been sent.",
+		});
+	} catch (error) {
+		next(error);
+	}
+}
+
+export async function resetPassword(req, res, next) {
+	try {
+		const { token, password } = req.body;
+
+		if (!token || typeof token !== "string") {
+			return res.status(400).json({
+				success: false,
+				message: "Reset token is required.",
+			});
+		}
+
+		const strong =
+			typeof password === "string" &&
+			password.length >= 8 &&
+			/[A-Z]/.test(password) &&
+			/[0-9]/.test(password);
+		if (!strong) {
+			return res.status(400).json({
+				success: false,
+				message:
+					"Password must be 8+ characters with an uppercase letter and a number.",
+			});
+		}
+
+		const result = await consumeResetToken(token);
+		if (!result.ok) {
+			const message =
+				result.reason === "expired"
+					? "This reset link has expired. Request a new one."
+					: "Invalid or already-used reset link.";
+			return res.status(400).json({ success: false, message });
+		}
+
+		const { error: updateError } =
+			await supabaseAdmin.auth.admin.updateUserById(result.row.user_id, {
+				password,
+			});
+		if (updateError) throw updateError;
+
+		await markResetTokenUsed(result.row.id);
+
+		return res.status(200).json({
+			success: true,
+			message: "Password updated.",
+			data: { email: result.row.email },
 		});
 	} catch (error) {
 		next(error);

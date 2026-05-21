@@ -52,6 +52,21 @@ export async function completeInvite(
 	await api.post("/auth/complete-invite", { full_name: fullName, password, role });
 }
 
+export async function requestPasswordReset(email: string): Promise<void> {
+	await api.post("/auth/forgot-password", { email });
+}
+
+export async function resetPassword(
+	token: string,
+	password: string,
+): Promise<{ email: string }> {
+	const res = await api.post<{ data: { email: string } }>(
+		"/auth/reset-password",
+		{ token, password },
+	);
+	return res.data;
+}
+
 export async function logout(): Promise<void> {
 	await api.post("/auth/logout", {}).catch(() => {});
 	clearStoredAuth();
