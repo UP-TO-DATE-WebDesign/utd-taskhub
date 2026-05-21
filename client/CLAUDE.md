@@ -1,13 +1,14 @@
 # Client Rules
 
-This folder contains the Next.js frontend.
+This folder contains the Vite + React 19 frontend.
 
 Rules:
 
 - Use TypeScript.
-- Use Tailwind CSS and shadcn/ui.
-- API requests must go through service files.
-- Use `NEXT_PUBLIC_API_URL` for backend URL.
+- Use Tailwind CSS v4 with shadcn/ui (Radix). Mantine, Headless UI, and Emotion are also present; prefer shadcn/ui for new work unless the surrounding component already uses another library.
+- State and data: Redux Toolkit and SWR (via the `useApiSWR` hook) are both in use. Prefer SWR for new server-data reads.
+- API requests must go through service files in `src/services/`.
+- Use `VITE_API_URL` for the backend URL (see `.env` / `VITE_*` vars).
 - Do not call Supabase directly unless requested.
 - Keep UI clean, responsive, and accessible.
 - Include loading, empty, and error states.

@@ -18,17 +18,19 @@ The app includes:
 
 Frontend:
 
-- Next.js
+- Vite + React 19
 - TypeScript
-- Tailwind CSS
-- shadcn/ui
+- Tailwind CSS v4
+- shadcn/ui (Radix primitives); Mantine, Headless UI, and Emotion also present
+- Redux Toolkit + SWR for state/data
+- React Router v7
 
 Backend:
 
 - Node.js
-- Express.js
+- Express.js v5
 - Supabase
-- Axios
+- Axios, undici, ws, helmet, express-rate-limit, nodemailer/mailtrap
 
 Database/Auth:
 
@@ -38,8 +40,10 @@ Database/Auth:
 
 ## Folder Structure
 
-- `client/` contains the Next.js frontend.
+- `client/` contains the Vite + React frontend.
 - `server/` contains the Node.js + Express backend.
+- `postman/` contains the API collection.
+- `backend/` and `frontend/` are legacy directories; the active code lives in `server/` and `client/`.
 - Frontend must call the backend API.
 - Do not connect frontend directly to Supabase unless specifically requested.
 
@@ -55,7 +59,7 @@ Database/Auth:
 
 ## Backend Rules
 
-- Keep routes inside `server/routes`.
+- Keep routes inside `server/src/routes`.
 - Keep controllers/services separated if the project already follows that pattern.
 - Validate request payloads.
 - Return consistent JSON responses.

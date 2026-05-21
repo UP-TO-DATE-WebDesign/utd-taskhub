@@ -1,6 +1,15 @@
 # Server Rules
 
-This folder contains the Node.js + Express backend.
+This folder contains the Node.js + Express (v5) backend.
+
+Structure:
+
+- Entry: `src/server.js` (mounted via `src/app.js`).
+- Routes: `src/routes/` (one file per resource).
+- Controllers: `src/controllers/`.
+- Services: `src/services/`.
+- Middlewares: `src/middlewares/`.
+- Supabase migrations: `supabase/migrations/`.
 
 Rules:
 

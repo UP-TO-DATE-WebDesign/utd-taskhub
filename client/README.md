@@ -20,8 +20,9 @@ Frontend for TaskHub v2, a task and project management app.
 - TypeScript
 - Vite
 - Tailwind CSS v4
-- shadcn/ui (Radix primitives)
+- shadcn/ui (Radix primitives); Mantine, Headless UI, and Emotion also in use
 - Redux Toolkit
+- SWR (via reusable `useApiSWR` hook)
 - React Router v7
 - Lexical (rich text)
 - dnd-kit (drag and drop)
@@ -83,7 +84,28 @@ client/
 │   ├── layouts/             route layouts
 │   ├── lib/                 api client, utils
 │   ├── pages/               route components
-│   │   └── admin/
+│   │   ├── admin/
+│   │   ├── AcceptInvitationPage.tsx
+│   │   ├── AuthCallbackPage.tsx
+│   │   ├── ContactPage.tsx
+│   │   ├── DashboardPage.tsx
+│   │   ├── DesignSystemPage.tsx
+│   │   ├── ForgotPasswordPage.tsx
+│   │   ├── LoginPage.tsx
+│   │   ├── NotFoundPage.tsx
+│   │   ├── PrivacyPage.tsx
+│   │   ├── ProfilePage.tsx
+│   │   ├── ProjectPage.tsx
+│   │   ├── ProjectsPage.tsx
+│   │   ├── PublicPageLayout.tsx
+│   │   ├── RegisterPage.tsx
+│   │   ├── ResetPasswordPage.tsx
+│   │   ├── SettingsPage.tsx
+│   │   ├── SprintsPage.tsx
+│   │   ├── TasksPage.tsx
+│   │   ├── TermsPage.tsx
+│   │   ├── TicketsPage.tsx
+│   │   └── UsersPage.tsx
 │   ├── services/            API service modules (one per resource)
 │   ├── types/               shared TS types
 │   ├── App.tsx
@@ -97,8 +119,8 @@ client/
 ## Architecture Notes
 
 - API calls go through service files; no direct Supabase calls from the client.
-- Components follow shadcn/ui patterns with Radix primitives.
-- State managed via Redux Toolkit.
+- Components follow shadcn/ui patterns with Radix primitives. Some surfaces also use Mantine or Headless UI.
+- State managed via Redux Toolkit. Server data is increasingly fetched with SWR through `useApiSWR`.
 - All views include loading, empty, and error states.
 
 ## Related
