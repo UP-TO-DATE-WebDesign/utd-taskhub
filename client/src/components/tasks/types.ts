@@ -1,6 +1,7 @@
 import {
 	type Task as ApiTask,
 	type TaskSprint,
+	type TaskTypeRef,
 	type ApiTaskStatus,
 	type ApiTaskPriority,
 } from "@/services/task.service";
@@ -29,6 +30,8 @@ export interface UiTask {
 	estimated_time: number;
 	sprint: TaskSprint | null;
 	parent_task_id: string | null;
+	task_type_id: string | null;
+	task_type: TaskTypeRef | null;
 }
 
 // ── System-stage-derived display fallbacks ────────────────────────────────────
@@ -142,6 +145,8 @@ export function toUiTask(t: ApiTask): UiTask {
 		estimated_time: t.estimated_time ?? 0,
 		sprint: t.sprint ?? null,
 		parent_task_id: t.parent_task_id ?? null,
+		task_type_id: t.task_type_id ?? null,
+		task_type: t.task_type ?? null,
 	};
 }
 

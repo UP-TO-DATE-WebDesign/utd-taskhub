@@ -21,6 +21,14 @@ export interface TaskSprint {
 	end_date: string | null;
 }
 
+export interface TaskTypeRef {
+	id: string;
+	key: string;
+	name: string;
+	color: string;
+	icon: string;
+}
+
 export interface Task {
 	id: string;
 	project_id: string;
@@ -40,6 +48,8 @@ export interface Task {
 	sprint?: TaskSprint | null;
 	estimated_time?: number;
 	parent_task_id: string | null;
+	task_type_id: string | null;
+	task_type: TaskTypeRef | null;
 	created_at: string;
 	updated_at: string;
 }
@@ -56,6 +66,7 @@ export interface CreateTaskPayload {
 	sprint_id?: string;
 	estimated_time?: number; // in minutes
 	parent_task_id?: string;
+	task_type_id?: string | null;
 }
 
 export interface UpdateTaskPayload {
@@ -71,6 +82,7 @@ export interface UpdateTaskPayload {
 	sprint_id?: string | null;
 	estimated_time?: number; // in minutes
 	parent_task_id?: string | null;
+	task_type_id?: string | null;
 }
 
 export interface ListAllTasksParams {

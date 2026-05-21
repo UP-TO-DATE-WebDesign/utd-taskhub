@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Icon, type IconName } from "@/components/ui/icon-picker";
 import {
 	Tooltip,
 	TooltipContent,
@@ -58,10 +59,28 @@ function TaskCardContentBase({
 			)}
 		>
 			<div className="flex items-start justify-between gap-2">
-				<Badge variant={task.priority} className="text-[10px]">
-					{task.priority.charAt(0).toUpperCase() +
-						task.priority.slice(1)}
-				</Badge>
+				<div className="flex items-center gap-1.5 flex-wrap">
+					{task.task_type && (
+						<span
+							className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium leading-none"
+							style={{
+								background: `${task.task_type.color}1a`,
+								color: task.task_type.color,
+							}}
+							title={task.task_type.name}
+						>
+							<Icon
+								name={task.task_type.icon as IconName}
+								className="h-3 w-3"
+							/>
+							{task.task_type.name}
+						</span>
+					)}
+					<Badge variant={task.priority} className="text-[10px]">
+						{task.priority.charAt(0).toUpperCase() +
+							task.priority.slice(1)}
+					</Badge>
+				</div>
 				{task.tags[0] && (
 					<span className="text-[10px] bg-muted-subtle text-muted-foreground px-1.5 py-0.5 rounded font-medium leading-none">
 						{task.tags[0]}

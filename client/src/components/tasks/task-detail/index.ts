@@ -1,6 +1,7 @@
 export { InlineTitle } from "./InlineTitle";
 export { InlineDescription } from "./InlineDescription";
 export { InlinePriority } from "./InlinePriority";
+export { InlineTaskType } from "./InlineTaskType";
 export { InlineAssignee } from "./InlineAssignee";
 export { InlineDueDate } from "./InlineDueDate";
 export { InlineEstimatedTime } from "./InlineEstimatedTime";

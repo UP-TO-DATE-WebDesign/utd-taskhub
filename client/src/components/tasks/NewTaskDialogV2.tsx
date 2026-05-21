@@ -30,6 +30,8 @@ import {
 import { type Project } from "@/services/project.service";
 import { type Profile } from "@/services/profile.service";
 import { listSprints, type Sprint } from "@/services/sprint.service";
+import { listTaskTypes, type TaskType } from "@/services/task-type.service";
+import { Icon, type IconName } from "@/components/ui/icon-picker";
 import type { WorkflowStage } from "@/services/workflow-stage.service";
 import { SYSTEM_STAGES } from "./system-stages";
 import { StageChip } from "./StageChip";
@@ -79,6 +81,8 @@ export function NewTaskDialogV2({
 	const [tags, setTags] = useState<string[]>([]);
 	const [sprints, setSprints] = useState<Sprint[]>([]);
 	const [sprintsLoading, setSprintsLoading] = useState(false);
+	const [taskTypes, setTaskTypes] = useState<TaskType[]>([]);
+	const [taskTypeId, setTaskTypeId] = useState<string | null>(null);
 	const [submitting, setSubmitting] = useState(false);
 
 	useEffect(() => {
@@ -95,6 +99,24 @@ export function NewTaskDialogV2({
 		setTags([]);
 		setSubmitting(false);
 	}, [open, lockedProjectId, projects]);
+
+	useEffect(() => {
+		if (!open) return;
+		let active = true;
+		listTaskTypes()
+			.then((data) => {
+				if (!active) return;
+				setTaskTypes(data);
+				const def = data.find((t) => t.is_default) ?? data[0] ?? null;
+				setTaskTypeId(def?.id ?? null);
+			})
+			.catch(() => {
+				if (active) setTaskTypes([]);
+			});
+		return () => {
+			active = false;
+		};
+	}, [open]);
 
 	useEffect(() => {
 		if (!open || !projectId) {
@@ -146,6 +168,7 @@ export function NewTaskDialogV2({
 			sprint_id: sprintId ?? undefined,
 			estimated_time: estimatedTime || undefined,
 			parent_task_id: parentTaskId,
+			task_type_id: taskTypeId ?? undefined,
 		};
 		setSubmitting(true);
 		try {
@@ -269,6 +292,44 @@ export function NewTaskDialogV2({
 
 					{/* Sidebar */}
 					<aside className="border-l border-border bg-muted-subtle/30 overflow-y-auto px-5 py-6 space-y-5 max-h-[80vh]">
+						{/* Task Type */}
+						<div>
+							<p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-2">
+								Task Type
+							</p>
+							<Select
+								value={taskTypeId ?? ""}
+								onValueChange={(v) => setTaskTypeId(v)}
+								disabled={taskTypes.length === 0}
+							>
+								<SelectTrigger className="h-8 text-xs">
+									<SelectValue placeholder="Select type" />
+								</SelectTrigger>
+								<SelectContent>
+									{taskTypes.map((t) => (
+										<SelectItem key={t.id} value={t.id}>
+											<span className="inline-flex items-center gap-2">
+												<span
+													className="inline-flex h-4 w-4 items-center justify-center rounded text-white"
+													style={{ background: t.color }}
+												>
+													<Icon
+														name={t.icon as IconName}
+														className="h-2.5 w-2.5"
+													/>
+												</span>
+												<span className="text-xs">
+													{t.name}
+												</span>
+											</span>
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</div>
+
+						<Separator />
+
 						{/* Status */}
 						<div>
 							<p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-2">

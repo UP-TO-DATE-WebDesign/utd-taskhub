@@ -27,6 +27,8 @@ import {
 import { type Project } from "@/services/project.service";
 import { type Profile } from "@/services/profile.service";
 import { listSprints, type Sprint } from "@/services/sprint.service";
+import { listTaskTypes, type TaskType } from "@/services/task-type.service";
+import { Icon, type IconName } from "@/components/ui/icon-picker";
 import { getTeamSprintCapacity } from "@/services/capacity.service";
 import { type SprintCapacitySummary } from "@/types/capacity";
 import { ProjectDescriptionEditor } from "@/components/projects/project-description";
@@ -54,6 +56,7 @@ const EMPTY_EDIT_FORM = {
 	dueDate: "",
 	tagInput: "",
 	tags: [] as string[],
+	taskTypeId: "",
 };
 
 function taskToEditForm(task: UiTask): typeof EMPTY_EDIT_FORM {
@@ -68,6 +71,7 @@ function taskToEditForm(task: UiTask): typeof EMPTY_EDIT_FORM {
 		dueDate: task.due_date ? task.due_date.slice(0, 10) : "",
 		tagInput: "",
 		tags: [...task.tags],
+		taskTypeId: task.task_type?.id ?? task.task_type_id ?? "",
 	};
 }
 
@@ -93,6 +97,7 @@ export function EditTaskDialog({
 	const [estimatedTime, setEstimatedTime] = useState(0);
 	const [sprints, setSprints] = useState<Sprint[]>([]);
 	const [sprintsLoading, setSprintsLoading] = useState(false);
+	const [taskTypes, setTaskTypes] = useState<TaskType[]>([]);
 	const [capacityMap, setCapacityMap] = useState<
 		Map<string, SprintCapacitySummary>
 	>(new Map());
@@ -140,6 +145,14 @@ export function EditTaskDialog({
 				setCapacityMap(new Map(summaries.map((s) => [s.userId, s])));
 			})
 			.catch(() => {});
+
+		listTaskTypes()
+			.then((data) => {
+				if (active) setTaskTypes(data);
+			})
+			.catch(() => {
+				if (active) setTaskTypes([]);
+			});
 
 		return () => {
 			active = false;
@@ -197,6 +210,7 @@ export function EditTaskDialog({
 				sprint_id: form.sprintId || undefined,
 				tags: form.tags,
 				estimated_time: estimatedTime,
+				task_type_id: form.taskTypeId || null,
 			});
 			onClose();
 		} catch {
@@ -340,6 +354,40 @@ export function EditTaskDialog({
 							onChange={(value) => set("description", value)}
 							placeholder="Describe the task details..."
 						/>
+					</div>
+
+					{/* Task Type */}
+					<div>
+						<label className="text-sm font-medium text-muted-foreground mb-1.5 block">
+							Task Type
+						</label>
+						<Select
+							value={form.taskTypeId}
+							onValueChange={(v) => set("taskTypeId", v)}
+							disabled={taskTypes.length === 0}
+						>
+							<SelectTrigger>
+								<SelectValue placeholder="Select type" />
+							</SelectTrigger>
+							<SelectContent>
+								{taskTypes.map((t) => (
+									<SelectItem key={t.id} value={t.id}>
+										<span className="inline-flex items-center gap-2">
+											<span
+												className="inline-flex h-4 w-4 items-center justify-center rounded text-white"
+												style={{ background: t.color }}
+											>
+												<Icon
+													name={t.icon as IconName}
+													className="h-2.5 w-2.5"
+												/>
+											</span>
+											{t.name}
+										</span>
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
 					</div>
 
 					{/* Priority + Status */}

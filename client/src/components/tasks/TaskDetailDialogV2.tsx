@@ -56,6 +56,7 @@ import {
 	InlineTitle,
 	InlineDescription,
 	InlinePriority,
+	InlineTaskType,
 	InlineAssignee,
 	InlineDueDate,
 	InlineEstimatedTime,
@@ -222,6 +223,13 @@ export function TaskDetailDialogV2({
 							<DialogClose className="rounded-md p-1 text-danger hover:text-foreground hover:bg-muted-subtle"></DialogClose>
 							{task && (
 								<>
+									<InlineTaskType
+										value={task.task_type}
+										canEdit={canEdit}
+										onSave={(id) =>
+											persist({ task_type_id: id })
+										}
+									/>
 									<InlinePriority
 										value={task.priority}
 										canEdit={canEdit}
