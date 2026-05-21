@@ -83,6 +83,8 @@ Database/Auth:
 
 ## Response Rules
 
+- Minimal prose.
+- Code first.
 - Be concise.
 - Prioritize code output over conversation
 - No unnecessary commentary.
