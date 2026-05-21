@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
-import { Bell, User, LogOut, Menu } from "lucide-react";
+import { Bell, User, LogOut, Menu, ChevronDown } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
 	DropdownMenu,
@@ -50,7 +50,8 @@ function formatRelativeTime(iso: string): string {
 
 function routeForNotification(n: Notification): string | null {
 	const d = n.data ?? {};
-	if (d.task_id && d.project_id) return `/projects/${d.project_id}?task=${d.task_id}`;
+	if (d.task_id && d.project_id)
+		return `/projects/${d.project_id}?task=${d.task_id}`;
 	if (d.ticket_id && d.project_id)
 		return `/projects/${d.project_id}?ticket=${d.ticket_id}`;
 	if (d.project_id) return `/projects/${d.project_id}`;
@@ -157,7 +158,9 @@ export default function AppLayout() {
 									{unreadCount > 0 && (
 										<>
 											<span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground leading-none z-20">
-												{unreadCount > 99 ? "99+" : unreadCount}
+												{unreadCount > 99
+													? "99+"
+													: unreadCount}
 											</span>
 											<span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary/50 text-[9px] font-bold text-primary-foreground leading-none animate-ping"></span>
 										</>
@@ -185,37 +188,46 @@ export default function AppLayout() {
 											You're all caught up.
 										</div>
 									) : (
-										notifications.slice(0, 8).map((notif) => (
-											<DropdownMenuItem
-												key={notif.id}
-												className="flex flex-col items-start gap-0.5 px-3 py-2.5 cursor-pointer"
-												onSelect={() => handleNotificationClick(notif)}
-											>
-												<div className="flex w-full items-start gap-2">
-													{!notif.read && (
-														<span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-													)}
-													<div
-														className={cn(
-															"flex-1",
-															notif.read && "pl-3.5",
+										notifications
+											.slice(0, 8)
+											.map((notif) => (
+												<DropdownMenuItem
+													key={notif.id}
+													className="flex flex-col items-start gap-0.5 px-3 py-2.5 cursor-pointer"
+													onSelect={() =>
+														handleNotificationClick(
+															notif,
+														)
+													}
+												>
+													<div className="flex w-full items-start gap-2">
+														{!notif.read && (
+															<span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
 														)}
-													>
-														<p className="text-xs font-medium text-foreground leading-snug">
-															{notif.title}
-														</p>
-														{notif.body && (
-															<p className="text-xs text-muted-foreground leading-snug mt-0.5 truncate">
-																{notif.body}
+														<div
+															className={cn(
+																"flex-1",
+																notif.read &&
+																	"pl-3.5",
+															)}
+														>
+															<p className="text-xs font-medium text-foreground leading-snug">
+																{notif.title}
 															</p>
-														)}
+															{notif.body && (
+																<p className="text-xs text-muted-foreground leading-snug mt-0.5 truncate">
+																	{notif.body}
+																</p>
+															)}
+														</div>
+														<span className="shrink-0 text-[10px] text-muted-foreground">
+															{formatRelativeTime(
+																notif.created_at,
+															)}
+														</span>
 													</div>
-													<span className="shrink-0 text-[10px] text-muted-foreground">
-														{formatRelativeTime(notif.created_at)}
-													</span>
-												</div>
-											</DropdownMenuItem>
-										))
+												</DropdownMenuItem>
+											))
 									)}
 								</div>
 								<DropdownMenuSeparator />
@@ -234,7 +246,7 @@ export default function AppLayout() {
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<button
-									className="flex items-center gap-2 rounded-md p-1 transition-colors hover:bg-muted-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-primary md:px-1"
+									className="flex items-center gap-2 rounded-md py-1 px-2 border border-border/50 transition-colors hover:bg-muted-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
 									aria-label="Open account menu"
 								>
 									<Avatar className="h-7 w-7">
@@ -256,6 +268,7 @@ export default function AppLayout() {
 											{role}
 										</div>
 									</div>
+									<ChevronDown className="h-3 w-3 text-muted-foreground" />
 								</button>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align="end" className="w-48">
@@ -447,7 +460,9 @@ export default function AppLayout() {
 												{notif.title}
 											</p>
 											<span className="shrink-0 text-xs text-muted-foreground">
-												{formatRelativeTime(notif.created_at)}
+												{formatRelativeTime(
+													notif.created_at,
+												)}
 											</span>
 										</div>
 										{notif.body && (

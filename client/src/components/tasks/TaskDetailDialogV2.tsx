@@ -672,8 +672,10 @@ export function TaskDetailDialogV2({
 								className="w-full justify-start"
 								onClick={handleCopyLink}
 							>
-								<Link2 className="h-4 w-4 mr-2" />
-								Copy Task Link
+								<Link2 className="h-4 w-4 mr-2  text-primary" />
+								<span className=" text-primary text-xs!">
+									Copy Task Link
+								</span>
 							</Button>
 						</aside>
 					</div>

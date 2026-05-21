@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
 	CheckCircle2,
 	Circle,
@@ -34,6 +34,7 @@ import {
 	type DashboardTicket,
 } from "@/services/dashboard.service";
 import SkeletonLoader from "@/components/ui/skeleton-loader";
+import { useApiSWR } from "@/hooks/useApiSWR";
 
 const STATUS_DOT: Record<string, string> = {
 	in_progress: "bg-primary",
@@ -110,13 +111,6 @@ export default function DashboardPage() {
 	const navigate = useNavigate();
 	const { can } = usePermission();
 	const isAdmin = can("Workspace settings");
-	const [data, setData] = useState<DashboardData | null>(null);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
-	const [reportsSummary, setReportsSummary] = useState<
-		AdminReportPayload["projectStatusSummary"] | null
-	>(null);
-	const [reportsLoading, setReportsLoading] = useState(false);
 	const [sortKey, setSortKey] = useState<
 		"title" | "project" | "due_date" | "status"
 	>("due_date");
@@ -131,21 +125,20 @@ export default function DashboardPage() {
 		}
 	};
 
-	useEffect(() => {
-		getDashboard()
-			.then(setData)
-			.catch((err: Error) => setError(err.message))
-			.finally(() => setLoading(false));
-	}, []);
+	const {
+		data,
+		error: dashboardError,
+		isLoading: loading,
+	} = useApiSWR<DashboardData>(["dashboard"], () => getDashboard());
 
-	useEffect(() => {
-		if (!isAdmin) return;
-		setReportsLoading(true);
-		getAdminReports()
-			.then((p) => setReportsSummary(p.projectStatusSummary))
-			.catch(() => setReportsSummary(null))
-			.finally(() => setReportsLoading(false));
-	}, [isAdmin]);
+	const error = dashboardError ? dashboardError.message : null;
+
+	const { data: reportsPayload, isLoading: reportsLoading } =
+		useApiSWR<AdminReportPayload>(
+			isAdmin ? ["admin-reports"] : null,
+			() => getAdminReports(),
+		);
+	const reportsSummary = reportsPayload?.projectStatusSummary ?? null;
 
 	const firstName = user?.full_name?.split(" ")[0] ?? "there";
 
