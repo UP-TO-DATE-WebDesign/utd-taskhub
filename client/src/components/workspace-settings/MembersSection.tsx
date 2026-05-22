@@ -24,12 +24,9 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+	SearchableSelect,
+	type SearchableSelectOption,
+} from "@/components/ui/searchable-select";
 import { cn } from "@/lib/utils";
 import {
 	listUsers,
@@ -71,6 +68,11 @@ function ManageRoleDialog({
 	}, [open, user]);
 
 	const selectedRole = roles.find((r) => r.key === selectedRoleKey);
+	const roleOptions: SearchableSelectOption[] = roles.map((r) => ({
+		value: r.key,
+		label: r.name,
+		description: r.description ?? undefined,
+	}));
 
 	async function handleSave() {
 		if (!user || !selectedRoleKey) return;
@@ -127,23 +129,12 @@ function ManageRoleDialog({
 								<span className="text-sm">Loading roles...</span>
 							</div>
 						) : (
-							<Select value={selectedRoleKey} onValueChange={setSelectedRoleKey}>
-								<SelectTrigger>
-									<SelectValue placeholder="Select a role" />
-								</SelectTrigger>
-								<SelectContent>
-									{roles.map((r) => (
-										<SelectItem key={r.key} value={r.key}>
-											<span className="font-medium">{r.name}</span>
-											{r.description && (
-												<span className="ml-2 text-xs text-muted-foreground">
-													{r.description}
-												</span>
-											)}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
+							<SearchableSelect
+								value={selectedRoleKey}
+								onValueChange={setSelectedRoleKey}
+								options={roleOptions}
+								placeholder="Select a role"
+							/>
 						)}
 					</div>
 

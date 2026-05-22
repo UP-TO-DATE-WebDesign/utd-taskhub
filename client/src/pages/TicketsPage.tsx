@@ -24,13 +24,9 @@ import {
 	DialogClose,
 } from "@/components/ui/dialog";
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import { SearchSelect } from "@/components/ui/search-select";
+	SearchableSelect,
+	type SearchableSelectOption,
+} from "@/components/ui/searchable-select";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -442,48 +438,30 @@ function TicketDialog({
 							<label className="text-sm font-medium text-muted-foreground mb-1.5 block">
 								Type
 							</label>
-							<Select
+							<SearchableSelect
 								value={type}
 								onValueChange={(v) => setType(v as TicketType)}
-							>
-								<SelectTrigger>
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									{TICKET_TYPES.map((t) => (
-										<SelectItem key={t} value={t}>
-											{typeLabel(t)}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
+								options={TICKET_TYPES.map<SearchableSelectOption>((t) => ({
+									value: t,
+									label: typeLabel(t),
+								}))}
+							/>
 						</div>
 
 						<div>
 							<label className="text-sm font-medium text-muted-foreground mb-1.5 block">
 								Priority
 							</label>
-							<Select
+							<SearchableSelect
 								value={priority}
 								onValueChange={(v) =>
 									setPriority(v as TicketPriority)
 								}
-							>
-								<SelectTrigger>
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									{TICKET_PRIORITIES.map((p) => (
-										<SelectItem
-											key={p}
-											value={p}
-											className="capitalize"
-										>
-											{p}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
+								options={TICKET_PRIORITIES.map<SearchableSelectOption>((p) => ({
+									value: p,
+									label: p.charAt(0).toUpperCase() + p.slice(1),
+								}))}
+							/>
 						</div>
 					</div>
 
@@ -492,23 +470,16 @@ function TicketDialog({
 							<label className="text-sm font-medium text-muted-foreground mb-1.5 block">
 								Status
 							</label>
-							<Select
+							<SearchableSelect
 								value={status}
 								onValueChange={(v) =>
 									setStatus(v as TicketStatus)
 								}
-							>
-								<SelectTrigger>
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									{TICKET_STATUSES.map((s) => (
-										<SelectItem key={s} value={s}>
-											{statusLabel(s)}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
+								options={TICKET_STATUSES.map<SearchableSelectOption>((s) => ({
+									value: s,
+									label: statusLabel(s),
+								}))}
+							/>
 						</div>
 
 						<div>
@@ -527,24 +498,24 @@ function TicketDialog({
 						<label className="text-sm font-medium text-muted-foreground mb-1.5 block">
 							Assigned To
 						</label>
-						<SearchSelect
+						<SearchableSelect
 							value={assignedTo || UNASSIGNED_VALUE}
 							onValueChange={(v) =>
 								setAssignedTo(v === UNASSIGNED_VALUE ? "" : v)
 							}
 							disabled={membersLoading}
+							loading={membersLoading}
 							placeholder={
 								membersLoading
 									? "Loading members..."
 									: "Unassigned"
 							}
-							searchPlaceholder="Search members..."
 							options={[
 								{
 									value: UNASSIGNED_VALUE,
 									label: "Unassigned",
 								},
-								...members.map((m) => ({
+								...members.map<SearchableSelectOption>((m) => ({
 									value: m.profiles.id,
 									label:
 										m.profiles.full_name ??
@@ -729,50 +700,30 @@ function ConvertDialog({
 							<label className="text-sm font-medium text-muted-foreground mb-1.5 block">
 								Priority
 							</label>
-							<Select
+							<SearchableSelect
 								value={priority}
 								onValueChange={setPriority}
-							>
-								<SelectTrigger>
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									{TICKET_PRIORITIES.map((p) => (
-										<SelectItem
-											key={p}
-											value={p}
-											className="capitalize"
-										>
-											{p}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
+								options={TICKET_PRIORITIES.map<SearchableSelectOption>((p) => ({
+									value: p,
+									label: p.charAt(0).toUpperCase() + p.slice(1),
+								}))}
+							/>
 						</div>
 
 						<div>
 							<label className="text-sm font-medium text-muted-foreground mb-1.5 block">
 								Status
 							</label>
-							<Select
+							<SearchableSelect
 								value={taskStatus}
 								onValueChange={setTaskStatus}
-							>
-								<SelectTrigger>
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									{TASK_STATUSES.map((s) => (
-										<SelectItem
-											key={s}
-											value={s}
-											className="capitalize"
-										>
-											{s.replace("_", " ")}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
+								options={TASK_STATUSES.map<SearchableSelectOption>((s) => ({
+									value: s,
+									label: s
+										.replace("_", " ")
+										.replace(/^./, (c) => c.toUpperCase()),
+								}))}
+							/>
 						</div>
 					</div>
 
@@ -781,7 +732,7 @@ function ConvertDialog({
 							<label className="text-sm font-medium text-muted-foreground mb-1.5 block">
 								Assigned To
 							</label>
-							<SearchSelect
+							<SearchableSelect
 								value={assignedTo || UNASSIGNED_VALUE}
 								onValueChange={(v) =>
 									setAssignedTo(
@@ -789,18 +740,18 @@ function ConvertDialog({
 									)
 								}
 								disabled={membersLoading}
+								loading={membersLoading}
 								placeholder={
 									membersLoading
 										? "Loading members..."
 										: "Unassigned"
 								}
-								searchPlaceholder="Search members..."
 								options={[
 									{
 										value: UNASSIGNED_VALUE,
 										label: "Unassigned",
 									},
-									...members.map((m) => ({
+									...members.map<SearchableSelectOption>((m) => ({
 										value: m.profiles.id,
 										label:
 											m.profiles.full_name ??
@@ -1266,95 +1217,82 @@ export default function TicketsPage() {
 					{projectsLoading ? (
 						<div className="h-9 rounded-md border border-border bg-muted-subtle animate-pulse" />
 					) : (
-						<Select
+						<SearchableSelect
 							value={selectedProjectId}
 							onValueChange={setSelectedProjectId}
-						>
-							<SelectTrigger className="h-9">
-								<SelectValue placeholder="Select project..." />
-							</SelectTrigger>
-							<SelectContent>
-								{projects.map((p) => (
-									<SelectItem key={p.id} value={p.id}>
-										{p.name}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
+							placeholder="Select project..."
+							options={projects.map<SearchableSelectOption>((p) => ({
+								value: p.id,
+								label: p.name,
+							}))}
+						/>
 					)}
 				</div>
 
 				<div className="h-5 w-px bg-border hidden sm:block" />
 
 				{/* Status filter */}
-				<Select
-					value={filters.status || "all"}
-					onValueChange={(v) =>
-						setFilter(
-							"status",
-							v === "all" ? "" : (v as TicketStatus),
-						)
-					}
-				>
-					<SelectTrigger className="h-9 w-[140px]">
-						<SelectValue placeholder="Status" />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="all">All statuses</SelectItem>
-						{TICKET_STATUSES.map((s) => (
-							<SelectItem key={s} value={s}>
-								{statusLabel(s)}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
+				<div className="w-[140px]">
+					<SearchableSelect
+						value={filters.status || "all"}
+						onValueChange={(v) =>
+							setFilter(
+								"status",
+								v === "all" || !v ? "" : (v as TicketStatus),
+							)
+						}
+						placeholder="Status"
+						options={[
+							{ value: "all", label: "All statuses" },
+							...TICKET_STATUSES.map<SearchableSelectOption>((s) => ({
+								value: s,
+								label: statusLabel(s),
+							})),
+						]}
+					/>
+				</div>
 
 				{/* Type filter */}
-				<Select
-					value={filters.type || "all"}
-					onValueChange={(v) =>
-						setFilter("type", v === "all" ? "" : (v as TicketType))
-					}
-				>
-					<SelectTrigger className="h-9 w-[160px]">
-						<SelectValue placeholder="Type" />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="all">All types</SelectItem>
-						{TICKET_TYPES.map((t) => (
-							<SelectItem key={t} value={t}>
-								{typeLabel(t)}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
+				<div className="w-[160px]">
+					<SearchableSelect
+						value={filters.type || "all"}
+						onValueChange={(v) =>
+							setFilter(
+								"type",
+								v === "all" || !v ? "" : (v as TicketType),
+							)
+						}
+						placeholder="Type"
+						options={[
+							{ value: "all", label: "All types" },
+							...TICKET_TYPES.map<SearchableSelectOption>((t) => ({
+								value: t,
+								label: typeLabel(t),
+							})),
+						]}
+					/>
+				</div>
 
 				{/* Priority filter */}
-				<Select
-					value={filters.priority || "all"}
-					onValueChange={(v) =>
-						setFilter(
-							"priority",
-							v === "all" ? "" : (v as TicketPriority),
-						)
-					}
-				>
-					<SelectTrigger className="h-9 w-[140px]">
-						<SelectValue placeholder="Priority" />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="all">All priorities</SelectItem>
-						{TICKET_PRIORITIES.map((p) => (
-							<SelectItem
-								key={p}
-								value={p}
-								className="capitalize"
-							>
-								{p}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
+				<div className="w-[140px]">
+					<SearchableSelect
+						value={filters.priority || "all"}
+						onValueChange={(v) =>
+							setFilter(
+								"priority",
+								v === "all" || !v ? "" : (v as TicketPriority),
+							)
+						}
+						placeholder="Priority"
+						options={[
+							{ value: "all", label: "All priorities" },
+							...TICKET_PRIORITIES.map<SearchableSelectOption>((p) => ({
+								value: p,
+								label: p.charAt(0).toUpperCase() + p.slice(1),
+							})),
+						]}
+					/>
+				</div>
 
 				{hasFilters && (
 					<button

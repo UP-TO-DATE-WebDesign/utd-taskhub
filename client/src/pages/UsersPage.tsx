@@ -25,12 +25,9 @@ import {
 	DialogClose,
 } from "@/components/ui/dialog";
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+	SearchableSelect,
+	type SearchableSelectOption,
+} from "@/components/ui/searchable-select";
 import { cn } from "@/lib/utils";
 import {
 	listUsers,
@@ -387,25 +384,18 @@ function InviteDialog({
 								</span>
 							</div>
 						) : (
-							<Select value={role} onValueChange={setRole}>
-								<SelectTrigger>
-									<SelectValue placeholder="Select a role" />
-								</SelectTrigger>
-								<SelectContent>
-									{roles.map((r) => (
-										<SelectItem key={r.key} value={r.key}>
-											<span className="font-medium">
-												{r.name}
-											</span>
-											{r.description && (
-												<span className="ml-2 text-xs text-muted-foreground">
-													{r.description}
-												</span>
-											)}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
+							<SearchableSelect
+								value={role}
+								onValueChange={setRole}
+								options={roles.map<SearchableSelectOption>(
+									(r) => ({
+										value: r.key,
+										label: r.name,
+										description: r.description ?? undefined,
+									}),
+								)}
+								placeholder="Select a role"
+							/>
 						)}
 					</div>
 				</div>

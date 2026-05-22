@@ -1,13 +1,10 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Loader2, UserCheck } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+	SearchableSelect,
+	type SearchableSelectOption,
+} from "@/components/ui/searchable-select";
 import { useAuth } from "@/context/AuthContext";
 import { type Profile } from "@/services/profile.service";
 import { type UiTask, getInitials, profileColorClass } from "../types";
@@ -118,28 +115,32 @@ export function InlineAssignee({
 		);
 	}
 
+	const options: SearchableSelectOption[] = useMemo(
+		() => [
+			{ value: UNASSIGNED_VALUE, label: "Unassigned" },
+			...profiles.map((p) => ({
+				value: p.id,
+				label: p.full_name ?? p.email,
+				description: p.full_name ? p.email : undefined,
+			})),
+		],
+		[profiles],
+	);
+
 	return (
-		<div className="flex items-center gap-2">
-			<Select
-				defaultOpen
-				value={currentId || UNASSIGNED_VALUE}
-				onValueChange={pick}
-				onOpenChange={(o) => {
-					if (!o) setEditing(false);
-				}}
-			>
-				<SelectTrigger className="h-8 text-xs">
-					<SelectValue />
-				</SelectTrigger>
-				<SelectContent>
-					<SelectItem value={UNASSIGNED_VALUE}>Unassigned</SelectItem>
-					{profiles.map((p) => (
-						<SelectItem key={p.id} value={p.id}>
-							{p.full_name ?? p.email}
-						</SelectItem>
-					))}
-				</SelectContent>
-			</Select>
+		<div className="flex items-center gap-2 flex-1 min-w-0">
+			<div className="flex-1 min-w-0">
+				<SearchableSelect
+					defaultMenuIsOpen
+					autoFocus
+					size="sm"
+					value={currentId || UNASSIGNED_VALUE}
+					onValueChange={(v) => pick(v || UNASSIGNED_VALUE)}
+					onMenuClose={() => setEditing(false)}
+					options={options}
+					placeholder="Unassigned"
+				/>
+			</div>
 			{saving && (
 				<Loader2 className="h-3.5 w-3.5 animate-spin text-muted" />
 			)}

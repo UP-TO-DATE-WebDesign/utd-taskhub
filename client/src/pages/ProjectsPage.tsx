@@ -25,12 +25,9 @@ import {
 	DialogClose,
 } from "@/components/ui/dialog";
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+	SearchableSelect,
+	type SearchableSelectOption,
+} from "@/components/ui/searchable-select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import {
@@ -488,30 +485,18 @@ function NewProjectDialog({
 							<label className="text-xs font-medium text-muted-foreground mb-1.5 block">
 								Status
 							</label>
-							<Select
+							<SearchableSelect
 								value={form.status}
 								onValueChange={(v) =>
 									set("status", v as ProjectStatus)
 								}
-							>
-								<SelectTrigger>
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="planning">
-										Planning
-									</SelectItem>
-									<SelectItem value="in-progress">
-										In Progress
-									</SelectItem>
-									<SelectItem value="on-hold">
-										On Hold
-									</SelectItem>
-									<SelectItem value="completed">
-										Completed
-									</SelectItem>
-								</SelectContent>
-							</Select>
+								options={[
+									{ value: "planning", label: "Planning" },
+									{ value: "in-progress", label: "In Progress" },
+									{ value: "on-hold", label: "On Hold" },
+									{ value: "completed", label: "Completed" },
+								]}
+							/>
 						</div>
 						<div>
 							<label className="text-xs font-medium text-muted-foreground mb-1.5 block">
@@ -788,29 +773,26 @@ export default function ProjectsPage() {
 				</div>
 
 				<div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-					<Select
-						value={sprintFilter}
-						onValueChange={setSprintFilter}
-						disabled={sprintsLoading}
-					>
-						<SelectTrigger className="h-9 w-full text-sm sm:w-48">
-							<SelectValue
-								placeholder={
-									sprintsLoading
-										? "Loading sprints..."
-										: "All Sprints"
-								}
-							/>
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="all">All Sprints</SelectItem>
-							{sprints.map((sprint) => (
-								<SelectItem key={sprint.id} value={sprint.id}>
-									{sprint.name}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
+					<div className="w-full sm:w-48">
+						<SearchableSelect
+							value={sprintFilter}
+							onValueChange={(v) => setSprintFilter(v || "all")}
+							disabled={sprintsLoading}
+							loading={sprintsLoading}
+							options={[
+								{ value: "all", label: "All Sprints" },
+								...sprints.map<SearchableSelectOption>((s) => ({
+									value: s.id,
+									label: s.name,
+								})),
+							]}
+							placeholder={
+								sprintsLoading
+									? "Loading sprints..."
+									: "All Sprints"
+							}
+						/>
+					</div>
 
 					<div className="relative min-w-0 flex-1 sm:flex-none">
 						<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted pointer-events-none" />
