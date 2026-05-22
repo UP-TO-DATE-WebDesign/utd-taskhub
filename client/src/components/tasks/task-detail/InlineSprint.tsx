@@ -1,12 +1,9 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+	SearchableSelect,
+	type SearchableSelectOption,
+} from "@/components/ui/searchable-select";
 import { type Sprint } from "@/services/sprint.service";
 import { type UiTask } from "../types";
 import { NO_SPRINT_VALUE } from "./constants";
@@ -30,7 +27,7 @@ export function InlineSprint({
 	const currentId = sprint?.id ?? "";
 
 	async function pick(v: string) {
-		const next = v === NO_SPRINT_VALUE ? null : v;
+		const next = v === NO_SPRINT_VALUE || !v ? null : v;
 		if ((next ?? "") === currentId) {
 			setEditing(false);
 			return;
@@ -52,6 +49,14 @@ export function InlineSprint({
 		</span>
 	);
 
+	const options: SearchableSelectOption[] = useMemo(
+		() => [
+			{ value: NO_SPRINT_VALUE, label: "No sprint" },
+			...sprints.map((s) => ({ value: s.id, label: s.name })),
+		],
+		[sprints],
+	);
+
 	if (!canEdit) return readView;
 
 	if (!editing) {
@@ -68,29 +73,20 @@ export function InlineSprint({
 
 	return (
 		<div className="flex items-center gap-2">
-			<Select
-				defaultOpen
-				value={currentId || NO_SPRINT_VALUE}
-				onValueChange={pick}
-				onOpenChange={(o) => {
-					if (!o) setEditing(false);
-				}}
-				disabled={loading}
-			>
-				<SelectTrigger className="h-8 text-xs">
-					<SelectValue
-						placeholder={loading ? "Loading..." : "Select sprint"}
-					/>
-				</SelectTrigger>
-				<SelectContent>
-					<SelectItem value={NO_SPRINT_VALUE}>No sprint</SelectItem>
-					{sprints.map((s) => (
-						<SelectItem key={s.id} value={s.id}>
-							{s.name}
-						</SelectItem>
-					))}
-				</SelectContent>
-			</Select>
+			<div className="flex-1 min-w-0">
+				<SearchableSelect
+					defaultMenuIsOpen
+					autoFocus
+					size="sm"
+					value={currentId || NO_SPRINT_VALUE}
+					onValueChange={pick}
+					onMenuClose={() => setEditing(false)}
+					disabled={loading}
+					loading={loading}
+					placeholder={loading ? "Loading..." : "Select sprint"}
+					options={options}
+				/>
+			</div>
 			{saving && (
 				<Loader2 className="h-3.5 w-3.5 animate-spin text-muted" />
 			)}

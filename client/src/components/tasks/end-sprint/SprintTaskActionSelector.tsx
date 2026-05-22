@@ -1,11 +1,5 @@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import {
 	COLUMN_IDS,
 	COLUMN_LABELS,
@@ -76,25 +70,19 @@ export function SprintTaskActionSelector({
 								{ACTION_LABEL[kind]}
 							</label>
 							{kind === "move" && value.kind === "move" && (
-								<Select
-									value={value.targetStatus ?? ""}
-									onValueChange={handleStatusChange}
-									disabled={disabled}
-								>
-									<SelectTrigger className="h-7 w-[150px] text-xs">
-										<SelectValue placeholder="Select column" />
-									</SelectTrigger>
-									<SelectContent>
-										{MOVE_COLUMN_IDS.map((colId) => (
-											<SelectItem
-												key={colId}
-												value={columnIdToApiStatus(colId)}
-											>
-												{COLUMN_LABELS[colId]}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
+								<div className="w-[150px]">
+									<SearchableSelect
+										value={value.targetStatus ?? ""}
+										onValueChange={handleStatusChange}
+										disabled={disabled}
+										size="sm"
+										placeholder="Select column"
+										options={MOVE_COLUMN_IDS.map((colId) => ({
+											value: columnIdToApiStatus(colId),
+											label: COLUMN_LABELS[colId],
+										}))}
+									/>
+								</div>
 							)}
 						</div>
 					);

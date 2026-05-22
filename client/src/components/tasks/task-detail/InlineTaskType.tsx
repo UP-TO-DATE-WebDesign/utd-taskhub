@@ -1,12 +1,6 @@
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Icon, type IconName } from "@/components/ui/icon-picker";
 import { listTaskTypes, type TaskType } from "@/services/task-type.service";
 import type { TaskTypeRef } from "@/services/task.service";
@@ -41,7 +35,7 @@ export function InlineTaskType({
 	}, [editing]);
 
 	async function pick(nextId: string) {
-		if (nextId === value?.id) {
+		if (!nextId || nextId === value?.id) {
 			setEditing(false);
 			return;
 		}
@@ -83,35 +77,47 @@ export function InlineTaskType({
 	}
 
 	return (
-		<div className="flex items-center gap-1.5">
-			<Select
-				defaultOpen
-				value={value?.id ?? ""}
-				onValueChange={pick}
-				onOpenChange={(o) => {
-					if (!o) setEditing(false);
-				}}
-			>
-				<SelectTrigger className="h-7 text-xs min-w-32">
-					<SelectValue placeholder="Select type" />
-				</SelectTrigger>
-				<SelectContent>
-					{types.map((t) => (
-						<SelectItem key={t.id} value={t.id}>
-							<span
-								className="inline-flex items-center gap-1.5 text-base font-medium"
-								style={{ color: t.color }}
-							>
-								<Icon
-									name={t.icon as IconName}
-									className="h-3 w-3"
-								/>
-								{t.name}
-							</span>
-						</SelectItem>
-					))}
-				</SelectContent>
-			</Select>
+		<div className="flex items-center gap-1.5 min-w-32">
+			<div className="flex-1 min-w-0">
+				<SearchableSelect<{ color: string; icon: string }>
+					defaultMenuIsOpen
+					autoFocus
+					size="sm"
+					value={value?.id ?? ""}
+					onValueChange={pick}
+					onMenuClose={() => setEditing(false)}
+					placeholder="Select type"
+					options={types.map((t) => ({
+						value: t.id,
+						label: t.name,
+						meta: { color: t.color, icon: t.icon },
+					}))}
+					renderOption={(opt) => (
+						<span
+							className="inline-flex items-center gap-1.5 text-base font-medium"
+							style={{ color: opt.meta?.color }}
+						>
+							<Icon
+								name={opt.meta?.icon as IconName}
+								className="h-3 w-3"
+							/>
+							{opt.label}
+						</span>
+					)}
+					renderValue={(opt) => (
+						<span
+							className="inline-flex items-center gap-1.5 font-medium"
+							style={{ color: opt.meta?.color }}
+						>
+							<Icon
+								name={opt.meta?.icon as IconName}
+								className="h-3 w-3"
+							/>
+							{opt.label}
+						</span>
+					)}
+				/>
+			</div>
 			{saving && <Loader2 className="h-3 w-3 animate-spin text-muted" />}
 		</div>
 	);

@@ -8,7 +8,6 @@ import {
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { SearchableSelect, type SearchableSelectOption } from '@/components/ui/searchable-select'
 import { Checkbox } from '@/components/ui/checkbox'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
@@ -241,15 +240,11 @@ export default function DesignSystemPage() {
               </div>
               <div>
                 <label className="text-sm font-medium text-muted-foreground mb-1.5 block">Select Priority</label>
-                <Select defaultValue="medium">
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="urgent">Urgent</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="low">Low</SelectItem>
-                  </SelectContent>
-                </Select>
+                <SearchableSelect
+                  value="medium"
+                  onValueChange={() => {}}
+                  options={PRIORITY_OPTIONS}
+                />
               </div>
               <div className="flex items-center gap-4">
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -272,29 +267,14 @@ export default function DesignSystemPage() {
           <SectionHeader icon={AlignLeft} title="Searchable Select (react-select)" />
           <Card className="p-6 space-y-6">
             <div>
-              <SectionLabel>Parity vs shadcn Select</SectionLabel>
-              <div className="grid grid-cols-2 gap-6 items-start">
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Legacy shadcn Select</label>
-                  <Select defaultValue="medium">
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="urgent">Urgent</SelectItem>
-                      <SelectItem value="high">High</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="low">Low</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">SearchableSelect (basic)</label>
-                  <SearchableSelect
-                    value={basicValue}
-                    onValueChange={setBasicValue}
-                    options={PRIORITY_OPTIONS}
-                    placeholder="Select priority"
-                  />
-                </div>
+              <SectionLabel>Basic</SectionLabel>
+              <div className="max-w-xs">
+                <SearchableSelect
+                  value={basicValue}
+                  onValueChange={setBasicValue}
+                  options={PRIORITY_OPTIONS}
+                  placeholder="Select priority"
+                />
               </div>
             </div>
 
@@ -634,26 +614,23 @@ export default function DesignSystemPage() {
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <label className="text-sm font-medium text-muted-foreground mb-1.5 block">Priority</label>
-                        <Select defaultValue="medium">
-                          <SelectTrigger><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="urgent">Urgent</SelectItem>
-                            <SelectItem value="high">High</SelectItem>
-                            <SelectItem value="medium">Medium</SelectItem>
-                            <SelectItem value="low">Low</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <SearchableSelect
+                          value="medium"
+                          onValueChange={() => {}}
+                          options={PRIORITY_OPTIONS}
+                        />
                       </div>
                       <div>
                         <label className="text-sm font-medium text-muted-foreground mb-1.5 block">Assignee</label>
-                        <Select defaultValue="jd">
-                          <SelectTrigger><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="jd">John Doe</SelectItem>
-                            <SelectItem value="as">Anna Smith</SelectItem>
-                            <SelectItem value="ar">Alex Rivera</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <SearchableSelect
+                          value="jd"
+                          onValueChange={() => {}}
+                          options={[
+                            { value: 'jd', label: 'John Doe' },
+                            { value: 'as', label: 'Anna Smith' },
+                            { value: 'ar', label: 'Alex Rivera' },
+                          ]}
+                        />
                       </div>
                     </div>
                   </div>

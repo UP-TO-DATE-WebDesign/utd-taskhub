@@ -1,12 +1,9 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+	SearchableSelect,
+	type SearchableSelectOption,
+} from "@/components/ui/searchable-select";
 import { type Project } from "@/services/project.service";
 import { reportError } from "./utils";
 
@@ -28,7 +25,7 @@ export function InlineProject({
 	const current = projects.find((p) => p.id === projectId);
 
 	async function pick(v: string) {
-		if (v === projectId) {
+		if (!v || v === projectId) {
 			setEditing(false);
 			return;
 		}
@@ -49,6 +46,11 @@ export function InlineProject({
 		</span>
 	);
 
+	const options: SearchableSelectOption[] = useMemo(
+		() => projects.map((p) => ({ value: p.id, label: p.name })),
+		[projects],
+	);
+
 	if (!canEdit || locked) return readView;
 
 	if (!editing) {
@@ -65,25 +67,18 @@ export function InlineProject({
 
 	return (
 		<div className="flex items-center gap-2">
-			<Select
-				defaultOpen
-				value={projectId}
-				onValueChange={pick}
-				onOpenChange={(o) => {
-					if (!o) setEditing(false);
-				}}
-			>
-				<SelectTrigger className="h-8 text-xs">
-					<SelectValue placeholder="Select project" />
-				</SelectTrigger>
-				<SelectContent>
-					{projects.map((p) => (
-						<SelectItem key={p.id} value={p.id}>
-							{p.name}
-						</SelectItem>
-					))}
-				</SelectContent>
-			</Select>
+			<div className="flex-1 min-w-0">
+				<SearchableSelect
+					defaultMenuIsOpen
+					autoFocus
+					size="sm"
+					value={projectId}
+					onValueChange={pick}
+					onMenuClose={() => setEditing(false)}
+					options={options}
+					placeholder="Select project"
+				/>
+			</div>
 			{saving && (
 				<Loader2 className="h-3.5 w-3.5 animate-spin text-muted" />
 			)}

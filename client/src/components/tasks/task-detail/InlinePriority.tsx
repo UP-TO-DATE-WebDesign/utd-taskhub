@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-} from "@/components/ui/select";
+	SearchableSelect,
+	type SearchableSelectOption,
+} from "@/components/ui/searchable-select";
 import { type ApiTaskPriority } from "@/services/task.service";
 import {
 	PRIORITY_COLOR,
@@ -76,47 +74,51 @@ export function InlinePriority({
 		);
 	}
 
+	const options: SearchableSelectOption<{ color: string }>[] = PRIORITY_OPTIONS.map(
+		(p) => ({
+			value: p,
+			label: PRIORITY_LABEL[p],
+			meta: { color: PRIORITY_COLOR[p] },
+		}),
+	);
+
 	return (
-		<div className="flex items-center gap-1.5">
-			<Select
-				defaultOpen
-				value={value}
-				onValueChange={(v) => pick(v as ApiTaskPriority)}
-				onOpenChange={(o) => {
-					if (!o) setEditing(false);
-				}}
-			>
-				<SelectTrigger className="h-6 text-[10px]! px-2 py-1 min-w-35">
-					<span
-						className="inline-flex items-center gap-1.5 font-bold tracking-wider"
-						style={{ color }}
-					>
+		<div className="flex items-center gap-1.5 min-w-35">
+			<div className="flex-1 min-w-0">
+				<SearchableSelect<{ color: string }>
+					defaultMenuIsOpen
+					autoFocus
+					size="sm"
+					value={value}
+					onValueChange={(v) => v && pick(v as ApiTaskPriority)}
+					onMenuClose={() => setEditing(false)}
+					options={options}
+					renderOption={(opt) => (
 						<span
-							className="inline-block h-2 w-2 rounded-full"
-							style={{ backgroundColor: color }}
-						/>
-						{PRIORITY_LABEL[value]}
-					</span>
-				</SelectTrigger>
-				<SelectContent>
-					{PRIORITY_OPTIONS.map((p) => (
-						<SelectItem key={p} value={p}>
+							className="inline-flex items-center gap-1.5 text-[10px] font-bold tracking-wider"
+							style={{ color: opt.meta?.color }}
+						>
 							<span
-								className="inline-flex items-center gap-1.5 text-[10px] font-bold tracking-wider"
-								style={{ color: PRIORITY_COLOR[p] }}
-							>
-								<span
-									className="inline-block h-2 w-2 rounded-full"
-									style={{
-										backgroundColor: PRIORITY_COLOR[p],
-									}}
-								/>
-								{PRIORITY_LABEL[p]}
-							</span>
-						</SelectItem>
-					))}
-				</SelectContent>
-			</Select>
+								className="inline-block h-2 w-2 rounded-full"
+								style={{ backgroundColor: opt.meta?.color }}
+							/>
+							{opt.label}
+						</span>
+					)}
+					renderValue={(opt) => (
+						<span
+							className="inline-flex items-center gap-1.5 font-bold tracking-wider"
+							style={{ color: opt.meta?.color }}
+						>
+							<span
+								className="inline-block h-2 w-2 rounded-full"
+								style={{ backgroundColor: opt.meta?.color }}
+							/>
+							{opt.label}
+						</span>
+					)}
+				/>
+			</div>
 			{saving && <Loader2 className="h-3 w-3 animate-spin text-muted" />}
 		</div>
 	);
