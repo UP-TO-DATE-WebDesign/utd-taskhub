@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { SearchableSelect, type SearchableSelectOption } from '@/components/ui/searchable-select'
 import { Checkbox } from '@/components/ui/checkbox'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -95,9 +96,30 @@ const colorTokens = [
   },
 ]
 
+const PRIORITY_OPTIONS: SearchableSelectOption[] = [
+  { value: 'urgent', label: 'Urgent', description: 'Drop everything' },
+  { value: 'high', label: 'High' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'low', label: 'Low' },
+]
+
+const MEMBER_OPTIONS: SearchableSelectOption<{ initials: string; role: string }>[] = [
+  { value: 'jd', label: 'John Doe', description: 'john@taskhub.dev', meta: { initials: 'JD', role: 'Engineer' } },
+  { value: 'as', label: 'Anna Smith', description: 'anna@taskhub.dev', meta: { initials: 'AS', role: 'Designer' } },
+  { value: 'ar', label: 'Alex Rivera', description: 'alex@taskhub.dev', meta: { initials: 'AR', role: 'PM' } },
+  { value: 'sl', label: 'Sarah Lee', description: 'sarah@taskhub.dev', meta: { initials: 'SL', role: 'Engineer' } },
+  { value: 'mk', label: 'Mike Kim', description: 'mike@taskhub.dev', meta: { initials: 'MK', role: 'QA' }, disabled: true },
+]
+
 export default function DesignSystemPage() {
   const [checked, setChecked] = useState(true)
   const [radioValue, setRadioValue] = useState('active')
+  const [basicValue, setBasicValue] = useState('medium')
+  const [memberValue, setMemberValue] = useState('jd')
+  const [clearableValue, setClearableValue] = useState('high')
+  const [errorValue, setErrorValue] = useState('')
+  const [dialogPriority, setDialogPriority] = useState('medium')
+  const [dialogAssignee, setDialogAssignee] = useState('jd')
 
   return (
     <div className="mx-auto max-w-[1280px] px-6 py-8">
@@ -241,6 +263,167 @@ export default function DesignSystemPage() {
                   </div>
                 </RadioGroup>
               </div>
+            </div>
+          </Card>
+        </section>
+
+        {/* ── SEARCHABLE SELECT ─────────────────────────────────── */}
+        <section>
+          <SectionHeader icon={AlignLeft} title="Searchable Select (react-select)" />
+          <Card className="p-6 space-y-6">
+            <div>
+              <SectionLabel>Parity vs shadcn Select</SectionLabel>
+              <div className="grid grid-cols-2 gap-6 items-start">
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Legacy shadcn Select</label>
+                  <Select defaultValue="medium">
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="urgent">Urgent</SelectItem>
+                      <SelectItem value="high">High</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="low">Low</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">SearchableSelect (basic)</label>
+                  <SearchableSelect
+                    value={basicValue}
+                    onValueChange={setBasicValue}
+                    options={PRIORITY_OPTIONS}
+                    placeholder="Select priority"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <Separator />
+
+            <div className="grid grid-cols-2 gap-6 items-start">
+              <div>
+                <SectionLabel>Clearable + Description</SectionLabel>
+                <SearchableSelect
+                  value={clearableValue}
+                  onValueChange={setClearableValue}
+                  options={PRIORITY_OPTIONS}
+                  placeholder="Select priority"
+                  clearable
+                />
+              </div>
+              <div>
+                <SectionLabel>Disabled</SectionLabel>
+                <SearchableSelect
+                  value="high"
+                  onValueChange={() => {}}
+                  options={PRIORITY_OPTIONS}
+                  disabled
+                />
+              </div>
+              <div>
+                <SectionLabel>Error State</SectionLabel>
+                <SearchableSelect
+                  value={errorValue}
+                  onValueChange={setErrorValue}
+                  options={PRIORITY_OPTIONS}
+                  placeholder="Required"
+                  error={!errorValue}
+                />
+                {!errorValue && <p className="text-xs text-danger mt-1">Priority is required</p>}
+              </div>
+              <div>
+                <SectionLabel>Loading</SectionLabel>
+                <SearchableSelect
+                  value=""
+                  onValueChange={() => {}}
+                  options={[]}
+                  loading
+                  placeholder="Fetching options..."
+                />
+              </div>
+            </div>
+
+            <Separator />
+
+            <div>
+              <SectionLabel>Custom Option Renderer (Avatar + Role)</SectionLabel>
+              <div className="max-w-md">
+                <SearchableSelect<{ initials: string; role: string }>
+                  value={memberValue}
+                  onValueChange={setMemberValue}
+                  options={MEMBER_OPTIONS}
+                  placeholder="Select assignee"
+                  clearable
+                  renderOption={(opt) => (
+                    <div className="flex items-center gap-2 w-full">
+                      <Avatar className="h-6 w-6">
+                        <AvatarFallback className="text-[9px]">{opt.meta?.initials}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm text-foreground truncate">{opt.label}</div>
+                        <div className="text-xs text-muted truncate">{opt.description}</div>
+                      </div>
+                      <span className="text-[10px] text-muted shrink-0">{opt.meta?.role}</span>
+                    </div>
+                  )}
+                  renderValue={(opt) => (
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-5 w-5">
+                        <AvatarFallback className="text-[9px]">{opt.meta?.initials}</AvatarFallback>
+                      </Avatar>
+                      <span>{opt.label}</span>
+                    </div>
+                  )}
+                />
+              </div>
+              <p className="text-xs text-muted mt-2">Try typing "ann" or "qa" to filter by label or description.</p>
+            </div>
+
+            <Separator />
+
+            <div>
+              <SectionLabel>Inside a Dialog (portal + z-index check)</SectionLabel>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline">Open Dialog with SearchableSelect</Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Create New Task</DialogTitle>
+                    <DialogDescription>Both selects should overlay the dialog backdrop without clipping.</DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium text-muted-foreground mb-1.5 block">Task name</label>
+                      <Input placeholder="e.g. Refactor auth service" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground mb-1.5 block">Priority</label>
+                        <SearchableSelect
+                          value={dialogPriority}
+                          onValueChange={setDialogPriority}
+                          options={PRIORITY_OPTIONS}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground mb-1.5 block">Assignee</label>
+                        <SearchableSelect
+                          value={dialogAssignee}
+                          onValueChange={setDialogAssignee}
+                          options={MEMBER_OPTIONS}
+                          placeholder="Select assignee"
+                          clearable
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+                    <Button>Create Task</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
           </Card>
         </section>
