@@ -8,13 +8,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -264,49 +258,35 @@ export function EditTaskDialogV2({
 							</p>
 							{(() => {
 								const stageList = stages ?? SYSTEM_STAGES;
-								const currentStage = stageList.find(
-									(s) => s.key === status,
-								);
 								return (
-									<Select
+									<SearchableSelect<{ color: string }>
 										value={status}
 										onValueChange={(v) =>
 											setStatus(v as ApiTaskStatus)
 										}
-									>
-										<SelectTrigger className="h-8 text-xs">
-											{currentStage ? (
-												<span
-													className="inline-flex items-center gap-2 font-medium"
-													style={{
-														color: currentStage.color,
-													}}
-												>
-													<StageDot
-														color={
-															currentStage.color
-														}
-													/>
-													{currentStage.name}
-												</span>
-											) : (
-												<SelectValue placeholder="Select status" />
-											)}
-										</SelectTrigger>
-										<SelectContent>
-											{stageList.map((stage) => (
-												<SelectItem
-													key={stage.key}
-													value={stage.key}
-												>
-													<StageChip
-														label={stage.name}
-														color={stage.color}
-													/>
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
+										size="sm"
+										placeholder="Select status"
+										options={stageList.map((stage) => ({
+											value: stage.key,
+											label: stage.name,
+											meta: { color: stage.color },
+										}))}
+										renderOption={(opt) => (
+											<StageChip
+												label={opt.label}
+												color={opt.meta?.color ?? ""}
+											/>
+										)}
+										renderValue={(opt) => (
+											<span
+												className="inline-flex items-center gap-2 font-medium"
+												style={{ color: opt.meta?.color }}
+											>
+												<StageDot color={opt.meta?.color ?? ""} />
+												{opt.label}
+											</span>
+										)}
+									/>
 								);
 							})()}
 						</div>

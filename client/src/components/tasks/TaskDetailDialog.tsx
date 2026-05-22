@@ -3,13 +3,7 @@ import { Loader2, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import {
 	Dialog,
 	DialogContent,
@@ -181,22 +175,18 @@ export function TaskDetailDialog({
 							</p>
 							<div className="relative">
 								{canEditStatus && task ? (
-									<Select
-										value={task.apiStatus}
-										onValueChange={handleStatusChange}
-										disabled={statusSaving}
-									>
-										<SelectTrigger className="h-7 w-[150px] text-xs">
-											<SelectValue />
-										</SelectTrigger>
-										<SelectContent>
-											{STATUS_OPTIONS.map((s) => (
-												<SelectItem key={s} value={s}>
-													{STATUS_BADGE[s].label}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
+									<div className="w-[150px]">
+										<SearchableSelect
+											value={task.apiStatus}
+											onValueChange={handleStatusChange}
+											disabled={statusSaving}
+											size="sm"
+											options={STATUS_OPTIONS.map((s) => ({
+												value: s,
+												label: STATUS_BADGE[s].label,
+											}))}
+										/>
+									</div>
 								) : (
 									<Badge
 										variant={

@@ -9,12 +9,9 @@ import {
 	DialogClose,
 } from "@/components/ui/dialog";
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+	SearchableSelect,
+	type SearchableSelectOption,
+} from "@/components/ui/searchable-select";
 import { Separator } from "@/components/ui/separator";
 import { ProjectDescriptionEditor } from "@/components/projects/project-description";
 import { projectDescriptionText } from "@/components/projects/project-description-utils";
@@ -395,27 +392,17 @@ export function TaskFormDialogV2({
 							<p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-1.5">
 								Project <span className="text-danger">*</span>
 							</p>
-							<Select
+							<SearchableSelect
 								value={form.projectId}
 								onValueChange={(v) => set("projectId", v)}
 								disabled={!!lockedProjectId}
-							>
-								<SelectTrigger
-									className={cn(
-										"h-9 text-xs",
-										errors.projectId ? "border-danger" : "",
-									)}
-								>
-									<SelectValue placeholder="Select project" />
-								</SelectTrigger>
-								<SelectContent>
-									{projects.map((p) => (
-										<SelectItem key={p.id} value={p.id}>
-											{p.name}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
+								error={!!errors.projectId}
+								placeholder="Select project"
+								options={projects.map<SearchableSelectOption>((p) => ({
+									value: p.id,
+									label: p.name,
+								}))}
+							/>
 							{errors.projectId && (
 								<p className="text-xs text-danger mt-1">
 									{errors.projectId}
@@ -427,29 +414,24 @@ export function TaskFormDialogV2({
 							<p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-1.5">
 								Sprint
 							</p>
-							<Select
+							<SearchableSelect
 								value={form.sprintId || NO_SPRINT_VALUE}
 								onValueChange={(v) =>
-									set("sprintId", v === NO_SPRINT_VALUE ? "" : v)
+									set("sprintId", v === NO_SPRINT_VALUE || !v ? "" : v)
 								}
 								disabled={sprintsLoading}
-							>
-								<SelectTrigger className="h-9 text-xs">
-									<SelectValue
-										placeholder={
-											sprintsLoading ? "Loading..." : "Select sprint"
-										}
-									/>
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value={NO_SPRINT_VALUE}>No sprint</SelectItem>
-									{sprints.map((sprint) => (
-										<SelectItem key={sprint.id} value={sprint.id}>
-											{sprint.name}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
+								loading={sprintsLoading}
+								placeholder={
+									sprintsLoading ? "Loading..." : "Select sprint"
+								}
+								options={[
+									{ value: NO_SPRINT_VALUE, label: "No sprint" },
+									...sprints.map<SearchableSelectOption>((s) => ({
+										value: s.id,
+										label: s.name,
+									})),
+								]}
+							/>
 						</div>
 
 						<Separator />
@@ -459,42 +441,34 @@ export function TaskFormDialogV2({
 								<p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-1.5">
 									Status
 								</p>
-								<Select
+								<SearchableSelect
 									value={form.status}
 									onValueChange={(v) => set("status", v as ColumnId)}
-								>
-									<SelectTrigger className="h-9 text-xs">
-										<SelectValue />
-									</SelectTrigger>
-									<SelectContent>
-										<SelectItem value="backlog">Backlog</SelectItem>
-										<SelectItem value="todo">To Do</SelectItem>
-										<SelectItem value="in-progress">In Progress</SelectItem>
-										<SelectItem value="qa">QA</SelectItem>
-										<SelectItem value="done">Done</SelectItem>
-									</SelectContent>
-								</Select>
+									options={[
+										{ value: "backlog", label: "Backlog" },
+										{ value: "todo", label: "To Do" },
+										{ value: "in-progress", label: "In Progress" },
+										{ value: "qa", label: "QA" },
+										{ value: "done", label: "Done" },
+									]}
+								/>
 							</div>
 							<div>
 								<p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-1.5">
 									Priority
 								</p>
-								<Select
+								<SearchableSelect
 									value={form.priority}
 									onValueChange={(v) =>
 										set("priority", v as ApiTaskPriority)
 									}
-								>
-									<SelectTrigger className="h-9 text-xs">
-										<SelectValue />
-									</SelectTrigger>
-									<SelectContent>
-										<SelectItem value="urgent">Urgent</SelectItem>
-										<SelectItem value="high">High</SelectItem>
-										<SelectItem value="medium">Medium</SelectItem>
-										<SelectItem value="low">Low</SelectItem>
-									</SelectContent>
-								</Select>
+									options={[
+										{ value: "urgent", label: "Urgent" },
+										{ value: "high", label: "High" },
+										{ value: "medium", label: "Medium" },
+										{ value: "low", label: "Low" },
+									]}
+								/>
 							</div>
 						</div>
 

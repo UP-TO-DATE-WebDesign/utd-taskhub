@@ -12,13 +12,7 @@ import {
 	DialogFooter,
 	DialogClose,
 } from "@/components/ui/dialog";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
 	updateProject,
@@ -217,30 +211,18 @@ export function EditProjectDialog({
 							<label className="text-sm font-medium text-muted-foreground mb-1.5 block">
 								Status
 							</label>
-							<Select
+							<SearchableSelect
 								value={form.status}
 								onValueChange={(v) =>
 									set("status", v as ProjectStatus)
 								}
-							>
-								<SelectTrigger>
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="planning">
-										Planning
-									</SelectItem>
-									<SelectItem value="in-progress">
-										In Progress
-									</SelectItem>
-									<SelectItem value="on-hold">
-										On Hold
-									</SelectItem>
-									<SelectItem value="completed">
-										Completed
-									</SelectItem>
-								</SelectContent>
-							</Select>
+								options={[
+									{ value: "planning", label: "Planning" },
+									{ value: "in-progress", label: "In Progress" },
+									{ value: "on-hold", label: "On Hold" },
+									{ value: "completed", label: "Completed" },
+								]}
+							/>
 						</div>
 						<div>
 							<label className="text-sm font-medium text-muted-foreground mb-1.5 block">

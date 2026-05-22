@@ -14,13 +14,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import {
 	Dialog,
 	DialogContent,
@@ -560,45 +554,37 @@ export function TaskDetailDialogV2({
 								</p>
 								{canEditStatus && task ? (
 									<div className="flex items-center gap-2">
-										<Select
-											value={task.apiStatus}
-											onValueChange={handleStatusChange}
-											disabled={statusSaving}
-										>
-											<SelectTrigger className="h-8 text-xs">
-												{currentStage ? (
+										<div className="flex-1 min-w-0">
+											<SearchableSelect<{ color: string }>
+												value={task.apiStatus}
+												onValueChange={handleStatusChange}
+												disabled={statusSaving}
+												size="sm"
+												placeholder="Select status"
+												options={stageList.map((stage) => ({
+													value: stage.key,
+													label: stage.name,
+													meta: { color: stage.color },
+												}))}
+												renderOption={(opt) => (
+													<StageChip
+														label={opt.label}
+														color={opt.meta?.color ?? ""}
+													/>
+												)}
+												renderValue={(opt) => (
 													<span
 														className="inline-flex items-center gap-2 font-medium"
-														style={{
-															color: currentStage.color,
-														}}
+														style={{ color: opt.meta?.color }}
 													>
 														<StageDot
-															color={
-																currentStage.color
-															}
+															color={opt.meta?.color ?? ""}
 														/>
-														&nbsp;&nbsp;
-														{currentStage.name}
+														{opt.label}
 													</span>
-												) : (
-													<SelectValue placeholder="Select status" />
 												)}
-											</SelectTrigger>
-											<SelectContent>
-												{stageList.map((stage) => (
-													<SelectItem
-														key={stage.key}
-														value={stage.key}
-													>
-														<StageChip
-															label={stage.name}
-															color={stage.color}
-														/>
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
+											/>
+										</div>
 										{statusSaving && (
 											<Loader2 className="h-3.5 w-3.5 animate-spin text-muted" />
 										)}

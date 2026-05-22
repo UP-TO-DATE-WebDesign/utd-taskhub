@@ -9,13 +9,7 @@ import {
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -295,39 +289,46 @@ export function NewTaskDialogV2({
 							<p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-2">
 								Task Type
 							</p>
-							<Select
+							<SearchableSelect<{ color: string; icon: string }>
 								value={taskTypeId ?? ""}
-								onValueChange={(v) => setTaskTypeId(v)}
+								onValueChange={(v) => setTaskTypeId(v || null)}
 								disabled={taskTypes.length === 0}
-							>
-								<SelectTrigger className="h-8 text-xs">
-									<SelectValue placeholder="Select type" />
-								</SelectTrigger>
-								<SelectContent>
-									{taskTypes.map((t) => (
-										<SelectItem key={t.id} value={t.id}>
-											<span className="inline-flex items-center gap-2">
-												<span
-													className="inline-flex h-4 w-4 items-center justify-center rounded text-white"
-													style={{
-														background: t.color,
-													}}
-												>
-													<Icon
-														name={
-															t.icon as IconName
-														}
-														className="h-2.5 w-2.5"
-													/>
-												</span>
-												<span className="text-base">
-													{t.name}
-												</span>
-											</span>
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
+								size="sm"
+								placeholder="Select type"
+								options={taskTypes.map((t) => ({
+									value: t.id,
+									label: t.name,
+									meta: { color: t.color, icon: t.icon },
+								}))}
+								renderOption={(opt) => (
+									<span className="inline-flex items-center gap-2">
+										<span
+											className="inline-flex h-4 w-4 items-center justify-center rounded text-white"
+											style={{ background: opt.meta?.color }}
+										>
+											<Icon
+												name={opt.meta?.icon as IconName}
+												className="h-2.5 w-2.5"
+											/>
+										</span>
+										<span className="text-base">{opt.label}</span>
+									</span>
+								)}
+								renderValue={(opt) => (
+									<span className="inline-flex items-center gap-2">
+										<span
+											className="inline-flex h-4 w-4 items-center justify-center rounded text-white"
+											style={{ background: opt.meta?.color }}
+										>
+											<Icon
+												name={opt.meta?.icon as IconName}
+												className="h-2.5 w-2.5"
+											/>
+										</span>
+										{opt.label}
+									</span>
+								)}
+							/>
 						</div>
 
 						<Separator />
@@ -339,49 +340,35 @@ export function NewTaskDialogV2({
 							</p>
 							{(() => {
 								const stageList = stages ?? SYSTEM_STAGES;
-								const currentStage = stageList.find(
-									(s) => s.key === status,
-								);
 								return (
-									<Select
+									<SearchableSelect<{ color: string }>
 										value={status}
 										onValueChange={(v) =>
 											setStatus(v as ApiTaskStatus)
 										}
-									>
-										<SelectTrigger className="h-8 text-xs">
-											{currentStage ? (
-												<span
-													className="inline-flex items-center gap-2 font-medium"
-													style={{
-														color: currentStage.color,
-													}}
-												>
-													<StageDot
-														color={
-															currentStage.color
-														}
-													/>
-													{currentStage.name}
-												</span>
-											) : (
-												<SelectValue placeholder="Select status" />
-											)}
-										</SelectTrigger>
-										<SelectContent>
-											{stageList.map((stage) => (
-												<SelectItem
-													key={stage.key}
-													value={stage.key}
-												>
-													<StageChip
-														label={stage.name}
-														color={stage.color}
-													/>
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
+										size="sm"
+										placeholder="Select status"
+										options={stageList.map((stage) => ({
+											value: stage.key,
+											label: stage.name,
+											meta: { color: stage.color },
+										}))}
+										renderOption={(opt) => (
+											<StageChip
+												label={opt.label}
+												color={opt.meta?.color ?? ""}
+											/>
+										)}
+										renderValue={(opt) => (
+											<span
+												className="inline-flex items-center gap-2 font-medium"
+												style={{ color: opt.meta?.color }}
+											>
+												<StageDot color={opt.meta?.color ?? ""} />
+												{opt.label}
+											</span>
+										)}
+									/>
 								);
 							})()}
 						</div>
