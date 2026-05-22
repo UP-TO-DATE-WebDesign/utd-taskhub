@@ -218,20 +218,13 @@ export function EditProjectDialog({
 								}
 								options={[
 									{ value: "planning", label: "Planning" },
-									{ value: "in-progress", label: "In Progress" },
+									{
+										value: "in-progress",
+										label: "In Progress",
+									},
 									{ value: "on-hold", label: "On Hold" },
 									{ value: "completed", label: "Completed" },
 								]}
-							/>
-						</div>
-						<div>
-							<label className="text-sm font-medium text-muted-foreground mb-1.5 block">
-								Sprint Name
-							</label>
-							<Input
-								placeholder="e.g. Sprint 1 Alpha"
-								value={form.sprint}
-								onChange={(e) => set("sprint", e.target.value)}
 							/>
 						</div>
 					</div>
