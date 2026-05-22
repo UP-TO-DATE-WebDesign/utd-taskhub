@@ -12,13 +12,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { SectionBlock, Toggle } from "./SectionBlock";
@@ -125,18 +119,17 @@ export function NotificationsSection() {
 						<label className="text-sm font-medium text-muted-foreground mb-1.5 block">
 							Email Digest
 						</label>
-						<Select value={digestFrequency} onValueChange={setDigestFrequency}>
-							<SelectTrigger>
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="realtime">Real-time</SelectItem>
-								<SelectItem value="hourly">Hourly</SelectItem>
-								<SelectItem value="daily">Daily summary</SelectItem>
-								<SelectItem value="weekly">Weekly summary</SelectItem>
-								<SelectItem value="never">Never</SelectItem>
-							</SelectContent>
-						</Select>
+						<SearchableSelect
+							value={digestFrequency}
+							onValueChange={setDigestFrequency}
+							options={[
+								{ value: "realtime", label: "Real-time" },
+								{ value: "hourly", label: "Hourly" },
+								{ value: "daily", label: "Daily summary" },
+								{ value: "weekly", label: "Weekly summary" },
+								{ value: "never", label: "Never" },
+							]}
+						/>
 						<p className="text-[11px] text-muted mt-1.5">
 							How often email summaries are sent.
 						</p>

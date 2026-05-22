@@ -2,12 +2,9 @@ import { TrendingUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+	SearchableSelect,
+	type SearchableSelectOption,
+} from "@/components/ui/searchable-select";
 import type { Project } from "@/services/project.service";
 import type { Task } from "@/services/task.service";
 import type { Sprint } from "@/services/sprint.service";
@@ -89,30 +86,25 @@ export function OverviewTab({
 									Ends {formatDate(project.sprint.end_date)}
 								</p>
 							)}
-							<div className="mt-3">
-								<Select
+							<div className="mt-3 w-48">
+								<SearchableSelect
 									value={project.sprint_id ?? "__none__"}
 									onValueChange={(v) =>
 										onAssignSprint(
-											v === "__none__" ? null : v,
+											v === "__none__" || !v ? null : v,
 										)
 									}
 									disabled={assigningSprintId}
-								>
-									<SelectTrigger className="h-8 text-xs w-48">
-										<SelectValue placeholder="Assign to sprint" />
-									</SelectTrigger>
-									<SelectContent>
-										<SelectItem value="__none__">
-											No sprint
-										</SelectItem>
-										{allSprints.map((s) => (
-											<SelectItem key={s.id} value={s.id}>
-												{s.name}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
+									size="sm"
+									placeholder="Assign to sprint"
+									options={[
+										{ value: "__none__", label: "No sprint" },
+										...allSprints.map<SearchableSelectOption>((s) => ({
+											value: s.id,
+											label: s.name,
+										})),
+									]}
+								/>
 							</div>
 						</div>
 						<TeamAvatars members={members} />

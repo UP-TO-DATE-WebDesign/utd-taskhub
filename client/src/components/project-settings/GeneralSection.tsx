@@ -3,13 +3,7 @@ import { toast } from "sonner";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { SectionBlock } from "@/components/workspace-settings/SectionBlock";
 import {
 	updateProject,
@@ -171,25 +165,19 @@ export function GeneralSection({
 						<label className="text-sm font-medium text-muted-foreground mb-1.5 block">
 							Status
 						</label>
-						<Select
+						<SearchableSelect
 							value={form.status}
 							onValueChange={(v) =>
 								setField("status", v as ProjectStatus)
 							}
 							disabled={saving}
-						>
-							<SelectTrigger>
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="planning">Planning</SelectItem>
-								<SelectItem value="in-progress">
-									In Progress
-								</SelectItem>
-								<SelectItem value="on-hold">On Hold</SelectItem>
-								<SelectItem value="completed">Completed</SelectItem>
-							</SelectContent>
-						</Select>
+							options={[
+								{ value: "planning", label: "Planning" },
+								{ value: "in-progress", label: "In Progress" },
+								{ value: "on-hold", label: "On Hold" },
+								{ value: "completed", label: "Completed" },
+							]}
+						/>
 					</div>
 				</div>
 

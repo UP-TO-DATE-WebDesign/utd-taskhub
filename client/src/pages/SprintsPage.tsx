@@ -14,13 +14,7 @@ import {
 	DialogFooter,
 	DialogClose,
 } from "@/components/ui/dialog";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { WeekPicker } from "@/components/ui/week-picker";
 import {
 	listSprints,
@@ -169,21 +163,17 @@ function NewSprintDialog({
 						<label className="text-sm font-medium text-muted-foreground mb-1.5 block">
 							Status
 						</label>
-						<Select
+						<SearchableSelect
 							value={form.status}
 							onValueChange={(v) =>
 								setForm((p) => ({ ...p, status: v as SprintStatus }))
 							}
-						>
-							<SelectTrigger>
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="planned">Planned</SelectItem>
-								<SelectItem value="active">Active</SelectItem>
-								<SelectItem value="completed">Completed</SelectItem>
-							</SelectContent>
-						</Select>
+							options={[
+								{ value: "planned", label: "Planned" },
+								{ value: "active", label: "Active" },
+								{ value: "completed", label: "Completed" },
+							]}
+						/>
 					</div>
 
 					{errors.submit && (
@@ -312,21 +302,17 @@ function EditSprintDialog({
 						<label className="text-sm font-medium text-muted-foreground mb-1.5 block">
 							Status
 						</label>
-						<Select
+						<SearchableSelect
 							value={form.status}
 							onValueChange={(v) =>
 								setForm((p) => ({ ...p, status: v as SprintStatus }))
 							}
-						>
-							<SelectTrigger>
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="planned">Planned</SelectItem>
-								<SelectItem value="active">Active</SelectItem>
-								<SelectItem value="completed">Completed</SelectItem>
-							</SelectContent>
-						</Select>
+							options={[
+								{ value: "planned", label: "Planned" },
+								{ value: "active", label: "Active" },
+								{ value: "completed", label: "Completed" },
+							]}
+						/>
 					</div>
 
 					{errors.submit && (

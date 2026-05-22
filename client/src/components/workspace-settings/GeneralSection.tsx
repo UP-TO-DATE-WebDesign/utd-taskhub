@@ -2,13 +2,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { SectionBlock } from "./SectionBlock";
 import {
 	getWorkspaceSettings,
@@ -154,7 +148,7 @@ export function GeneralSection() {
 					<label className="text-sm font-medium text-muted-foreground mb-1.5 block">
 						Time Zone
 					</label>
-					<Select
+					<SearchableSelect
 						value={form.workspace_timezone}
 						onValueChange={(value) =>
 							setForm((f) => ({
@@ -163,24 +157,14 @@ export function GeneralSection() {
 							}))
 						}
 						disabled={loading || saving}
-					>
-						<SelectTrigger>
-							<SelectValue />
-						</SelectTrigger>
-						<SelectContent>
-							{TIMEZONE_OPTIONS.map((o) => (
-								<SelectItem key={o.value} value={o.value}>
-									{o.label}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
+						options={TIMEZONE_OPTIONS}
+					/>
 				</div>
 				<div>
 					<label className="text-sm font-medium text-muted-foreground mb-1.5 block">
 						Language
 					</label>
-					<Select
+					<SearchableSelect
 						value={form.workspace_language}
 						onValueChange={(value) =>
 							setForm((f) => ({
@@ -189,18 +173,8 @@ export function GeneralSection() {
 							}))
 						}
 						disabled={loading || saving}
-					>
-						<SelectTrigger>
-							<SelectValue />
-						</SelectTrigger>
-						<SelectContent>
-							{LANGUAGE_OPTIONS.map((o) => (
-								<SelectItem key={o.value} value={o.value}>
-									{o.label}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
+						options={LANGUAGE_OPTIONS}
+					/>
 				</div>
 			</div>
 			<div className="mt-5 flex justify-end">

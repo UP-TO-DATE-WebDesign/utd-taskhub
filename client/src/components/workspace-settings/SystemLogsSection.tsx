@@ -20,13 +20,7 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { cn } from "@/lib/utils";
 import {
 	listSystemLogs,
@@ -381,52 +375,30 @@ export function SystemLogsSection() {
 					<label className="mb-1.5 block text-sm font-medium text-muted-foreground">
 						Table
 					</label>
-					<Select
+					<SearchableSelect
 						value={filters.table}
 						onValueChange={(value) =>
-							updateFilter({ table: value as Filters["table"] })
+							updateFilter({
+								table: (value || "all") as Filters["table"],
+							})
 						}
-					>
-						<SelectTrigger>
-							<SelectValue />
-						</SelectTrigger>
-						<SelectContent>
-							{TABLE_OPTIONS.map((option) => (
-								<SelectItem
-									key={option.value}
-									value={option.value}
-								>
-									{option.label}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
+						options={TABLE_OPTIONS}
+					/>
 				</div>
 
 				<div>
 					<label className="mb-1.5 block text-sm font-medium text-muted-foreground">
 						Action
 					</label>
-					<Select
+					<SearchableSelect
 						value={filters.action}
 						onValueChange={(value) =>
-							updateFilter({ action: value as Filters["action"] })
+							updateFilter({
+								action: (value || "all") as Filters["action"],
+							})
 						}
-					>
-						<SelectTrigger>
-							<SelectValue />
-						</SelectTrigger>
-						<SelectContent>
-							{ACTION_OPTIONS.map((option) => (
-								<SelectItem
-									key={option.value}
-									value={option.value}
-								>
-									{option.label}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
+						options={ACTION_OPTIONS}
+					/>
 				</div>
 
 				<div>

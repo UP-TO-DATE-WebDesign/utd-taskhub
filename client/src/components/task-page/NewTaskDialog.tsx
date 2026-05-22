@@ -12,12 +12,9 @@ import {
 	DialogClose,
 } from "@/components/ui/dialog";
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+	SearchableSelect,
+	type SearchableSelectOption,
+} from "@/components/ui/searchable-select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { listSprints, type Sprint } from "@/services/sprint.service";
 import {
@@ -190,39 +187,27 @@ export function NewTaskDialog({
 						<label className="text-sm font-medium text-muted-foreground mb-1.5 block">
 							Select Sprint
 						</label>
-						<Select
+						<SearchableSelect
 							value={form.sprintId || NO_TASK_SPRINT_VALUE}
 							onValueChange={(v) =>
 								set(
 									"sprintId",
-									v === NO_TASK_SPRINT_VALUE ? "" : v,
+									v === NO_TASK_SPRINT_VALUE || !v ? "" : v,
 								)
 							}
 							disabled={sprintsLoading}
-						>
-							<SelectTrigger>
-								<SelectValue
-									placeholder={
-										sprintsLoading
-											? "Loading..."
-											: "Select sprint"
-									}
-								/>
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value={NO_TASK_SPRINT_VALUE}>
-									No sprint
-								</SelectItem>
-								{sprints.map((sprint) => (
-									<SelectItem
-										key={sprint.id}
-										value={sprint.id}
-									>
-										{sprint.name}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
+							loading={sprintsLoading}
+							placeholder={
+								sprintsLoading ? "Loading..." : "Select sprint"
+							}
+							options={[
+								{ value: NO_TASK_SPRINT_VALUE, label: "No sprint" },
+								...sprints.map<SearchableSelectOption>((s) => ({
+									value: s.id,
+									label: s.name,
+								})),
+							]}
+						/>
 					</div>
 
 					{/* Title */}
@@ -261,54 +246,36 @@ export function NewTaskDialog({
 							<label className="text-sm font-medium text-muted-foreground mb-1.5 block">
 								Priority
 							</label>
-							<Select
+							<SearchableSelect
 								value={form.priority}
 								onValueChange={(v) =>
 									set("priority", v as ApiTaskPriority)
 								}
-							>
-								<SelectTrigger>
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="low">Low</SelectItem>
-									<SelectItem value="medium">
-										Medium
-									</SelectItem>
-									<SelectItem value="high">High</SelectItem>
-									<SelectItem value="urgent">
-										Urgent
-									</SelectItem>
-								</SelectContent>
-							</Select>
+								options={[
+									{ value: "low", label: "Low" },
+									{ value: "medium", label: "Medium" },
+									{ value: "high", label: "High" },
+									{ value: "urgent", label: "Urgent" },
+								]}
+							/>
 						</div>
 						<div>
 							<label className="text-sm font-medium text-muted-foreground mb-1.5 block">
 								Status
 							</label>
-							<Select
+							<SearchableSelect
 								value={form.status}
 								onValueChange={(v) =>
 									set("status", v as ApiTaskStatus)
 								}
-							>
-								<SelectTrigger>
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="backlog">
-										Backlog
-									</SelectItem>
-									<SelectItem value="todo">Todo</SelectItem>
-									<SelectItem value="in-progress">
-										In Progress
-									</SelectItem>
-									<SelectItem value="qa">
-										QA
-									</SelectItem>
-									<SelectItem value="done">Done</SelectItem>
-								</SelectContent>
-							</Select>
+								options={[
+									{ value: "backlog", label: "Backlog" },
+									{ value: "todo", label: "Todo" },
+									{ value: "in-progress", label: "In Progress" },
+									{ value: "qa", label: "QA" },
+									{ value: "done", label: "Done" },
+								]}
+							/>
 						</div>
 					</div>
 

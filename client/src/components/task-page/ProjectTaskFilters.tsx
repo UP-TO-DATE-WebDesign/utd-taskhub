@@ -1,12 +1,9 @@
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+	SearchableSelect,
+	type SearchableSelectOption,
+} from "@/components/ui/searchable-select";
 import { type Sprint } from "@/services/sprint.service";
 import { type ProjectMember } from "@/services/project-member.service";
 
@@ -51,50 +48,41 @@ export function ProjectTaskFilters({
 			</div>
 
 			{/* Sprint */}
-			<div className="relative">
-				{sprintsLoading && (
-					<>
-						<div className="h-full w-full absolute rounded-2xl bg-white/20 backdrop-blur-xs top-0 left-0 pointer-events-none" />
-						<div className="bg-white/50 backdrop-blur-xs h-full w-full absolute rounded-2xl text-slate-600 flex items-center px-3 text-xs justify-start z-10 border border-border pointer-events-none">
-							loading...
-						</div>
-					</>
-				)}
-				<Select
+			<div className="w-44">
+				<SearchableSelect
 					value={filterSprint}
-					onValueChange={onFilterSprintChange}
+					onValueChange={(v) => onFilterSprintChange(v || "all")}
 					disabled={sprintsLoading}
-				>
-					<SelectTrigger className="w-44 h-9">
-						<SelectValue
-							placeholder={sprintsLoading ? "Loading..." : "All Sprints"}
-						/>
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="all">All Sprints</SelectItem>
-						{sprints.map((s) => (
-							<SelectItem key={s.id} value={s.id}>
-								{s.name}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
+					loading={sprintsLoading}
+					placeholder={sprintsLoading ? "Loading..." : "All Sprints"}
+					options={[
+						{ value: "all", label: "All Sprints" },
+						...sprints.map<SearchableSelectOption>((s) => ({
+							value: s.id,
+							label: s.name,
+						})),
+					]}
+				/>
 			</div>
 
 			{/* User */}
-			<Select value={filterUser} onValueChange={onFilterUserChange}>
-				<SelectTrigger className="w-44 h-9">
-					<SelectValue placeholder="All Users" />
-				</SelectTrigger>
-				<SelectContent>
-					<SelectItem value="all">All Users</SelectItem>
-					{members.map((m) => (
-						<SelectItem key={m.profiles.id} value={m.profiles.id}>
-							{m.profiles.full_name ?? m.profiles.email}
-						</SelectItem>
-					))}
-				</SelectContent>
-			</Select>
+			<div className="w-44">
+				<SearchableSelect
+					value={filterUser}
+					onValueChange={(v) => onFilterUserChange(v || "all")}
+					placeholder="All Users"
+					options={[
+						{ value: "all", label: "All Users" },
+						...members.map<SearchableSelectOption>((m) => ({
+							value: m.profiles.id,
+							label: m.profiles.full_name ?? m.profiles.email,
+							description: m.profiles.full_name
+								? m.profiles.email
+								: undefined,
+						})),
+					]}
+				/>
+			</div>
 
 			{/* Clear filters */}
 			{isFiltered && (

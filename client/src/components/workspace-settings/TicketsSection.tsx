@@ -2,13 +2,7 @@ import { useState } from "react";
 import { Hash, UserCircle, Clock, CheckCircle2, Tag, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Separator } from "@/components/ui/separator";
 import { SectionBlock, Toggle } from "./SectionBlock";
 
@@ -55,17 +49,16 @@ export function TicketsSection() {
 						<label className="text-sm font-medium text-muted-foreground mb-1.5 block">
 							Default Priority
 						</label>
-						<Select value={defaultPriority} onValueChange={setDefaultPriority}>
-							<SelectTrigger>
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="urgent">Urgent</SelectItem>
-								<SelectItem value="high">High</SelectItem>
-								<SelectItem value="medium">Medium</SelectItem>
-								<SelectItem value="low">Low</SelectItem>
-							</SelectContent>
-						</Select>
+						<SearchableSelect
+							value={defaultPriority}
+							onValueChange={setDefaultPriority}
+							options={[
+								{ value: "urgent", label: "Urgent" },
+								{ value: "high", label: "High" },
+								{ value: "medium", label: "Medium" },
+								{ value: "low", label: "Low" },
+							]}
+						/>
 						<p className="text-[11px] text-muted mt-1.5">
 							Applied to new tickets with no priority set.
 						</p>
@@ -92,17 +85,18 @@ export function TicketsSection() {
 									</p>
 								</div>
 							</div>
-							<Select value={defaultAssignee} onValueChange={setDefaultAssignee}>
-								<SelectTrigger className="w-40">
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="unassigned">Unassigned</SelectItem>
-									<SelectItem value="jd">John Doe</SelectItem>
-									<SelectItem value="sm">Sarah Miller</SelectItem>
-									<SelectItem value="round-robin">Round Robin</SelectItem>
-								</SelectContent>
-							</Select>
+							<div className="w-40">
+								<SearchableSelect
+									value={defaultAssignee}
+									onValueChange={setDefaultAssignee}
+									options={[
+										{ value: "unassigned", label: "Unassigned" },
+										{ value: "jd", label: "John Doe" },
+										{ value: "sm", label: "Sarah Miller" },
+										{ value: "round-robin", label: "Round Robin" },
+									]}
+								/>
+							</div>
 						</div>
 
 						<div className="flex items-center justify-between rounded-lg border border-border px-4 py-3">
