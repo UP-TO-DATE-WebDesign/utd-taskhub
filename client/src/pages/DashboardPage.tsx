@@ -499,6 +499,7 @@ export default function DashboardPage() {
 						<Button
 							variant="outline"
 							className="w-full mt-5 text-sm"
+							onClick={() => navigate("/tickets")}
 						>
 							Manage Tickets
 						</Button>
