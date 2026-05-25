@@ -117,7 +117,10 @@ export function NewTaskDialogV2({
 		setSprintsLoading(true);
 		listSprints()
 			.then((data) => {
-				if (active) setSprints(data);
+				if (!active) return;
+				setSprints(data);
+				const activeSprint = data.find((s) => s.status === "active");
+				if (activeSprint) setSprintId(activeSprint.id);
 			})
 			.catch(() => {
 				if (active) setSprints([]);
