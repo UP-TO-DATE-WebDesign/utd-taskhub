@@ -8,6 +8,7 @@ import { useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import {
 	Calendar,
+	Clock,
 	GripVertical,
 	Trash2,
 	CheckCircle2,
@@ -30,6 +31,7 @@ import {
 	PRIORITY_BORDER,
 	getInitials,
 	profileColorClass,
+	formatTime,
 } from "./types";
 import type { WorkflowStage } from "@/services/workflow-stage.service";
 
@@ -80,6 +82,11 @@ function TaskCardContentBase({
 						{task.priority.charAt(0).toUpperCase() +
 							task.priority.slice(1)}
 					</Badge>
+					{task.ticket_id && (
+						<span className="text-[10px] bg-muted-subtle text-muted-foreground px-1.5 py-0.5 rounded font-medium leading-none font-mono">
+							#{task.ticket_id}
+						</span>
+					)}
 				</div>
 				{task.tags[0] && (
 					<span className="text-[10px] bg-muted-subtle text-muted-foreground px-1.5 py-0.5 rounded font-medium leading-none">
@@ -120,11 +127,19 @@ function TaskCardContentBase({
 				) : (
 					<span />
 				)}
-				<div className="flex items-center gap-1 text-[11px] text-muted">
-					<Calendar className="h-3 w-3" />
-					{task.due_date
-						? formatDate(task.due_date.slice(0, 10))
-						: "—"}
+				<div className="flex items-center gap-3">
+					{task.estimated_time > 0 && (
+						<div className="flex items-center gap-1 text-[11px] text-muted">
+							<Clock className="h-3 w-3" />
+							{formatTime(task.estimated_time)}
+						</div>
+					)}
+					<div className="flex items-center gap-1 text-[11px] text-muted">
+						<Calendar className="h-3 w-3" />
+						{task.due_date
+							? formatDate(task.due_date.slice(0, 10))
+							: "—"}
+					</div>
 				</div>
 			</div>
 		</div>
