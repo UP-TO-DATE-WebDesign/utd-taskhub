@@ -60,6 +60,18 @@ export function InlineAssignee({
 		}
 	}
 
+	const options: SearchableSelectOption[] = useMemo(
+		() => [
+			{ value: UNASSIGNED_VALUE, label: "Unassigned" },
+			...profiles.map((p) => ({
+				value: p.id,
+				label: p.full_name ?? p.email,
+				description: p.full_name ? p.email : undefined,
+			})),
+		],
+		[profiles],
+	);
+
 	const readView = assignee ? (
 		<div className="flex items-center gap-2">
 			<Avatar className="h-8 w-8">
@@ -114,18 +126,6 @@ export function InlineAssignee({
 			</div>
 		);
 	}
-
-	const options: SearchableSelectOption[] = useMemo(
-		() => [
-			{ value: UNASSIGNED_VALUE, label: "Unassigned" },
-			...profiles.map((p) => ({
-				value: p.id,
-				label: p.full_name ?? p.email,
-				description: p.full_name ? p.email : undefined,
-			})),
-		],
-		[profiles],
-	);
 
 	return (
 		<div className="flex items-center gap-2 flex-1 min-w-0">
