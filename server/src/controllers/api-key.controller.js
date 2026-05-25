@@ -2,6 +2,7 @@ import {
 	createApiKeyRecord,
 	listApiKeysForUser,
 	revokeApiKeyForUser,
+	getFullApiKeyForUser,
 } from "../services/api-key.service.js";
 import { validateCreateApiKey } from "../utils/api-key.validator.js";
 
@@ -9,6 +10,22 @@ export async function listMyApiKeys(req, res, next) {
 	try {
 		const keys = await listApiKeysForUser(req.profile.id);
 		res.status(200).json({ success: true, count: keys.length, data: keys });
+	} catch (err) {
+		next(err);
+	}
+}
+
+export async function getMyApiKey(req, res, next) {
+	try {
+		const { id } = req.params;
+		const key = await getFullApiKeyForUser(req.profile.id, id);
+		if (!key) {
+			return res.status(404).json({
+				success: false,
+				message: "API key not found.",
+			});
+		}
+		res.status(200).json({ success: true, data: key });
 	} catch (err) {
 		next(err);
 	}
@@ -37,7 +54,8 @@ export async function createMyApiKey(req, res, next) {
 
 		res.status(201).json({
 			success: true,
-			message: "API key created. Copy it now; it will not be shown again.",
+			message:
+				"API key created. Copy it now; it will not be shown again.",
 			data: { ...record, key: plaintext },
 		});
 	} catch (err) {

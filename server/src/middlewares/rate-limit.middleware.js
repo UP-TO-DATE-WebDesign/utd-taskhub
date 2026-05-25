@@ -1,4 +1,4 @@
-import rateLimit from "express-rate-limit";
+import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 
 // Shared limiter for sensitive credential / token endpoints.
 // 5 attempts per 15 minutes per IP. Tighter than the default to slow
@@ -24,7 +24,7 @@ export const externalApiLimiter = rateLimit({
 	limit: 60,
 	standardHeaders: "draft-7",
 	legacyHeaders: false,
-	keyGenerator: (req) => req.apiKey?.id || req.ip,
+	keyGenerator: (req, res) => req.apiKey?.id || ipKeyGenerator(req, res),
 	message: {
 		success: false,
 		message: "Rate limit exceeded. Try again shortly.",

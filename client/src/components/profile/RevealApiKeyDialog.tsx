@@ -44,15 +44,15 @@ export function RevealApiKeyDialog({
 				<DialogHeader>
 					<DialogTitle>Copy your API key</DialogTitle>
 					<DialogDescription>
-						This is the only time the full key will be shown.
-						Store it in a safe place.
+						This is the only time the full key will be shown. Store
+						it in a safe place.
 					</DialogDescription>
 				</DialogHeader>
 
 				<div className="space-y-3">
 					<div className="flex items-start gap-2 rounded-md border border-warning/30 bg-warning/10 p-3 text-xs text-warning-foreground">
 						<ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
-						<p>
+						<p className="text-red-700">
 							Treat this key like a password. Anyone with it can
 							create tickets and tasks on your behalf in the
 							selected project.

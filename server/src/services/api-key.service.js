@@ -56,12 +56,37 @@ export async function createApiKeyRecord({
 			scopes,
 			expires_at: expiresAt || null,
 		})
-		.select("id, key_prefix, name, project_id, scopes, expires_at, created_at")
+		.select(
+			"id, key_prefix, name, project_id, scopes, expires_at, created_at",
+		)
 		.single();
 
 	if (error) throw error;
 
 	return { plaintext, record: data };
+}
+
+//generates new api key of user to return full key to let user copy plaintext api key, then revokes old key. This is done to ensure that the plaintext key is only shown once and cannot be retrieved again after creation.
+export async function getFullApiKeyForUser(userId, keyId) {
+	const plaintext = generatePlaintextKey();
+	const key_hash = hashApiKey(plaintext);
+
+	const { data, error } = await supabaseAdmin
+		.from("api_keys")
+		.update({ key_hash, key_prefix: publicKeyPrefix(plaintext) })
+		.eq("id", keyId)
+		.eq("owner_user_id", userId)
+		.is("revoked_at", null)
+		.select(
+			`id, key_hash, key_prefix, name, project_id, scopes, expires_at,
+			 last_used_at, last_used_ip, revoked_at, created_at,
+			 project:projects ( id, name, key )`,
+		)
+		.maybeSingle();
+
+	if (error) throw error;
+	if (!data) return null;
+	return { ...data, key: data.key_prefix + "…", plaintext: plaintext };
 }
 
 export async function listApiKeysForUser(userId) {
@@ -99,7 +124,9 @@ export async function findActiveKeyByPlaintext(plaintext) {
 
 	const { data, error } = await supabaseAdmin
 		.from("api_keys")
-		.select("id, owner_user_id, project_id, scopes, expires_at, revoked_at, name")
+		.select(
+			"id, owner_user_id, project_id, scopes, expires_at, revoked_at, name",
+		)
 		.eq("key_hash", key_hash)
 		.maybeSingle();
 

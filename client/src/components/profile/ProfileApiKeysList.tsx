@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { KeyRound, Trash2 } from "lucide-react";
+import { Copy, KeyRound, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
 	revokeApiKey,
+	getFullApiKey,
 	type ApiKey,
 	type ApiKeyScope,
 } from "@/services/api-key.service";
@@ -39,13 +40,30 @@ function statusBadge(key: ApiKey): { label: string; cls: string } {
 
 export function ProfileApiKeysList({
 	keys,
+	setReveal,
 	onRevoked,
 }: {
 	keys: ApiKey[];
+	setReveal: (key: string) => void;
 	onRevoked: (id: string) => void;
 }) {
 	const [revoking, setRevoking] = useState<string | null>(null);
+	async function handleCopy(key: ApiKey) {
+		const ok = window.confirm(
+			`Are you sure you want to proceed?\n\nThis will update your api key to reveal the full key. If you have an active integration using this key, make sure to update it with the revealed key prefix and the same suffix after the reveal to avoid disruption.`,
+		);
+		if (!ok) return;
+		try {
+			await getFullApiKey(key.id).then((res) => {
+				setReveal(res?.plaintext || "");
+				key.key_prefix = res?.plaintext.slice(0, 16) || "";
+			});
 
+			toast.success("API key copied to clipboard.");
+		} catch {
+			toast.error("Failed to copy. Select the text and copy manually.");
+		}
+	}
 	async function handleRevoke(key: ApiKey) {
 		if (key.revoked_at) return;
 		const ok = window.confirm(
@@ -74,8 +92,8 @@ export function ProfileApiKeysList({
 					No API keys yet
 				</p>
 				<p className="max-w-sm text-xs text-muted-foreground">
-					Generate a key to let an external app create tickets or tasks
-					in one of your projects.
+					Generate a key to let an external app create tickets or
+					tasks in one of your projects.
 				</p>
 			</div>
 		);
@@ -99,6 +117,7 @@ export function ProfileApiKeysList({
 				<tbody>
 					{keys.map((k) => {
 						const badge = statusBadge(k);
+
 						return (
 							<tr
 								key={k.id}
@@ -138,20 +157,32 @@ export function ProfileApiKeysList({
 										{badge.label}
 									</span>
 								</td>
-								<td className="px-3 py-2 text-right">
+								<td className="px-3 py-2 gap-2 flex text-right">
 									{!k.revoked_at && (
-										<Button
-											type="button"
-											variant="destructive_outline"
-											size="xs"
-											disabled={revoking === k.id}
-											onClick={() => handleRevoke(k)}
-										>
-											<Trash2 className="h-3 w-3" />
-											{revoking === k.id
-												? "Revoking…"
-												: "Revoke"}
-										</Button>
+										<>
+											<Button
+												type="button"
+												variant="primary_outline"
+												size="xs"
+												onClick={() => handleCopy(k)}
+												title="This will update your api key to reveal the full key. If you have an active integration using this key, make sure to update it with the revealed key prefix and the same suffix after the reveal to avoid disruption."
+											>
+												<Copy className="h-3 w-3" />
+												Copy
+											</Button>
+											<Button
+												type="button"
+												variant="destructive_outline"
+												size="xs"
+												disabled={revoking === k.id}
+												onClick={() => handleRevoke(k)}
+											>
+												<Trash2 className="h-3 w-3" />
+												{revoking === k.id
+													? "Revoking…"
+													: "Revoke"}
+											</Button>
+										</>
 									)}
 								</td>
 							</tr>

@@ -42,7 +42,9 @@ export function ProfileApiKeysSection() {
 	function handleRevoked(id: string) {
 		setKeys((curr) =>
 			curr.map((k) =>
-				k.id === id ? { ...k, revoked_at: new Date().toISOString() } : k,
+				k.id === id
+					? { ...k, revoked_at: new Date().toISOString() }
+					: k,
 			),
 		);
 	}
@@ -55,7 +57,8 @@ export function ProfileApiKeysSection() {
 						API Keys
 					</h2>
 					<p className="mt-0.5 text-xs text-muted-foreground">
-						Let external apps create tickets and tasks in your projects.
+						Let external apps create tickets and tasks in your
+						projects.
 					</p>
 				</div>
 				<Button
@@ -77,7 +80,11 @@ export function ProfileApiKeysSection() {
 					<Skeleton className="h-8 w-full" />
 				</div>
 			) : (
-				<ProfileApiKeysList keys={keys} onRevoked={handleRevoked} />
+				<ProfileApiKeysList
+					keys={keys}
+					setReveal={setReveal}
+					onRevoked={handleRevoked}
+				/>
 			)}
 
 			<div className="mt-6">

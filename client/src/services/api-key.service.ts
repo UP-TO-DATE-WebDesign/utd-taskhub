@@ -41,7 +41,9 @@ export interface CreateApiKeyPayload {
 }
 
 export async function listApiKeys(): Promise<ApiKey[]> {
-	const res = await api.get<{ success: boolean; data: ApiKey[] }>("/api-keys");
+	const res = await api.get<{ success: boolean; data: ApiKey[] }>(
+		"/api-keys",
+	);
 	return res.data;
 }
 
@@ -57,4 +59,14 @@ export async function createApiKey(
 
 export async function revokeApiKey(id: string): Promise<void> {
 	await api.delete(`/api-keys/${id}`);
+}
+
+export async function getFullApiKey(
+	id: string,
+): Promise<{ key: string; plaintext: string } | null> {
+	const res = await api.get<{
+		success: boolean;
+		data: { key: string; plaintext: string };
+	}>(`/api-keys/${id}`);
+	return res.data;
 }
