@@ -1,22 +1,14 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { CalendarDays, Mail, ShieldCheck, Upload, X } from "lucide-react";
+import { CalendarDays, KeyRound, Mail, ShieldCheck, UserCog } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
-import {
-	getProfile,
-	updateProfile,
-	uploadProfileAvatar,
-	type Profile,
-	type UpdateProfilePayload,
-} from "@/services/profile.service";
-
-const AVATAR_MAX_BYTES = 2 * 1024 * 1024;
+import { getProfile, type Profile } from "@/services/profile.service";
+import { ProfilePersonalSection } from "@/components/profile/ProfilePersonalSection";
+import { ProfileApiKeysSection } from "@/components/profile/ProfileApiKeysSection";
 
 const STATUS_VARIANT: Record<string, string> = {
 	active: "bg-success-subtle text-success border-success/20",
@@ -30,6 +22,13 @@ const ROLE_VARIANT: Record<string, string> = {
 	developer: "bg-success-subtle text-success border-success/20",
 	user: "bg-muted-subtle text-muted-foreground border-border",
 };
+
+type TabId = "personal" | "api-keys";
+
+const TABS: { id: TabId; label: string; icon: typeof UserCog }[] = [
+	{ id: "personal", label: "Personal Info", icon: UserCog },
+	{ id: "api-keys", label: "API Keys", icon: KeyRound },
+];
 
 function getInitials(name: string | null, email: string): string {
 	if (name) {
@@ -55,117 +54,16 @@ export default function ProfilePage() {
 	const { user } = useAuth();
 	const [profile, setProfile] = useState<Profile | null>(null);
 	const [loading, setLoading] = useState(true);
-	const [saving, setSaving] = useState(false);
-	const [avatarFile, setAvatarFile] = useState<File | null>(null);
-	const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(
-		null,
-	);
-	const [avatarMarkedForRemoval, setAvatarMarkedForRemoval] = useState(false);
-	const fileInputRef = useRef<HTMLInputElement | null>(null);
-	const [form, setForm] = useState<UpdateProfilePayload>({
-		full_name: "",
-		avatar_url: "",
-	});
-
-	useEffect(() => {
-		return () => {
-			if (avatarPreviewUrl) URL.revokeObjectURL(avatarPreviewUrl);
-		};
-	}, [avatarPreviewUrl]);
+	const [activeTab, setActiveTab] = useState<TabId>("personal");
 
 	useEffect(() => {
 		if (!user?.id) return;
 		setLoading(true);
 		getProfile(user.id)
-			.then((p) => {
-				setProfile(p);
-				setForm({
-					full_name: p.full_name ?? "",
-					avatar_url: p.avatar_url ?? "",
-				});
-				setAvatarFile(null);
-				setAvatarPreviewUrl(null);
-				setAvatarMarkedForRemoval(false);
-			})
+			.then((p) => setProfile(p))
 			.catch(() => toast.error("Failed to load profile."))
 			.finally(() => setLoading(false));
 	}, [user?.id]);
-
-	function handleAvatarChange(file: File | undefined) {
-		if (!file) return;
-
-		if (!file.type.startsWith("image/")) {
-			toast.error("Choose an image file for your avatar.");
-			return;
-		}
-
-		if (file.size > AVATAR_MAX_BYTES) {
-			toast.error("Avatar image must be 2 MB or smaller.");
-			return;
-		}
-
-		if (avatarPreviewUrl) URL.revokeObjectURL(avatarPreviewUrl);
-		setAvatarFile(file);
-		setAvatarPreviewUrl(URL.createObjectURL(file));
-		setAvatarMarkedForRemoval(false);
-		setForm((f) => ({ ...f, avatar_url: profile?.avatar_url ?? "" }));
-	}
-
-	function handleRemoveAvatar() {
-		if (avatarPreviewUrl) URL.revokeObjectURL(avatarPreviewUrl);
-		setAvatarFile(null);
-		setAvatarPreviewUrl(null);
-		setAvatarMarkedForRemoval(true);
-		setForm((f) => ({ ...f, avatar_url: "" }));
-		if (fileInputRef.current) fileInputRef.current.value = "";
-	}
-
-	async function handleSave(e: React.FormEvent) {
-		e.preventDefault();
-		if (!profile) return;
-		setSaving(true);
-		try {
-			const payload: UpdateProfilePayload = {};
-			const trimmedName = form.full_name?.trim();
-			const trimmedAvatar = form.avatar_url?.trim();
-			if (trimmedName !== (profile.full_name ?? ""))
-				payload.full_name = trimmedName || null;
-			if (
-				!avatarFile &&
-				(avatarMarkedForRemoval ||
-					trimmedAvatar !== (profile.avatar_url ?? ""))
-			)
-				payload.avatar_url = trimmedAvatar || null;
-
-			if (Object.keys(payload).length === 0 && !avatarFile) {
-				toast.info("No changes to save.");
-				return;
-			}
-
-			let updated = profile;
-			if (Object.keys(payload).length > 0) {
-				updated = await updateProfile(profile.id, payload);
-			}
-			if (avatarFile) {
-				updated = await uploadProfileAvatar(profile.id, avatarFile);
-			}
-			setProfile(updated);
-			setForm({
-				full_name: updated.full_name ?? "",
-				avatar_url: updated.avatar_url ?? "",
-			});
-			if (avatarPreviewUrl) URL.revokeObjectURL(avatarPreviewUrl);
-			setAvatarFile(null);
-			setAvatarPreviewUrl(null);
-			setAvatarMarkedForRemoval(false);
-			if (fileInputRef.current) fileInputRef.current.value = "";
-			toast.success("Profile updated.");
-		} catch {
-			toast.error("Failed to update profile.");
-		} finally {
-			setSaving(false);
-		}
-	}
 
 	if (loading) {
 		return (
@@ -183,7 +81,6 @@ export default function ProfilePage() {
 					</Card>
 					<Card className="p-6">
 						<Skeleton className="mb-4 h-5 w-40" />
-						<Separator className="mb-4" />
 						<div className="space-y-4">
 							<Skeleton className="h-9 w-full" />
 							<Skeleton className="h-9 w-full" />
@@ -199,27 +96,21 @@ export default function ProfilePage() {
 
 	const initials = getInitials(profile.full_name, profile.email);
 	const displayName = profile.full_name ?? profile.email.split("@")[0];
-	const avatarSrc =
-		avatarPreviewUrl ??
-		(avatarMarkedForRemoval ? null : profile.avatar_url);
 
 	return (
 		<div className="mx-auto max-w-[1280px] px-4 py-8 sm:px-5 md:px-6">
 			<div className="mb-6">
-				<h1 className="text-xl font-semibold text-foreground">
-					Profile
-				</h1>
+				<h1 className="text-xl font-semibold text-foreground">Profile</h1>
 				<p className="mt-0.5 text-sm text-muted-foreground">
-					Manage your personal information
+					Manage your personal information and API access
 				</p>
 			</div>
 
 			<div className="grid gap-6 md:grid-cols-[280px_1fr]">
-				{/* Identity card */}
 				<Card className="flex flex-col items-center gap-3 p-6 text-center">
 					<Avatar className="h-20 w-20 text-xl">
-						{avatarSrc && (
-							<AvatarImage src={avatarSrc} alt={displayName} />
+						{profile.avatar_url && (
+							<AvatarImage src={profile.avatar_url} alt={displayName} />
 						)}
 						<AvatarFallback className="text-lg">
 							{initials}
@@ -258,107 +149,34 @@ export default function ProfilePage() {
 					)}
 				</Card>
 
-				{/* Edit form */}
-				<Card className="p-6">
-					<h2 className="text-sm font-semibold text-foreground">
-						Personal Information
-					</h2>
-					<Separator className="my-4" />
-
-					<form onSubmit={handleSave} className="space-y-4">
-						<div className="space-y-1.5">
-							<label
-								htmlFor="full_name"
-								className="text-xs font-medium text-muted-foreground"
-							>
-								Full Name
-							</label>
-							<Input
-								id="full_name"
-								placeholder="Your full name"
-								value={form.full_name ?? ""}
-								onChange={(e) =>
-									setForm((f) => ({
-										...f,
-										full_name: e.target.value,
-									}))
-								}
-							/>
-						</div>
-
-						<div className="space-y-1.5">
-							<label
-								htmlFor="avatar_upload"
-								className="text-xs font-medium text-muted-foreground"
-							>
-								Avatar
-							</label>
-							<div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-								{avatarFile ? (
-									<span className="truncate font-bold text-sm text-primary py-3">
-										{avatarFile.name}
-									</span>
-								) : (
-									<label className="inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border-strong bg-surface px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted-subtle">
-										<Upload className="h-4 w-4" />
-										Choose image
-										<input
-											ref={fileInputRef}
-											id="avatar_upload"
-											type="file"
-											accept="image/jpeg,image/png,image/webp,image/gif"
-											className="sr-only"
-											onChange={(e) =>
-												handleAvatarChange(
-													e.target.files?.[0],
-												)
-											}
-										/>
-									</label>
+				<div className="space-y-4">
+					<div className="flex gap-1 border-b border-border">
+						{TABS.map(({ id, label, icon: Icon }) => (
+							<button
+								key={id}
+								type="button"
+								onClick={() => setActiveTab(id)}
+								className={cn(
+									"flex items-center gap-1.5 px-4 py-2 text-sm transition-colors border-b-2 -mb-px",
+									activeTab === id
+										? "border-primary text-primary font-medium"
+										: "border-transparent text-muted-foreground hover:text-foreground",
 								)}
-								{(avatarFile ||
-									(!avatarMarkedForRemoval &&
-										profile.avatar_url)) && (
-									<Button
-										type="button"
-										variant="destructive"
-										size="xs"
-										onClick={handleRemoveAvatar}
-									>
-										<X className="-mr-1 h-3 w-3" />
-										<small className="text-[9px]">
-											Remove
-										</small>
-									</Button>
-								)}
-							</div>
-							<p className="text-xs text-muted-foreground">
-								Upload a JPG, PNG, WebP, or GIF image up to 2
-								MB.
-							</p>
-						</div>
+							>
+								<Icon className="h-4 w-4" />
+								{label}
+							</button>
+						))}
+					</div>
 
-						<div className="space-y-1.5">
-							<label className="text-xs font-medium text-muted-foreground">
-								Email
-							</label>
-							<Input
-								value={profile.email}
-								disabled
-								className="opacity-60"
-							/>
-							<p className="text-xs text-muted-foreground">
-								Email cannot be changed here.
-							</p>
-						</div>
-
-						<div className="pt-2">
-							<Button type="submit" disabled={saving} size="sm">
-								{saving ? "Saving..." : "Save Changes"}
-							</Button>
-						</div>
-					</form>
-				</Card>
+					{activeTab === "personal" && (
+						<ProfilePersonalSection
+							profile={profile}
+							onProfileChange={setProfile}
+						/>
+					)}
+					{activeTab === "api-keys" && <ProfileApiKeysSection />}
+				</div>
 			</div>
 		</div>
 	);

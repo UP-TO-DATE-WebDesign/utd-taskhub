@@ -16,3 +16,17 @@ export const sensitiveAuthLimiter = rateLimit({
 		message: "Too many attempts. Please try again later.",
 	},
 });
+
+// Limiter for external API endpoints (key-auth). Per-key when the API
+// key middleware has run, otherwise fall back to per-IP for failed auth.
+export const externalApiLimiter = rateLimit({
+	windowMs: 60 * 1000,
+	limit: 60,
+	standardHeaders: "draft-7",
+	legacyHeaders: false,
+	keyGenerator: (req) => req.apiKey?.id || req.ip,
+	message: {
+		success: false,
+		message: "Rate limit exceeded. Try again shortly.",
+	},
+});
