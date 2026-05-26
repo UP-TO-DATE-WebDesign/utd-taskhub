@@ -10,6 +10,7 @@ import ProjectsPage from '@/pages/ProjectsPage'
 import ProjectPage from '@/pages/ProjectPage'
 import TasksPage from '@/pages/TasksPage'
 import TicketsPage from '@/pages/TicketsPage'
+import TicketDetailPage from '@/pages/TicketDetailPage'
 import SettingsPage from '@/pages/SettingsPage'
 import UsersPage from '@/pages/UsersPage'
 import LoginPage from '@/pages/LoginPage'
@@ -49,6 +50,7 @@ function App() {
             <Route path="/projects/:id" element={<ProjectPage />} />
             <Route path="/tasks" element={<TasksPage />} />
             <Route path="/tickets" element={<TicketsPage />} />
+            <Route path="/projects/:projectId/tickets/:ticketId" element={<TicketDetailPage />} />
             <Route element={<RoleGuard feature="View sprints" />}>
               <Route path="/sprints" element={<SprintsPage />} />
             </Route>

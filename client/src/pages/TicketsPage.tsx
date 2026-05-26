@@ -58,7 +58,7 @@ export default function TicketsPage() {
 		listProjects()
 			.then((data) => {
 				setProjects(data);
-				if (data.length > 0) setSelectedProjectId(data[0].id);
+				setSelectedProjectId("all");
 			})
 			.catch(() => toast.error("Failed to load projects."))
 			.finally(() => setProjectsLoading(false));
@@ -73,8 +73,12 @@ export default function TicketsPage() {
 		[filters.status, filters.type, filters.priority],
 	);
 
+	const isAllProjects = selectedProjectId === "all";
+
 	const ticketsKey = selectedProjectId
-		? (["tickets", selectedProjectId, ticketParams] as const)
+		? isAllProjects
+			? (["tickets", "all", projects.map((p) => p.id), ticketParams] as const)
+			: (["tickets", selectedProjectId, ticketParams] as const)
 		: null;
 
 	const {
@@ -82,19 +86,30 @@ export default function TicketsPage() {
 		error,
 		isLoading: loading,
 		mutate: mutateTickets,
-	} = useApiSWR<Ticket[]>(ticketsKey, () =>
-		listTickets(
+	} = useApiSWR<Ticket[]>(ticketsKey, async () => {
+		if (isAllProjects) {
+			const results = await Promise.all(
+				projects.map((p) =>
+					listTickets(
+						p.id,
+						ticketParams as Parameters<typeof listTickets>[1],
+					).catch(() => [] as Ticket[]),
+				),
+			);
+			return results.flat();
+		}
+		return listTickets(
 			selectedProjectId,
 			ticketParams as Parameters<typeof listTickets>[1],
-		),
-	);
+		);
+	});
 
 	async function handleDelete(ticket: Ticket) {
 		if (!window.confirm(`Delete "${ticket.title}"? This cannot be undone.`))
 			return;
 		setDeletingId(ticket.id);
 		try {
-			await deleteTicket(selectedProjectId, ticket.id);
+			await deleteTicket(ticket.project_id, ticket.id);
 			toast.success("Ticket deleted.");
 			mutateTickets();
 		} catch (err: unknown) {
@@ -217,7 +232,8 @@ export default function TicketsPage() {
 			<TicketDialog
 				open={createOpen}
 				mode="create"
-				projectId={selectedProjectId}
+				projectId={isAllProjects ? "" : selectedProjectId}
+				projects={projects}
 				onClose={() => setCreateOpen(false)}
 				onSaved={() => mutateTickets()}
 			/>
@@ -226,7 +242,8 @@ export default function TicketsPage() {
 				open={editTicket !== null}
 				mode="edit"
 				ticket={editTicket ?? undefined}
-				projectId={selectedProjectId}
+				projectId={editTicket?.project_id ?? selectedProjectId}
+				projects={projects}
 				onClose={() => setEditTicket(null)}
 				onSaved={() => mutateTickets()}
 			/>
@@ -234,7 +251,7 @@ export default function TicketsPage() {
 			<ConvertDialog
 				open={convertTicket !== null}
 				ticket={convertTicket}
-				projectId={selectedProjectId}
+				projectId={convertTicket?.project_id ?? selectedProjectId}
 				onClose={() => setConvertTicket(null)}
 				onConverted={() => mutateTickets()}
 			/>
@@ -242,7 +259,7 @@ export default function TicketsPage() {
 			<CloseTicketDialog
 				open={closingTicket !== null}
 				ticket={closingTicket}
-				projectId={selectedProjectId}
+				projectId={closingTicket?.project_id ?? selectedProjectId}
 				onClose={() => setClosingTicket(null)}
 				onClosed={() => mutateTickets()}
 			/>

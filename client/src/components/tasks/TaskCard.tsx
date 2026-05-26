@@ -64,9 +64,9 @@ function TaskCardContentBase({
 				<div className="flex items-center gap-1.5 flex-wrap">
 					{task.task_type && (
 						<span
-							className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium leading-none"
+							className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[12px] font-medium leading-none absolute right-4 transition-all duration-200 group-hover:right-8 top-4"
 							style={{
-								background: `${task.task_type.color}1a`,
+								// background: `${task.task_type.color}1a`,
 								color: task.task_type.color,
 							}}
 							title={task.task_type.name}
@@ -134,12 +134,14 @@ function TaskCardContentBase({
 							{formatTime(task.estimated_time)}
 						</div>
 					)}
-					<div className="flex items-center gap-1 text-[11px] text-muted">
-						<Calendar className="h-3 w-3" />
-						{task.due_date
-							? formatDate(task.due_date.slice(0, 10))
-							: "—"}
-					</div>
+					{task.due_date && (
+						<div className="flex items-center gap-1 text-[11px] text-muted">
+							<Calendar className="h-3 w-3" />
+							{task.due_date
+								? formatDate(task.due_date.slice(0, 10))
+								: "—"}
+						</div>
+					)}
 				</div>
 			</div>
 		</div>
@@ -191,7 +193,7 @@ function SortableTaskCardBase({
 			<div
 				{...attributes}
 				{...listeners}
-				className="absolute top-4 right-1.5 z-10 p-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing text-muted hover:text-primary"
+				className="absolute top-4 bg-white right-1.5 z-10 p-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing text-muted hover:text-primary"
 				onClick={(e) => e.stopPropagation()}
 			>
 				<Tooltip>

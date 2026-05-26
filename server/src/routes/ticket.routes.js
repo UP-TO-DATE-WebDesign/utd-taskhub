@@ -16,6 +16,11 @@ import {
 	makeUpdateComment,
 	makeDeleteComment,
 } from "../controllers/comment.controller.js";
+import {
+	listAttachments,
+	createAttachment,
+	deleteAttachment,
+} from "../controllers/ticket-attachment.controller.js";
 import { requireAuth } from "../middlewares/auth.middleware.js";
 import {
 	requireProjectMember,
@@ -64,6 +69,28 @@ router.post(
 	requireProjectMember,
 	requireProjectPermission("tickets.convert"),
 	convertTicketToTask
+);
+
+router.get(
+	"/:ticketId/attachments",
+	requireAuth,
+	requireProjectMember,
+	requireProjectPermission("tickets.read"),
+	listAttachments
+);
+router.post(
+	"/:ticketId/attachments",
+	requireAuth,
+	requireProjectMember,
+	requireProjectPermission("tickets.update"),
+	createAttachment
+);
+router.delete(
+	"/:ticketId/attachments/:attachmentId",
+	requireAuth,
+	requireProjectMember,
+	requireProjectPermission("tickets.update"),
+	deleteAttachment
 );
 
 router.get("/:ticketId/comments", requireAuth, requireProjectMember, requireProjectPermission("comments.read"), makeGetComments("ticketId"));

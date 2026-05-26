@@ -45,13 +45,16 @@ export function TicketsFilters({
 					<div className="h-9 rounded-md border border-border bg-muted-subtle animate-pulse" />
 				) : (
 					<SearchableSelect
-						value={selectedProjectId}
+						value={selectedProjectId || "all"}
 						onValueChange={onSelectProject}
 						placeholder="Select project..."
-						options={projects.map<SearchableSelectOption>((p) => ({
-							value: p.id,
-							label: p.name,
-						}))}
+						options={[
+							{ value: "all", label: "All projects" },
+							...projects.map<SearchableSelectOption>((p) => ({
+								value: p.id,
+								label: p.name,
+							})),
+						]}
 					/>
 				)}
 			</div>

@@ -29,7 +29,7 @@ export const PRIORITY_LABEL: Record<ApiTaskPriority, string> = {
 export const PRIORITY_CHIP: Record<ApiTaskPriority, string> = {
 	low: "bg-slate-100 text-slate-700",
 	medium: "bg-primary/10 text-primary",
-	high: "bg-orange-100 text-orange-700",
+	high: "bg-orange-100 text-orange-600",
 	urgent: "bg-red-100 text-red-700",
 };
 

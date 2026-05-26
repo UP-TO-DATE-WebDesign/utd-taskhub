@@ -154,20 +154,17 @@ export function getStage(
 	key: string,
 	stages: WorkflowStage[] = SYSTEM_STAGES,
 ): WorkflowStage | undefined {
-	return stages.find((s) => s.key === key) ?? SYSTEM_STAGES.find((s) => s.key === key);
+	return (
+		stages.find((s) => s.key === key) ??
+		SYSTEM_STAGES.find((s) => s.key === key)
+	);
 }
 
-export function getStageLabel(
-	key: string,
-	stages?: WorkflowStage[],
-): string {
+export function getStageLabel(key: string, stages?: WorkflowStage[]): string {
 	return getStage(key, stages)?.name ?? key;
 }
 
-export function getStageColor(
-	key: string,
-	stages?: WorkflowStage[],
-): string {
+export function getStageColor(key: string, stages?: WorkflowStage[]): string {
 	return getStage(key, stages)?.color ?? "#64748b";
 }
 

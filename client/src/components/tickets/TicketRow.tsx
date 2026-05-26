@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import {
 	Loader2,
 	MoreHorizontal,
@@ -55,19 +56,24 @@ export function TicketRow({
 		<tr className="border-b border-border last:border-0 hover:bg-muted-subtle transition-colors">
 			{/* Title */}
 			<td className="px-5 py-3.5 max-w-[240px]">
-				<div className="flex items-center gap-2">
-					<span className="text-[10px] font-mono font-semibold text-muted-foreground bg-muted-subtle px-1.5 py-0.5 rounded shrink-0">
-						{ticket.ticket_code}
-					</span>
-					<p className="text-sm font-semibold text-foreground truncate">
-						{ticket.title}
-					</p>
-				</div>
-				{ticket.description && (
-					<p className="text-xs text-muted truncate mt-0.5">
-						{ticket.description}
-					</p>
-				)}
+				<Link
+					to={`/projects/${ticket.project_id}/tickets/${ticket.id}`}
+					className="block group"
+				>
+					<div className="flex items-center gap-2">
+						<span className="text-[10px] font-mono font-semibold text-muted-foreground bg-muted-subtle px-1.5 py-0.5 rounded shrink-0">
+							{ticket.ticket_code}
+						</span>
+						<p className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+							{ticket.title}
+						</p>
+					</div>
+					{ticket.description && (
+						<p className="text-xs text-muted truncate mt-0.5">
+							{ticket.description}
+						</p>
+					)}
+				</Link>
 			</td>
 
 			{/* Type */}

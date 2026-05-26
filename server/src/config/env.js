@@ -19,6 +19,8 @@ export const env = {
 	supabaseAvatarBucket: process.env.SUPABASE_AVATAR_BUCKET || "avatars",
 	supabaseTaskAttachmentsBucket:
 		process.env.SUPABASE_TASK_ATTACHMENTS_BUCKET || "task-attachments",
+	supabaseTicketAttachmentsBucket:
+		process.env.SUPABASE_TICKET_ATTACHMENTS_BUCKET || "ticket-attachments",
 
 	GMAIL_USER: process.env.GMAIL_USER,
 	GMAIL_APP_PASSWORD: process.env.GMAIL_APP_PASSWORD,
