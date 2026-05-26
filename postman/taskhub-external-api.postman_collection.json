@@ -1,0 +1,271 @@
+{
+  "info": {
+    "name": "TaskHub v2 — External API",
+    "description": "Third-party integration endpoints. Authenticate every request with an API key generated from Profile > API Keys. Key is bound to a single project and a set of scopes. Set `baseUrl` and `apiKey` variables before running.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5050",
+      "type": "string",
+      "description": "Root URL of the TaskHub backend (no trailing slash)."
+    },
+    {
+      "key": "apiVersion",
+      "value": "v1",
+      "type": "string"
+    },
+    {
+      "key": "apiKey",
+      "value": "thk_live_REPLACE_ME",
+      "type": "string",
+      "description": "Plaintext API key from Profile > API Keys. Shown once at creation."
+    },
+    {
+      "key": "ticketId",
+      "value": "",
+      "type": "string",
+      "description": "UUID of an existing ticket in the key's project. Auto-populated by Create Ticket if test script enabled."
+    },
+    {
+      "key": "taskId",
+      "value": "",
+      "type": "string",
+      "description": "UUID of an existing task in the key's project. Auto-populated by Create Task if test script enabled."
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{apiKey}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Tickets",
+      "item": [
+        {
+          "name": "Create ticket",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.data && json.data.id) {",
+                  "  pm.collectionVariables.set('ticketId', json.data.id);",
+                  "}",
+                  "pm.test('201 Created', () => pm.response.to.have.status(201));",
+                  "pm.test('source = external_api', () => {",
+                  "  pm.expect(json.data.source).to.eql('external_api');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Login button broken on Safari\",\n  \"type\": \"bug\",\n  \"description\": \"Clicking login does nothing on iOS Safari.\",\n  \"priority\": \"high\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/external/tickets",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "external", "tickets"]
+            },
+            "description": "Requires scope `tickets:write`. Project and creator are derived from the API key; do not include `project_id` or `created_by` in the body. Optional fields: `description`, `status`, `priority`, `assigned_to` (UUID of project member), `due_date`, `ticket_code`."
+          },
+          "response": []
+        },
+        {
+          "name": "Get ticket by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/external/tickets/{{ticketId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "external", "tickets", "{{ticketId}}"]
+            },
+            "description": "Requires scope `tickets:read`. 404 if the ticket exists in a different project than the key is bound to."
+          },
+          "response": []
+        },
+        {
+          "name": "Update ticket status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"closed\",\n  \"resolution\": \"Fixed in release 2.4\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/external/tickets/{{ticketId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "external", "tickets", "{{ticketId}}", "status"]
+            },
+            "description": "Requires scope `status:update`. Valid statuses: open, in_review, resolved, closed, cancelled. `resolution` is only persisted when status = closed."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Tasks",
+      "item": [
+        {
+          "name": "Create task",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.data && json.data.id) {",
+                  "  pm.collectionVariables.set('taskId', json.data.id);",
+                  "}",
+                  "pm.test('201 Created', () => pm.response.to.have.status(201));",
+                  "pm.test('source = external_api', () => {",
+                  "  pm.expect(json.data.source).to.eql('external_api');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Follow up with customer\",\n  \"description\": \"Reach out to VIP customer about onboarding.\",\n  \"priority\": \"medium\",\n  \"tags\": [\"support\", \"vip\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/external/tasks",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "external", "tasks"]
+            },
+            "description": "Requires scope `tasks:write`. Optional fields: `description`, `status` (workflow stage key), `priority`, `assigned_to`, `board_column_id`, `due_date`, `tags`, `task_type_id`. If `task_type_id` omitted, default type applied. If `status` omitted, first workflow stage of the project is used."
+          },
+          "response": []
+        },
+        {
+          "name": "Get task by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/external/tasks/{{taskId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "external", "tasks", "{{taskId}}"]
+            },
+            "description": "Requires scope `tasks:read`."
+          },
+          "response": []
+        },
+        {
+          "name": "Update task status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"in_progress\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/external/tasks/{{taskId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "external", "tasks", "{{taskId}}", "status"]
+            },
+            "description": "Requires scope `status:update`. `status` must be a valid workflow stage key (lowercase, digits, hyphens, underscores) for the project bound to the key."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Negative cases",
+      "description": "Sanity checks for auth, scope, revoke, and rate-limit behavior.",
+      "item": [
+        {
+          "name": "Missing Authorization header",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Should fail\",\n  \"type\": \"bug\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/external/tickets",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "external", "tickets"]
+            },
+            "description": "Expect 401: 'Missing API key. Send Authorization: Bearer <key>.'"
+          },
+          "response": []
+        },
+        {
+          "name": "Invalid key prefix",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "not_a_real_key", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/external/tickets/{{ticketId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "external", "tickets", "{{ticketId}}"]
+            },
+            "description": "Expect 401: 'Invalid API key format.'"
+          },
+          "response": []
+        },
+        {
+          "name": "Wrong project (override project_id in body is ignored)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"project_id in body should be ignored\",\n  \"type\": \"issue\",\n  \"project_id\": \"00000000-0000-0000-0000-000000000000\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/{{apiVersion}}/external/tickets",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "{{apiVersion}}", "external", "tickets"]
+            },
+            "description": "Expect 201: ticket created in the key's project, NOT the body's project_id."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
