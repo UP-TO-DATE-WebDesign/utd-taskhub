@@ -39,8 +39,11 @@ import {
 	type UserInvitation,
 } from "@/services/user.service";
 import { listRoles, type Role } from "@/services/role.service";
+import { getTeamSprintCapacity } from "@/services/capacity.service";
+import type { SprintCapacitySummary } from "@/types/capacity";
 import { toast } from "sonner";
 import { UsersPageSkeleton } from "@/components/users/UsersPageSkeleton";
+import SprintCapacityInline from "@/components/users/SprintCapacityInline";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -80,16 +83,39 @@ function UserCard({
 	user,
 	index,
 	onDelete,
+	capacity,
+	capacityLoading,
 }: {
 	user: UserProfile;
 	index: number;
 	onDelete: (user: UserProfile) => void;
+	capacity: SprintCapacitySummary | null;
+	capacityLoading: boolean;
 }) {
 	return (
 		<Card
 			className="p-5 flex flex-col gap-4"
 			key={`index-${user.id}-${index}`}
 		>
+			<div className="flex items-center justify-between">
+				<div className="flex items-center gap-1.5">
+					<Badge
+						variant={user.role === "admin" ? "medium" : "default"}
+						className="capitalize"
+					>
+						{user.role}
+					</Badge>
+					<Badge
+						variant={user.status === "active" ? "done" : "todo"}
+						className="capitalize"
+					>
+						{user.status}
+					</Badge>
+				</div>
+				<span className="text-[10px] text-muted">
+					{formatDate(user.created_at)}
+				</span>
+			</div>
 			<div className="flex items-center gap-3">
 				<Avatar className="h-10 w-10">
 					<AvatarImage
@@ -116,25 +142,11 @@ function UserCard({
 					<Trash2 className="h-3.5 w-3.5" />
 				</button>
 			</div>
-			<div className="flex items-center justify-between">
-				<div className="flex items-center gap-1.5">
-					<Badge
-						variant={user.role === "admin" ? "medium" : "default"}
-						className="capitalize"
-					>
-						{user.role}
-					</Badge>
-					<Badge
-						variant={user.status === "active" ? "done" : "todo"}
-						className="capitalize"
-					>
-						{user.status}
-					</Badge>
-				</div>
-				<span className="text-[10px] text-muted">
-					{formatDate(user.created_at)}
-				</span>
-			</div>
+			<SprintCapacityInline
+				capacity={capacity}
+				variant="card"
+				loading={capacityLoading}
+			/>
 		</Card>
 	);
 }
@@ -142,9 +154,13 @@ function UserCard({
 function UserRow({
 	user,
 	onDelete,
+	capacity,
+	capacityLoading,
 }: {
 	user: UserProfile;
 	onDelete: (user: UserProfile) => void;
+	capacity: SprintCapacitySummary | null;
+	capacityLoading: boolean;
 }) {
 	return (
 		<tr className="border-b border-border last:border-0 hover:bg-muted-subtle transition-colors">
@@ -184,6 +200,13 @@ function UserRow({
 				>
 					{user.status}
 				</Badge>
+			</td>
+			<td className="px-4 py-3.5">
+				<SprintCapacityInline
+					capacity={capacity}
+					variant="row"
+					loading={capacityLoading}
+				/>
 			</td>
 			<td className="px-4 py-3.5 text-xs text-muted whitespace-nowrap">
 				{formatDate(user.created_at)}
@@ -633,6 +656,10 @@ export default function UsersPage() {
 	const [users, setUsers] = useState<UserProfile[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
+	const [capacityMap, setCapacityMap] = useState<
+		Record<string, SprintCapacitySummary>
+	>({});
+	const [capacityLoading, setCapacityLoading] = useState(true);
 	const [search, setSearch] = useState("");
 	const [view, setView] = useState<"grid" | "list">("grid");
 	const [inviteOpen, setInviteOpen] = useState(false);
@@ -657,6 +684,28 @@ export default function UsersPage() {
 	useEffect(() => {
 		fetchUsers();
 	}, [fetchUsers]);
+
+	useEffect(() => {
+		let cancelled = false;
+		setCapacityLoading(true);
+		getTeamSprintCapacity()
+			.then((list) => {
+				if (cancelled) return;
+				const map: Record<string, SprintCapacitySummary> = {};
+				for (const c of list) map[c.userId] = c;
+				setCapacityMap(map);
+			})
+			.catch(() => {
+				if (!cancelled)
+					toast.warning("Failed to load sprint capacity.");
+			})
+			.finally(() => {
+				if (!cancelled) setCapacityLoading(false);
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, []);
 
 	const filtered = users.filter((u) => {
 		const q = search.toLowerCase();
@@ -773,6 +822,8 @@ export default function UsersPage() {
 							user={u}
 							index={i}
 							onDelete={setDeleteTarget}
+							capacity={capacityMap[u.id] ?? null}
+							capacityLoading={capacityLoading}
 						/>
 					))}
 				</div>
@@ -782,11 +833,17 @@ export default function UsersPage() {
 			{!loading && !error && view === "list" && filtered.length > 0 && (
 				<Card className="p-0 overflow-hidden">
 					<div className="overflow-x-auto">
-					<table className="min-w-[560px] w-full text-sm">
-						<thead>
-							<tr className="border-b border-border">
-								{["User", "Role", "Status", "Joined", ""].map(
-									(h, i) => (
+						<table className="min-w-[720px] w-full text-sm">
+							<thead>
+								<tr className="border-b border-border">
+									{[
+										"User",
+										"Role",
+										"Status",
+										"Sprint Capacity",
+										"Joined",
+										"",
+									].map((h, i) => (
 										<th
 											key={h + i}
 											className={cn(
@@ -798,20 +855,21 @@ export default function UsersPage() {
 										>
 											{h}
 										</th>
-									),
-								)}
-							</tr>
-						</thead>
-						<tbody>
-							{filtered.map((u) => (
-								<UserRow
-									key={u.id}
-									user={u}
-									onDelete={setDeleteTarget}
-								/>
-							))}
-						</tbody>
-					</table>
+									))}
+								</tr>
+							</thead>
+							<tbody>
+								{filtered.map((u) => (
+									<UserRow
+										key={u.id}
+										user={u}
+										onDelete={setDeleteTarget}
+										capacity={capacityMap[u.id] ?? null}
+										capacityLoading={capacityLoading}
+									/>
+								))}
+							</tbody>
+						</table>
 					</div>
 				</Card>
 			)}
