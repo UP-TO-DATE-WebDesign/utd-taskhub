@@ -27,13 +27,12 @@ const SprintCapacityInline = ({
 			);
 		}
 		return (
-			<div className="flex flex-col w-full mt-4 gap-1 items-center justify-center">
-				<span className="text-secondary font-light text-[10px]">
-					Sprint Capacity
+			<div className="flex flex-col w-full mt-1 gap-1 items-start justify-start">
+				<span className="flex items-center gap-1">
+					<Skeleton height={10} width="80" />
+					<Skeleton height={10} width="100" />
 				</span>
-				<Skeleton height={12} width="15%" />
-				<Skeleton height={12} />
-				<Skeleton height={14} width="35%" />
+				<Skeleton height={14} width="100%" />
 			</div>
 		);
 	}
