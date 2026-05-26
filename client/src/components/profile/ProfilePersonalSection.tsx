@@ -110,7 +110,7 @@ export function ProfilePersonalSection({
 	}
 
 	return (
-		<Card className="p-6">
+		<Card className="p-4 sm:p-6">
 			<h2 className="text-sm font-semibold text-foreground">
 				Personal Information
 			</h2>

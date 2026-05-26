@@ -104,14 +104,14 @@ export function ProfileApiKeysList({
 			<table className="w-full text-left text-xs">
 				<thead className="border-b border-border bg-muted-subtle text-muted-foreground">
 					<tr>
-						<th className="px-3 py-2 font-medium">Name</th>
-						<th className="px-3 py-2 font-medium">Project</th>
-						<th className="px-3 py-2 font-medium">Key</th>
-						<th className="px-3 py-2 font-medium">Scopes</th>
-						<th className="px-3 py-2 font-medium">Last used</th>
-						<th className="px-3 py-2 font-medium">Expires</th>
-						<th className="px-3 py-2 font-medium">Status</th>
-						<th className="px-3 py-2" />
+						<th className="whitespace-nowrap px-3 py-2 font-medium">Name</th>
+						<th className="whitespace-nowrap px-3 py-2 font-medium">Project</th>
+						<th className="whitespace-nowrap px-3 py-2 font-medium">Key</th>
+						<th className="whitespace-nowrap px-3 py-2 font-medium">Scopes</th>
+						<th className="whitespace-nowrap px-3 py-2 font-medium">Last used</th>
+						<th className="whitespace-nowrap px-3 py-2 font-medium">Expires</th>
+						<th className="whitespace-nowrap px-3 py-2 font-medium">Status</th>
+						<th className="whitespace-nowrap px-3 py-2" />
 					</tr>
 				</thead>
 				<tbody>
@@ -123,13 +123,13 @@ export function ProfileApiKeysList({
 								key={k.id}
 								className="border-b border-border last:border-b-0"
 							>
-								<td className="px-3 py-2 font-medium text-foreground">
+								<td className="whitespace-nowrap px-3 py-2 font-medium text-foreground">
 									{k.name}
 								</td>
-								<td className="px-3 py-2 text-muted-foreground">
+								<td className="whitespace-nowrap px-3 py-2 text-muted-foreground">
 									{k.project?.name ?? "—"}
 								</td>
-								<td className="px-3 py-2 font-mono text-[11px] text-foreground">
+								<td className="whitespace-nowrap px-3 py-2 font-mono text-[11px] text-foreground">
 									{k.key_prefix}…
 								</td>
 								<td className="px-3 py-2">
@@ -144,20 +144,20 @@ export function ProfileApiKeysList({
 										))}
 									</div>
 								</td>
-								<td className="px-3 py-2 text-muted-foreground">
+								<td className="whitespace-nowrap px-3 py-2 text-muted-foreground">
 									{formatDateTime(k.last_used_at)}
 								</td>
-								<td className="px-3 py-2 text-muted-foreground">
+								<td className="whitespace-nowrap px-3 py-2 text-muted-foreground">
 									{formatDate(k.expires_at)}
 								</td>
-								<td className="px-3 py-2">
+								<td className="whitespace-nowrap px-3 py-2">
 									<span
 										className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium ${badge.cls}`}
 									>
 										{badge.label}
 									</span>
 								</td>
-								<td className="px-3 py-2 gap-2 flex text-right">
+								<td className="whitespace-nowrap px-3 py-2 gap-2 flex text-right">
 									{!k.revoked_at && (
 										<>
 											<Button

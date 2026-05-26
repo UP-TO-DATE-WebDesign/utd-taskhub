@@ -14,6 +14,7 @@ import { ProfileApiKeysList } from "./ProfileApiKeysList";
 import { CreateApiKeyDialog } from "./CreateApiKeyDialog";
 import { RevealApiKeyDialog } from "./RevealApiKeyDialog";
 import { ApiKeyUsageExamples } from "./ApiKeyUsageExamples";
+import { ApiEndpointReference } from "./ApiEndpointReference";
 
 export function ProfileApiKeysSection() {
 	const [keys, setKeys] = useState<ApiKey[]>([]);
@@ -50,8 +51,8 @@ export function ProfileApiKeysSection() {
 	}
 
 	return (
-		<Card className="p-6">
-			<div className="flex items-center justify-between">
+		<Card className="p-4 sm:p-6">
+			<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 				<div>
 					<h2 className="text-sm font-semibold text-foreground">
 						API Keys
@@ -65,6 +66,7 @@ export function ProfileApiKeysSection() {
 					type="button"
 					size="sm"
 					onClick={() => setCreateOpen(true)}
+					className="w-full sm:w-auto"
 				>
 					<Plus className="h-3.5 w-3.5" />
 					Generate API key
@@ -88,6 +90,10 @@ export function ProfileApiKeysSection() {
 			)}
 
 			<div className="mt-6">
+				<ApiEndpointReference />
+			</div>
+
+			<div className="mt-4">
 				<ApiKeyUsageExamples />
 			</div>
 

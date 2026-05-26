@@ -67,19 +67,19 @@ export default function ProfilePage() {
 
 	if (loading) {
 		return (
-			<div className="mx-auto max-w-[1280px] px-4 py-8 sm:px-5 md:px-6">
+			<div className="mx-auto max-w-[1280px] px-4 py-6 sm:px-5 sm:py-8 md:px-6">
 				<div className="mb-6">
 					<Skeleton className="h-7 w-32" />
 					<Skeleton className="mt-1 h-4 w-56" />
 				</div>
-				<div className="grid gap-6 md:grid-cols-[280px_1fr]">
-					<Card className="flex flex-col items-center gap-4 p-6">
+				<div className="grid gap-4 sm:gap-6 md:grid-cols-[280px_1fr]">
+					<Card className="flex flex-col items-center gap-4 p-4 sm:p-6">
 						<Skeleton className="h-20 w-20 rounded-full" />
 						<Skeleton className="h-5 w-36" />
 						<Skeleton className="h-4 w-48" />
 						<Skeleton className="h-5 w-20 rounded-full" />
 					</Card>
-					<Card className="p-6">
+					<Card className="p-4 sm:p-6">
 						<Skeleton className="mb-4 h-5 w-40" />
 						<div className="space-y-4">
 							<Skeleton className="h-9 w-full" />
@@ -98,7 +98,7 @@ export default function ProfilePage() {
 	const displayName = profile.full_name ?? profile.email.split("@")[0];
 
 	return (
-		<div className="mx-auto max-w-[1280px] px-4 py-8 sm:px-5 md:px-6">
+		<div className="mx-auto max-w-[1280px] px-4 py-6 sm:px-5 sm:py-8 md:px-6">
 			<div className="mb-6">
 				<h1 className="text-xl font-semibold text-foreground">Profile</h1>
 				<p className="mt-0.5 text-sm text-muted-foreground">
@@ -106,8 +106,8 @@ export default function ProfilePage() {
 				</p>
 			</div>
 
-			<div className="grid gap-6 md:grid-cols-[280px_1fr]">
-				<Card className="flex flex-col items-center gap-3 p-6 text-center">
+			<div className="grid gap-4 sm:gap-6 md:grid-cols-[280px_1fr]">
+				<Card className="flex flex-col items-center gap-3 p-4 sm:p-6 text-center">
 					<Avatar className="h-20 w-20 text-xl">
 						{profile.avatar_url && (
 							<AvatarImage src={profile.avatar_url} alt={displayName} />
@@ -121,9 +121,9 @@ export default function ProfilePage() {
 						<p className="text-base font-semibold text-foreground">
 							{displayName}
 						</p>
-						<p className="mt-0.5 flex items-center justify-center gap-1 text-xs text-muted-foreground">
-							<Mail className="h-3 w-3" />
-							{profile.email}
+						<p className="mt-0.5 flex items-center justify-center gap-1 text-xs text-muted-foreground break-all">
+							<Mail className="h-3 w-3 shrink-0" />
+							<span className="break-all">{profile.email}</span>
 						</p>
 					</div>
 
@@ -149,15 +149,15 @@ export default function ProfilePage() {
 					)}
 				</Card>
 
-				<div className="space-y-4">
-					<div className="flex gap-1 border-b border-border">
+				<div className="space-y-4 min-w-0">
+					<div className="flex gap-1 border-b border-border overflow-x-auto">
 						{TABS.map(({ id, label, icon: Icon }) => (
 							<button
 								key={id}
 								type="button"
 								onClick={() => setActiveTab(id)}
 								className={cn(
-									"flex items-center gap-1.5 px-4 py-2 text-sm transition-colors border-b-2 -mb-px",
+									"flex shrink-0 items-center gap-1.5 px-3 sm:px-4 py-2 text-sm transition-colors border-b-2 -mb-px whitespace-nowrap",
 									activeTab === id
 										? "border-primary text-primary font-medium"
 										: "border-transparent text-muted-foreground hover:text-foreground",
