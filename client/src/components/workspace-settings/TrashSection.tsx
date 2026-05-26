@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -31,6 +30,7 @@ import {
 	type TrashItem,
 	type TrashRecordType,
 } from "@/services/trash.service";
+import { SectionBlock } from "./SectionBlock";
 
 const RECORD_TYPE_LABEL: Record<TrashRecordType, string> = {
 	projects: "Project",
@@ -72,19 +72,7 @@ function initialsOf(name: string | null | undefined, email?: string): string {
 		.slice(0, 2);
 }
 
-function Unauthorized() {
-	return (
-		<div className="mx-auto flex max-w-[1280px] flex-col items-center justify-center px-6 py-24 text-center">
-			<Ban className="mb-3 h-10 w-10 text-danger" />
-			<h2 className="text-2xl font-semibold text-foreground">Unauthorized</h2>
-			<p className="mt-2 max-w-md text-sm text-muted">
-				You do not have permission to view Trash.
-			</p>
-		</div>
-	);
-}
-
-export default function TrashPage() {
+export function TrashSection() {
 	const { can } = usePermission();
 	const [items, setItems] = useState<TrashItem[]>([]);
 	const [loading, setLoading] = useState(true);
@@ -125,7 +113,19 @@ export default function TrashPage() {
 		);
 	}, [items, search]);
 
-	if (!canManage) return <Unauthorized />;
+	if (!canManage) {
+		return (
+			<SectionBlock
+				title="Trash"
+				description="Restore or permanently delete items removed across the workspace."
+			>
+				<div className="flex items-center gap-2 rounded-md border border-danger/20 bg-danger-subtle px-3 py-2 text-sm text-danger">
+					<Ban className="h-4 w-4 shrink-0" />
+					You do not have permission to view Trash.
+				</div>
+			</SectionBlock>
+		);
+	}
 
 	async function handleRestore(item: TrashItem) {
 		try {
@@ -162,51 +162,41 @@ export default function TrashPage() {
 	}
 
 	return (
-		<div className="mx-auto max-w-[1280px] px-4 py-8 sm:px-6">
-			<div className="mb-8 flex flex-col items-start justify-between gap-3 md:flex-row md:items-center">
-				<div>
-					<h1 className="text-3xl font-semibold tracking-tight text-foreground">
-						Trash
-					</h1>
-					<p className="mt-1 text-sm text-muted">
-						Restore deleted records or permanently remove them.
-					</p>
+		<SectionBlock
+			title="Trash"
+			description="Restore or permanently delete items removed across the workspace."
+		>
+			<div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+				<div className="flex flex-wrap items-center gap-1.5">
+					{FILTER_OPTIONS.map((opt) => (
+						<button
+							key={opt.value}
+							type="button"
+							onClick={() => setFilter(opt.value)}
+							className={
+								"rounded-md px-3 py-1.5 text-xs font-medium transition-colors " +
+								(filter === opt.value
+									? "bg-primary text-primary-foreground"
+									: "bg-muted-subtle text-muted-foreground hover:bg-muted hover:text-foreground")
+							}
+						>
+							{opt.label}
+						</button>
+					))}
+				</div>
+				<div className="relative w-full md:w-64">
+					<Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+					<Input
+						value={search}
+						onChange={(e) => setSearch(e.target.value)}
+						placeholder="Search by name..."
+						className="pl-8"
+					/>
 				</div>
 			</div>
 
-			<Card className="mb-6 p-4">
-				<div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-					<div className="flex flex-wrap items-center gap-1.5">
-						{FILTER_OPTIONS.map((opt) => (
-							<button
-								key={opt.value}
-								type="button"
-								onClick={() => setFilter(opt.value)}
-								className={
-									"rounded-md px-3 py-1.5 text-xs font-medium transition-colors " +
-									(filter === opt.value
-										? "bg-primary text-primary-foreground"
-										: "bg-muted-subtle text-muted-foreground hover:bg-muted hover:text-foreground")
-								}
-							>
-								{opt.label}
-							</button>
-						))}
-					</div>
-					<div className="relative w-full md:w-64">
-						<Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-						<Input
-							value={search}
-							onChange={(e) => setSearch(e.target.value)}
-							placeholder="Search by name..."
-							className="pl-8"
-						/>
-					</div>
-				</div>
-			</Card>
-
 			{error ? (
-				<Card className="border-danger/20 bg-danger-subtle p-5">
+				<div className="rounded-md border border-danger/20 bg-danger-subtle p-4">
 					<div className="flex items-start gap-3 text-danger">
 						<AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
 						<div className="flex-1">
@@ -217,29 +207,25 @@ export default function TrashPage() {
 							Retry
 						</Button>
 					</div>
-				</Card>
+				</div>
 			) : loading ? (
-				<Card className="p-0">
-					<div className="space-y-2 p-4">
-						{Array.from({ length: 5 }).map((_, i) => (
-							<SkeletonLoader key={i} className="h-12 w-full" />
-						))}
-					</div>
-				</Card>
+				<div className="space-y-2">
+					{Array.from({ length: 5 }).map((_, i) => (
+						<SkeletonLoader key={i} className="h-12 w-full" />
+					))}
+				</div>
 			) : visibleItems.length === 0 ? (
-				<Card className="p-12">
-					<div className="flex flex-col items-center text-center">
-						<Inbox className="mb-3 h-10 w-10 text-muted-foreground" />
-						<p className="text-base font-medium text-foreground">
-							Trash is empty
-						</p>
-						<p className="mt-1 text-sm text-muted">
-							Deleted records will appear here.
-						</p>
-					</div>
-				</Card>
+				<div className="flex flex-col items-center rounded-md border border-border p-10 text-center">
+					<Inbox className="mb-3 h-10 w-10 text-muted-foreground" />
+					<p className="text-base font-medium text-foreground">
+						Trash is empty
+					</p>
+					<p className="mt-1 text-sm text-muted">
+						Deleted records will appear here.
+					</p>
+				</div>
 			) : (
-				<Card className="overflow-hidden p-0">
+				<div className="overflow-hidden rounded-md border border-border">
 					<div className="overflow-x-auto">
 						<table className="w-full text-sm">
 							<thead className="bg-muted-subtle text-xs uppercase tracking-wide text-muted-foreground">
@@ -337,7 +323,7 @@ export default function TrashPage() {
 							</tbody>
 						</table>
 					</div>
-				</Card>
+				</div>
 			)}
 
 			<Dialog
@@ -411,6 +397,6 @@ export default function TrashPage() {
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
-		</div>
+		</SectionBlock>
 	);
 }

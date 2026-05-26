@@ -26,7 +26,6 @@ import PrivacyPage from '@/pages/PrivacyPage'
 import ContactPage from '@/pages/ContactPage'
 import NotFoundPage from '@/pages/NotFoundPage'
 import ReportsPage from '@/pages/admin/ReportsPage'
-import TrashPage from '@/pages/admin/TrashPage'
 
 function App() {
   return (
@@ -63,9 +62,6 @@ function App() {
             <Route element={<RoleGuard feature="Workspace settings" />}>
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/admin/reports" element={<ReportsPage />} />
-            </Route>
-            <Route element={<RoleGuard feature="Manage trash" />}>
-              <Route path="/admin/trash" element={<TrashPage />} />
             </Route>
             <Route path="/design-system" element={<DesignSystemPage />} />
             <Route path="*" element={<NotFoundPage />} />

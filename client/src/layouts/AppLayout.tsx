@@ -38,7 +38,6 @@ const navLinks = [
 	{ to: "/sprints", label: "Sprints", feature: "View sprints" },
 	{ to: "/users", label: "Users", feature: "View users" },
 	{ to: "/settings", label: "Settings", feature: "Workspace settings" },
-	{ to: "/admin/trash", label: "Trash", feature: "Manage trash" },
 ];
 
 function formatRelativeTime(iso: string): string {

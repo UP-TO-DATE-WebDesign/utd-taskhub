@@ -5,6 +5,7 @@ import {
 	Lock,
 	FileClock,
 	Tags,
+	Trash2,
 	type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -13,6 +14,7 @@ import { MembersSection } from "@/components/workspace-settings/MembersSection";
 import { RolePermissionsSection } from "@/components/workspace-settings/RolePermissionsSection";
 import { SystemLogsSection } from "@/components/workspace-settings/SystemLogsSection";
 import { TaskTypesSection } from "@/components/workspace-settings/TaskTypesSection";
+import { TrashSection } from "@/components/workspace-settings/TrashSection";
 
 interface SettingsNavItem {
 	id: string;
@@ -27,6 +29,7 @@ const navItems: SettingsNavItem[] = [
 	{ id: "members", label: "Members & Roles", icon: Users },
 	{ id: "task-types", label: "Task Types", icon: Tags },
 	{ id: "system-logs", label: "System Logs", icon: FileClock },
+	{ id: "trash", label: "Trash", icon: Trash2 },
 	// { id: "boards", label: "Boards & Workflow", icon: LayoutDashboard },
 	// { id: "tickets", label: "Tickets", icon: Ticket },
 	// { id: "notifications", label: "Notifications", icon: Bell },
@@ -152,6 +155,9 @@ export default function SettingsPage() {
 					</div>
 					<div id="system-logs">
 						<SystemLogsSection />
+					</div>
+					<div id="trash">
+						<TrashSection />
 					</div>
 					{/* <div id="boards">
 						<BoardsSection />
