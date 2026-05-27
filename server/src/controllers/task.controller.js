@@ -16,6 +16,7 @@ const TASK_SELECT = `
 	project_id,
 	board_column_id,
 	ticket_id,
+	ticket:tickets!ticket_id ( ticket_code ),
 	title,
 	description,
 	developer_notes,
@@ -152,7 +153,8 @@ export async function createTask(req, res, next) {
 			if (!parent || parent.project_id !== projectId) {
 				return res.status(400).json({
 					success: false,
-					message: "parent_task_id must reference a task in the same project.",
+					message:
+						"parent_task_id must reference a task in the same project.",
 				});
 			}
 		}
@@ -229,16 +231,17 @@ export async function createTask(req, res, next) {
 		// assigned_to is the joined profile object {id,...} due to TASK_SELECT
 		if (data.sprint_id && data.assigned_to?.id) {
 			try {
-				await refreshUserCapacity(supabaseAdmin, data.assigned_to.id, data.sprint_id);
+				await refreshUserCapacity(
+					supabaseAdmin,
+					data.assigned_to.id,
+					data.sprint_id,
+				);
 			} catch (e) {
 				console.error("[capacity] createTask:", e.message);
 			}
 		}
 
-		if (
-			data.assigned_to?.id &&
-			data.assigned_to.id !== req.profile.id
-		) {
+		if (data.assigned_to?.id && data.assigned_to.id !== req.profile.id) {
 			createNotifications({
 				userIds: [data.assigned_to.id],
 				type: NotificationType.TASK_ASSIGNED,
@@ -365,10 +368,14 @@ export async function updateTask(req, res, next) {
 		if (existing) {
 			const oldAssignee = existing.assigned_to;
 			const newAssignee =
-				updateData.assigned_to !== undefined ? updateData.assigned_to : oldAssignee;
+				updateData.assigned_to !== undefined
+					? updateData.assigned_to
+					: oldAssignee;
 			const oldSprint = existing.sprint_id;
 			const newSprint =
-				updateData.sprint_id !== undefined ? updateData.sprint_id : oldSprint;
+				updateData.sprint_id !== undefined
+					? updateData.sprint_id
+					: oldSprint;
 
 			const pairs = new Set();
 
@@ -376,13 +383,20 @@ export async function updateTask(req, res, next) {
 				"assigned_to" in updateData &&
 				updateData.assigned_to !== oldAssignee
 			) {
-				if (oldAssignee && newSprint) pairs.add(`${oldAssignee}:${newSprint}`);
-				if (newAssignee && newSprint) pairs.add(`${newAssignee}:${newSprint}`);
+				if (oldAssignee && newSprint)
+					pairs.add(`${oldAssignee}:${newSprint}`);
+				if (newAssignee && newSprint)
+					pairs.add(`${newAssignee}:${newSprint}`);
 			}
 
-			if ("sprint_id" in updateData && updateData.sprint_id !== oldSprint) {
-				if (newAssignee && oldSprint) pairs.add(`${newAssignee}:${oldSprint}`);
-				if (newAssignee && newSprint) pairs.add(`${newAssignee}:${newSprint}`);
+			if (
+				"sprint_id" in updateData &&
+				updateData.sprint_id !== oldSprint
+			) {
+				if (newAssignee && oldSprint)
+					pairs.add(`${newAssignee}:${oldSprint}`);
+				if (newAssignee && newSprint)
+					pairs.add(`${newAssignee}:${newSprint}`);
 			}
 
 			if ("estimated_time" in updateData && newAssignee && newSprint) {
@@ -478,7 +492,11 @@ export async function deleteTask(req, res, next) {
 
 		if (existing.sprint_id && existing.assigned_to) {
 			try {
-				await refreshUserCapacity(supabaseAdmin, existing.assigned_to, existing.sprint_id);
+				await refreshUserCapacity(
+					supabaseAdmin,
+					existing.assigned_to,
+					existing.sprint_id,
+				);
 			} catch (e) {
 				console.error("[capacity] deleteTask:", e.message);
 			}

@@ -82,9 +82,9 @@ function TaskCardContentBase({
 						{task.priority.charAt(0).toUpperCase() +
 							task.priority.slice(1)}
 					</Badge>
-					{task.ticket_id && (
+					{task.ticket_code && (
 						<span className="text-[10px] bg-muted-subtle text-muted-foreground px-1.5 py-0.5 rounded font-medium leading-none font-mono">
-							#{task.ticket_id}
+							#{task.ticket_code}
 						</span>
 					)}
 				</div>

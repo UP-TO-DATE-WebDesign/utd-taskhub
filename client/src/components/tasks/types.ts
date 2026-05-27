@@ -18,6 +18,7 @@ export interface UiTask {
 	id: string;
 	project_id: string;
 	ticket_id: string | null;
+	ticket_code: string | null;
 	title: string;
 	description: string | null;
 	developer_notes: string | null;
@@ -133,6 +134,7 @@ export function toUiTask(t: ApiTask): UiTask {
 		id: t.id,
 		project_id: t.project_id,
 		ticket_id: t.ticket_id ?? null,
+		ticket_code: t.ticket?.ticket_code ?? null,
 		title: t.title,
 		description: t.description,
 		developer_notes: t.developer_notes,

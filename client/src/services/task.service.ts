@@ -34,6 +34,7 @@ export interface Task {
 	project_id: string;
 	board_column_id: string | null;
 	ticket_id: string | null;
+	ticket: { ticket_code: string } | null;
 	title: string;
 	description: string | null;
 	developer_notes: string | null;
