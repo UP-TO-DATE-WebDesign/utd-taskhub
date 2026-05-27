@@ -32,6 +32,7 @@ import {
 import { projectDescriptionText } from "@/components/projects/project-description-utils";
 import { PermissionGate } from "@/components/PermissionGate";
 import { usePermission } from "@/hooks/usePermission";
+import { useWorkspaceFeatureFlags } from "@/hooks/useWorkspaceFeatureFlags";
 import { type Project } from "@/services/project.service";
 import type { WorkflowStage } from "@/services/workflow-stage.service";
 import { SYSTEM_STAGES } from "./system-stages";
@@ -110,6 +111,7 @@ export function TaskDetailDialogV2({
 	const [sprints, setSprints] = useState<Sprint[]>([]);
 	const [sprintsLoading, setSprintsLoading] = useState(false);
 	const { can } = usePermission();
+	const { flags } = useWorkspaceFeatureFlags();
 	const canEdit = !!onUpdate && can("Create & edit tasks");
 	const canEditStatus = !!onChangeStatus && can("Create & edit tasks");
 
@@ -683,18 +685,22 @@ export function TaskDetailDialogV2({
 							</div>
 
 							{/* Log Time */}
-							<div>
-								<p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-2">
-									Log Time
-								</p>
-								{task && (
-									<InlineLogTime
-										projectId={task.project_id}
-										taskId={task.id}
-										assigneeId={task.assigned_to?.id ?? null}
-									/>
-								)}
-							</div>
+							{flags.enable_time_logging && (
+								<div>
+									<p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-2">
+										Log Time
+									</p>
+									{task && (
+										<InlineLogTime
+											projectId={task.project_id}
+											taskId={task.id}
+											assigneeId={
+												task.assigned_to?.id ?? null
+											}
+										/>
+									)}
+								</div>
+							)}
 
 							<Separator />
 

@@ -27,5 +27,12 @@ export function validateUpdateWorkspaceSettings(payload) {
 		errors.push("Workspace language must be a non-empty string.");
 	}
 
+	if (
+		payload.enable_time_logging !== undefined &&
+		typeof payload.enable_time_logging !== "boolean"
+	) {
+		errors.push("enable_time_logging must be a boolean.");
+	}
+
 	return errors;
 }

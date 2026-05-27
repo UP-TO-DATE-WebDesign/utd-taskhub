@@ -3,13 +3,14 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SearchableSelect } from "@/components/ui/searchable-select";
-import { SectionBlock } from "./SectionBlock";
+import { SectionBlock, Toggle } from "./SectionBlock";
 import {
 	getWorkspaceSettings,
 	updateWorkspaceSettings,
 	type UpdateWorkspaceSettingsPayload,
 	type WorkspaceSettings,
 } from "@/services/workspace-settings.service";
+import { useWorkspaceFeatureFlags } from "@/hooks/useWorkspaceFeatureFlags";
 
 const TIMEZONE_OPTIONS = [
 	{ value: "pacific", label: "(GMT-08:00) Pacific Time" },
@@ -31,6 +32,7 @@ const EMPTY_FORM: Required<UpdateWorkspaceSettingsPayload> = {
 	workspace_name: "",
 	workspace_timezone: "utc",
 	workspace_language: "en-us",
+	enable_time_logging: true,
 };
 
 export function GeneralSection() {
@@ -39,6 +41,7 @@ export function GeneralSection() {
 		useState<Required<UpdateWorkspaceSettingsPayload>>(EMPTY_FORM);
 	const [loading, setLoading] = useState(true);
 	const [saving, setSaving] = useState(false);
+	const { refresh: refreshFeatureFlags } = useWorkspaceFeatureFlags();
 
 	useEffect(() => {
 		let cancelled = false;
@@ -50,6 +53,7 @@ export function GeneralSection() {
 					workspace_name: s.workspace_name,
 					workspace_timezone: s.workspace_timezone,
 					workspace_language: s.workspace_language,
+					enable_time_logging: s.enable_time_logging,
 				});
 			})
 			.catch((err: Error) => {
@@ -76,6 +80,8 @@ export function GeneralSection() {
 			diff.workspace_timezone = form.workspace_timezone;
 		if (form.workspace_language !== settings.workspace_language)
 			diff.workspace_language = form.workspace_language;
+		if (form.enable_time_logging !== settings.enable_time_logging)
+			diff.enable_time_logging = form.enable_time_logging;
 		return diff;
 	}
 
@@ -101,7 +107,9 @@ export function GeneralSection() {
 				workspace_name: updated.workspace_name,
 				workspace_timezone: updated.workspace_timezone,
 				workspace_language: updated.workspace_language,
+				enable_time_logging: updated.enable_time_logging,
 			});
+			refreshFeatureFlags();
 			toast.success("Workspace settings saved.");
 		} catch (err) {
 			toast.error(
@@ -176,6 +184,26 @@ export function GeneralSection() {
 						options={LANGUAGE_OPTIONS}
 					/>
 				</div>
+			</div>
+			<div className="mt-6 border-t border-border pt-4 flex items-center justify-between">
+				<div>
+					<p className="text-sm font-medium text-foreground">
+						Log Time
+					</p>
+					<p className="text-xs text-muted mt-0.5">
+						Allow users to log worked hours on tasks. When off, the
+						Log Time section is hidden from task details.
+					</p>
+				</div>
+				<Toggle
+					checked={form.enable_time_logging}
+					onChange={() =>
+						setForm((f) => ({
+							...f,
+							enable_time_logging: !f.enable_time_logging,
+						}))
+					}
+				/>
 			</div>
 			<div className="mt-5 flex justify-end">
 				<Button

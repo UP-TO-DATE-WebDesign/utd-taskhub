@@ -157,7 +157,7 @@ export function TaskFilters({
 			{isFiltered && (
 				<button
 					onClick={onClearFilters}
-					className="text-xs text-muted hover:text-foreground underline"
+					className="text-xs! text-muted hover:text-foreground "
 				>
 					Clear filters
 				</button>

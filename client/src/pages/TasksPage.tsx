@@ -62,12 +62,15 @@ import { StartSprintButton } from "@/components/tasks/start-sprint/StartSprintBu
 import { TasksPageSkeleton } from "@/components/tasks/TasksPageSkeleton";
 import { useSearchParams } from "react-router-dom";
 import { useApiSWR } from "@/hooks/useApiSWR";
+import { useAuth } from "@/context/AuthContext";
 
 export default function TasksPage() {
+	const { user } = useAuth();
 	const [searchParams, setSearchParams] = useSearchParams();
 
 	const taskId = searchParams.get("taskId");
 	const projectId = searchParams.get("projectId");
+	const assignee = searchParams.get("assignee");
 
 	const {
 		data: rawTasks = [],
@@ -104,7 +107,6 @@ export default function TasksPage() {
 		[rawTasks, stages],
 	);
 
-	const loading = tasksLoading || projectsLoading || profilesLoading;
 	const error = tasksError ?? projectsError ?? profilesError ?? null;
 
 	const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
@@ -125,6 +127,11 @@ export default function TasksPage() {
 	const [filterStatus, setFilterStatus] = useState("all");
 	const [search, setSearch] = useState("");
 
+	const loading =
+		tasksLoading ||
+		projectsLoading ||
+		profilesLoading ||
+		filterSprintsLoading;
 	const columnsRef = useRef(columns);
 	columnsRef.current = columns;
 	const dragSrcColRef = useRef<ColumnId | null>(null);
@@ -144,9 +151,13 @@ export default function TasksPage() {
 					setViewTask(toUiTask(data));
 				});
 			}
+
+			if (assignee === "me" && user) {
+				setFilterUser(user.id);
+			}
 		}, 250);
 		return () => clearTimeout(t);
-	}, [taskId, projectId, viewTask]);
+	}, [taskId, projectId, viewTask, assignee]);
 
 	// ── Sprint filter options ────────────────────────────────────────────────
 
@@ -206,11 +217,13 @@ export default function TasksPage() {
 		return rectIntersection(args);
 	}, []);
 
-	const onDragStart = useCallback(({ active }: DragStartEvent) => {
-		setActiveTaskId(active.id as string);
-		dragSrcColRef.current = findColumnId(active.id as string);
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [stageKeys]);
+	const onDragStart = useCallback(
+		({ active }: DragStartEvent) => {
+			setActiveTaskId(active.id as string);
+			dragSrcColRef.current = findColumnId(active.id as string);
+		},
+		[stageKeys],
+	);
 
 	const onDragOver = useCallback(
 		({ active, over }: DragOverEvent) => {
@@ -221,9 +234,7 @@ export default function TasksPage() {
 
 			const srcColId = findColumnId(activeId);
 			const dstColId = (
-				stageKeys.includes(overId)
-					? overId
-					: findColumnId(overId)
+				stageKeys.includes(overId) ? overId : findColumnId(overId)
 			) as ColumnId | null;
 
 			if (!srcColId || !dstColId || srcColId === dstColId) return;
@@ -291,7 +302,8 @@ export default function TasksPage() {
 					if (!curr) return curr;
 					const fromIdx = curr.findIndex((t) => t.id === activeId);
 					const toIdx = curr.findIndex((t) => t.id === overId);
-					if (fromIdx < 0 || toIdx < 0 || fromIdx === toIdx) return curr;
+					if (fromIdx < 0 || toIdx < 0 || fromIdx === toIdx)
+						return curr;
 					return arrayMove(curr, fromIdx, toIdx);
 				},
 				{ revalidate: false },
@@ -360,9 +372,9 @@ export default function TasksPage() {
 	const activeSprintTasks = useMemo<UiTask[]>(
 		() =>
 			activeSprint
-				? stageKeys.flatMap((c) => columns[c] ?? []).filter(
-						(t) => t.sprint?.id === activeSprint.id,
-					)
+				? stageKeys
+						.flatMap((c) => columns[c] ?? [])
+						.filter((t) => t.sprint?.id === activeSprint.id)
 				: [],
 		[columns, activeSprint, stageKeys],
 	);
@@ -383,20 +395,22 @@ export default function TasksPage() {
 
 	const startCandidateTasks = useMemo<UiTask[]>(() => {
 		if (!nextPlannedSprint) return [];
-		return stageKeys.flatMap((c) => columns[c] ?? []).filter(
-			(t) =>
-				t.sprint?.id !== nextPlannedSprint.id &&
-				t.apiStatus !== "done" &&
-				t.apiStatus !== "cancelled",
-		);
+		return stageKeys
+			.flatMap((c) => columns[c] ?? [])
+			.filter(
+				(t) =>
+					t.sprint?.id !== nextPlannedSprint.id &&
+					t.apiStatus !== "done" &&
+					t.apiStatus !== "cancelled",
+			);
 	}, [columns, nextPlannedSprint, stageKeys]);
 
 	const activeTask = useMemo(
 		() =>
 			activeTaskId
-				? (stageKeys.flatMap((c) => columns[c] ?? []).find(
-						(t) => t.id === activeTaskId,
-					) ?? null)
+				? (stageKeys
+						.flatMap((c) => columns[c] ?? [])
+						.find((t) => t.id === activeTaskId) ?? null)
 				: null,
 		[activeTaskId, columns, stageKeys],
 	);
@@ -421,10 +435,9 @@ export default function TasksPage() {
 
 	const handleDeleteTask = useCallback(
 		async (task: UiTask) => {
-			mutateTasks(
-				(curr) => curr?.filter((t) => t.id !== task.id),
-				{ revalidate: false },
-			);
+			mutateTasks((curr) => curr?.filter((t) => t.id !== task.id), {
+				revalidate: false,
+			});
 			try {
 				await deleteTask(task.project_id, task.id);
 				toast.success("Task deleted", { description: task.title });
@@ -514,7 +527,9 @@ export default function TasksPage() {
 			const updated = toUiTask(apiTask);
 			mutateTasks();
 			if (updated) {
-				setViewTask((vt) => (vt && vt.id === updated.id ? updated : vt));
+				setViewTask((vt) =>
+					vt && vt.id === updated.id ? updated : vt,
+				);
 			}
 			toast.success("Task updated", { description: apiTask.title });
 		},

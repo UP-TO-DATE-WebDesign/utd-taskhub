@@ -134,9 +134,8 @@ export default function DashboardPage() {
 	const error = dashboardError ? dashboardError.message : null;
 
 	const { data: reportsPayload, isLoading: reportsLoading } =
-		useApiSWR<AdminReportPayload>(
-			isAdmin ? ["admin-reports"] : null,
-			() => getAdminReports(),
+		useApiSWR<AdminReportPayload>(isAdmin ? ["admin-reports"] : null, () =>
+			getAdminReports(),
 		);
 	const reportsSummary = reportsPayload?.projectStatusSummary ?? null;
 
@@ -515,123 +514,127 @@ export default function DashboardPage() {
 								Recent Tasks
 							</h2>
 							<button
-								onClick={() => navigate("/tasks")}
+								onClick={() => navigate("/tasks?assignee=me")}
 								className="text-sm text-primary font-medium hover:underline"
 							>
 								View All
 							</button>
 						</div>
 						<div className="overflow-x-auto">
-						<table className="min-w-[520px] w-full text-sm">
-							<thead>
-								<tr className="border-b border-border">
-									<th
-										onClick={() => toggleSort("title")}
-										className="px-5 py-3 text-[10px] font-medium uppercase tracking-wider text-muted text-left cursor-pointer select-none"
-									>
-										<span className="inline-flex items-center gap-1">
-											Task Description
-											{sortKey === "title" &&
-												(sortDir === "asc" ? (
-													<ArrowUp className="h-3 w-3" />
-												) : (
-													<ArrowDown className="h-3 w-3" />
-												))}
-										</span>
-									</th>
-									<th
-										onClick={() => toggleSort("project")}
-										className="px-4 py-3 text-[10px] font-medium uppercase tracking-wider text-muted text-left cursor-pointer select-none"
-									>
-										<span className="inline-flex items-center gap-1">
-											Project
-											{sortKey === "project" &&
-												(sortDir === "asc" ? (
-													<ArrowUp className="h-3 w-3" />
-												) : (
-													<ArrowDown className="h-3 w-3" />
-												))}
-										</span>
-									</th>
-									<th
-										onClick={() => toggleSort("due_date")}
-										className="px-4 py-3 text-[10px] font-medium uppercase tracking-wider text-muted text-left cursor-pointer select-none"
-									>
-										<span className="inline-flex items-center gap-1">
-											Due
-											{sortKey === "due_date" &&
-												(sortDir === "asc" ? (
-													<ArrowUp className="h-3 w-3" />
-												) : (
-													<ArrowDown className="h-3 w-3" />
-												))}
-										</span>
-									</th>
-									<th
-										onClick={() => toggleSort("status")}
-										className="px-4 py-3 text-[10px] font-medium uppercase tracking-wider text-muted text-left cursor-pointer select-none"
-									>
-										<span className="inline-flex items-center gap-1">
-											Status
-											{sortKey === "status" &&
-												(sortDir === "asc" ? (
-													<ArrowUp className="h-3 w-3" />
-												) : (
-													<ArrowDown className="h-3 w-3" />
-												))}
-										</span>
-									</th>
-								</tr>
-							</thead>
-							<tbody>
-								{sortedRecentTasks.length === 0 ? (
-									<tr>
-										<td
-											colSpan={4}
-											className="px-5 py-6 text-sm text-muted text-center"
+							<table className="min-w-[520px] w-full text-sm">
+								<thead>
+									<tr className="border-b border-border">
+										<th
+											onClick={() => toggleSort("title")}
+											className="px-5 py-3 text-[10px] font-medium uppercase tracking-wider text-muted text-left cursor-pointer select-none"
 										>
-											No active tasks
-										</td>
+											<span className="inline-flex items-center gap-1">
+												Task Description
+												{sortKey === "title" &&
+													(sortDir === "asc" ? (
+														<ArrowUp className="h-3 w-3" />
+													) : (
+														<ArrowDown className="h-3 w-3" />
+													))}
+											</span>
+										</th>
+										<th
+											onClick={() =>
+												toggleSort("project")
+											}
+											className="px-4 py-3 text-[10px] font-medium uppercase tracking-wider text-muted text-left cursor-pointer select-none"
+										>
+											<span className="inline-flex items-center gap-1">
+												Project
+												{sortKey === "project" &&
+													(sortDir === "asc" ? (
+														<ArrowUp className="h-3 w-3" />
+													) : (
+														<ArrowDown className="h-3 w-3" />
+													))}
+											</span>
+										</th>
+										<th
+											onClick={() =>
+												toggleSort("due_date")
+											}
+											className="px-4 py-3 text-[10px] font-medium uppercase tracking-wider text-muted text-left cursor-pointer select-none"
+										>
+											<span className="inline-flex items-center gap-1">
+												Due
+												{sortKey === "due_date" &&
+													(sortDir === "asc" ? (
+														<ArrowUp className="h-3 w-3" />
+													) : (
+														<ArrowDown className="h-3 w-3" />
+													))}
+											</span>
+										</th>
+										<th
+											onClick={() => toggleSort("status")}
+											className="px-4 py-3 text-[10px] font-medium uppercase tracking-wider text-muted text-left cursor-pointer select-none"
+										>
+											<span className="inline-flex items-center gap-1">
+												Status
+												{sortKey === "status" &&
+													(sortDir === "asc" ? (
+														<ArrowUp className="h-3 w-3" />
+													) : (
+														<ArrowDown className="h-3 w-3" />
+													))}
+											</span>
+										</th>
 									</tr>
-								) : (
-									sortedRecentTasks.map((task) => (
-										<tr
-											key={task.id}
-											className="border-b border-border last:border-0 hover:bg-muted-subtle transition-colors"
-										>
-											<td className="px-5 py-4">
-												<div className="flex items-center gap-2.5">
-													<span
-														className={`h-2 w-2 rounded-full shrink-0 ${STATUS_DOT[task.status] ?? "bg-muted"}`}
-													/>
-													<span className="text-sm font-medium text-foreground">
-														{task.title}
-													</span>
-												</div>
-											</td>
-											<td className="px-4 py-4 text-sm text-muted-foreground">
-												{task.project?.name ?? "—"}
-											</td>
-											<td className="px-4 py-4 text-sm text-muted-foreground">
-												{formatDue(task.due_date)}
-											</td>
-											<td className="px-4 py-4">
-												<Badge
-													variant={
-														task.status as never
-													}
-												>
-													{task.status.replace(
-														"_",
-														" ",
-													)}
-												</Badge>
+								</thead>
+								<tbody>
+									{sortedRecentTasks.length === 0 ? (
+										<tr>
+											<td
+												colSpan={4}
+												className="px-5 py-6 text-sm text-muted text-center"
+											>
+												No active tasks
 											</td>
 										</tr>
-									))
-								)}
-							</tbody>
-						</table>
+									) : (
+										sortedRecentTasks.map((task) => (
+											<tr
+												key={task.id}
+												className="border-b border-border last:border-0 hover:bg-muted-subtle transition-colors"
+											>
+												<td className="px-5 py-4">
+													<div className="flex items-center gap-2.5">
+														<span
+															className={`h-2 w-2 rounded-full shrink-0 ${STATUS_DOT[task.status] ?? "bg-muted"}`}
+														/>
+														<span className="text-sm font-medium text-foreground">
+															{task.title}
+														</span>
+													</div>
+												</td>
+												<td className="px-4 py-4 text-sm text-muted-foreground">
+													{task.project?.name ?? "—"}
+												</td>
+												<td className="px-4 py-4 text-sm text-muted-foreground">
+													{formatDue(task.due_date)}
+												</td>
+												<td className="px-4 py-4">
+													<Badge
+														variant={
+															task.status as never
+														}
+													>
+														{task.status.replace(
+															"_",
+															" ",
+														)}
+													</Badge>
+												</td>
+											</tr>
+										))
+									)}
+								</tbody>
+							</table>
 						</div>
 					</Card>
 
@@ -695,22 +698,26 @@ export default function DashboardPage() {
 										{[
 											{
 												label: "On Track",
-												count: reportsSummary.totals.onTrack,
+												count: reportsSummary.totals
+													.onTrack,
 												barClass: "bg-secondary",
 											},
 											{
 												label: "At Risk",
-												count: reportsSummary.totals.atRisk,
+												count: reportsSummary.totals
+													.atRisk,
 												barClass: "bg-warning",
 											},
 											{
 												label: "Blocked",
-												count: reportsSummary.totals.blocked,
+												count: reportsSummary.totals
+													.blocked,
 												barClass: "bg-danger",
 											},
 										].map((row) => {
 											const denom =
-												reportsSummary.totals.totalProjects || 1;
+												reportsSummary.totals
+													.totalProjects || 1;
 											const pct = Math.round(
 												(row.count / denom) * 100,
 											);
@@ -727,7 +734,9 @@ export default function DashboardPage() {
 													<div className="h-1.5 w-full overflow-hidden rounded-full bg-border">
 														<div
 															className={`h-full ${row.barClass} rounded-full transition-all`}
-															style={{ width: `${pct}%` }}
+															style={{
+																width: `${pct}%`,
+															}}
 														/>
 													</div>
 												</div>
@@ -740,7 +749,10 @@ export default function DashboardPage() {
 													Overall Progress
 												</span>
 												<span className="text-sm font-semibold text-foreground">
-													{reportsSummary.overallProgressPct}%
+													{
+														reportsSummary.overallProgressPct
+													}
+													%
 												</span>
 											</div>
 											<div className="h-2 w-full overflow-hidden rounded-full bg-border">
@@ -757,7 +769,9 @@ export default function DashboardPage() {
 									<Button
 										variant="outline"
 										className="mt-5 w-full text-sm"
-										onClick={() => navigate("/admin/reports")}
+										onClick={() =>
+											navigate("/admin/reports")
+										}
 									>
 										View Reports
 									</Button>

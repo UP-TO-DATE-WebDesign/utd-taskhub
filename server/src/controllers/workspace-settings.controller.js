@@ -3,7 +3,9 @@ import { userHasGlobalPermission } from "../middlewares/permission.middleware.js
 import { validateUpdateWorkspaceSettings } from "../utils/workspace-settings.validator.js";
 
 const SETTINGS_SELECT =
-	"id, workspace_name, workspace_timezone, workspace_language, created_at, updated_at";
+	"id, workspace_name, workspace_timezone, workspace_language, enable_time_logging, created_at, updated_at";
+
+const FEATURE_FLAGS_SELECT = "enable_time_logging";
 
 async function canReadSettings(req) {
 	const [canRead, canManage] = await Promise.all([
@@ -47,6 +49,27 @@ export async function getSettings(req, res, next) {
 	}
 }
 
+export async function getFeatureFlags(req, res, next) {
+	try {
+		const { data, error } = await supabaseAdmin
+			.from("workspace_settings")
+			.select(FEATURE_FLAGS_SELECT)
+			.order("created_at", { ascending: true })
+			.limit(1)
+			.maybeSingle();
+
+		if (error) throw error;
+
+		const flags = {
+			enable_time_logging: data?.enable_time_logging ?? true,
+		};
+
+		res.status(200).json({ success: true, data: { flags } });
+	} catch (error) {
+		next(error);
+	}
+}
+
 export async function updateSettings(req, res, next) {
 	try {
 		const canManage = await userHasGlobalPermission(req, "roles.manage");
@@ -75,6 +98,9 @@ export async function updateSettings(req, res, next) {
 		}
 		if (req.body.workspace_language !== undefined) {
 			updateData.workspace_language = req.body.workspace_language.trim();
+		}
+		if (req.body.enable_time_logging !== undefined) {
+			updateData.enable_time_logging = req.body.enable_time_logging;
 		}
 
 		if (Object.keys(updateData).length === 0) {
