@@ -5,6 +5,7 @@ export { InlineTaskType } from "./InlineTaskType";
 export { InlineAssignee } from "./InlineAssignee";
 export { InlineDueDate } from "./InlineDueDate";
 export { InlineEstimatedTime } from "./InlineEstimatedTime";
+export { InlineLogTime } from "./InlineLogTime";
 export { InlineTags } from "./InlineTags";
 export { InlineSprint } from "./InlineSprint";
 export { InlineProject } from "./InlineProject";

@@ -53,6 +53,7 @@ import {
 	InlineAssignee,
 	InlineDueDate,
 	InlineEstimatedTime,
+	InlineLogTime,
 	InlineTags,
 	InlineSprint,
 } from "./task-detail";
@@ -677,6 +678,20 @@ export function TaskDetailDialogV2({
 										onSave={(v) =>
 											persist({ estimated_time: v })
 										}
+									/>
+								)}
+							</div>
+
+							{/* Log Time */}
+							<div>
+								<p className="text-[10px] font-semibold uppercase tracking-wider text-muted mb-2">
+									Log Time
+								</p>
+								{task && (
+									<InlineLogTime
+										projectId={task.project_id}
+										taskId={task.id}
+										assigneeId={task.assigned_to?.id ?? null}
 									/>
 								)}
 							</div>

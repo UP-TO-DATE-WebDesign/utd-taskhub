@@ -18,6 +18,12 @@ import {
 	createAttachment,
 	deleteAttachment,
 } from "../controllers/task-attachment.controller.js";
+import {
+	listTimeLogs,
+	createTimeLogHandler,
+	updateTimeLogHandler,
+	deleteTimeLogHandler,
+} from "../controllers/timeLog.controller.js";
 import { requireAuth } from "../middlewares/auth.middleware.js";
 import { requireProjectMember } from "../middlewares/project.middleware.js";
 import { requireProjectPermission } from "../middlewares/permission.middleware.js";
@@ -120,6 +126,35 @@ router.delete(
 	requireProjectMember,
 	requireProjectPermission("tasks.update"),
 	deleteAttachment,
+);
+
+router.get(
+	"/:taskId/time-logs",
+	requireAuth,
+	requireProjectMember,
+	requireProjectPermission("tasks.read"),
+	listTimeLogs,
+);
+router.post(
+	"/:taskId/time-logs",
+	requireAuth,
+	requireProjectMember,
+	requireProjectPermission("tasks.update"),
+	createTimeLogHandler,
+);
+router.patch(
+	"/:taskId/time-logs/:logId",
+	requireAuth,
+	requireProjectMember,
+	requireProjectPermission("tasks.update"),
+	updateTimeLogHandler,
+);
+router.delete(
+	"/:taskId/time-logs/:logId",
+	requireAuth,
+	requireProjectMember,
+	requireProjectPermission("tasks.update"),
+	deleteTimeLogHandler,
 );
 
 export default router;

@@ -71,6 +71,20 @@ export async function refreshUserCapacity(client, userId, sprintId) {
 	if (error) throw error;
 }
 
+export async function calculateLoggedHours(client, userId, sprintId) {
+	const { data, error } = await client
+		.from("time_logs")
+		.select("duration_minutes")
+		.eq("user_id", userId)
+		.eq("sprint_id", sprintId);
+
+	if (error) throw error;
+	return (data || []).reduce(
+		(sum, row) => sum + (row.duration_minutes || 0) / 60,
+		0,
+	);
+}
+
 export async function getCapacitySummary(client, userId) {
 	const sprint = await getActiveSprint(client);
 	if (!sprint) return null;
@@ -81,6 +95,7 @@ export async function getCapacitySummary(client, userId) {
 		userId,
 		sprint.id,
 	);
+	const loggedHours = await calculateLoggedHours(client, userId, sprint.id);
 
 	return {
 		userId,
@@ -90,6 +105,7 @@ export async function getCapacitySummary(client, userId) {
 		sprintEnd: sprint.end_date,
 		capacityHours: record.capacity_hours,
 		assignedHours,
+		loggedHours,
 		remainingHours: record.capacity_hours - assignedHours,
 		isOverbooked: assignedHours > record.capacity_hours,
 	};
