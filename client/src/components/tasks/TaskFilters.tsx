@@ -113,8 +113,23 @@ export function TaskFilters({
 							value: u.id,
 							label: u.full_name ?? u.email,
 							description: u.full_name ? u.email : undefined,
+							meta: { avatar_url: u.avatar_url },
 						})),
 					]}
+					renderOption={(opt) => (
+						<div className="flex items-center gap-2">
+							<div>
+								<div className="text-xs font-medium">
+									{opt.label}
+								</div>
+								{opt.description && (
+									<div className="text-[8px] text-muted truncate overflow-hidden line-clamp-1">
+										{String(opt.description).split("@")[0]}
+									</div>
+								)}
+							</div>
+						</div>
+					)}
 				/>
 			</div>
 
@@ -127,12 +142,12 @@ export function TaskFilters({
 						placeholder="All Statuses"
 						options={[
 							{ value: "all", label: "All Statuses" },
-							...(stages ?? SYSTEM_STAGES).map<SearchableSelectOption>(
-								(stage) => ({
-									value: stage.key,
-									label: stage.name,
-								}),
-							),
+							...(
+								stages ?? SYSTEM_STAGES
+							).map<SearchableSelectOption>((stage) => ({
+								value: stage.key,
+								label: stage.name,
+							})),
 						]}
 					/>
 				</div>

@@ -80,66 +80,77 @@ export function SearchableSelect<TMeta = unknown>({
 		[options, value],
 	);
 
-	const classNames: ClassNamesConfig<RSOption<TMeta>, false, RSGroup<TMeta>> =
-		React.useMemo(
-			() => ({
-				control: ({ isFocused, isDisabled }) =>
-					cn(
-						"flex w-full items-center justify-between rounded-lg border bg-surface px-3 text-sm text-foreground transition",
-						size === "sm" ? "min-h-8 py-0.5" : "min-h-9 py-1",
-						isFocused
-							? "border-primary ring-2 ring-primary"
-							: "border-border-strong",
-						isDisabled && "cursor-not-allowed opacity-50",
-						error && "border-danger",
-						className,
-					),
-				valueContainer: () => "gap-1 p-0",
-				placeholder: () => "text-muted",
-				singleValue: () => "text-foreground",
-				input: () =>
-					"text-sm text-foreground [&_input]:focus:ring-0 [&_input]:focus:outline-none",
-				indicatorsContainer: () => "gap-1",
-				indicatorSeparator: () => "hidden",
-				dropdownIndicator: ({ isFocused }) =>
-					cn(
-						"text-muted hover:text-foreground px-1",
-						isFocused && "text-foreground",
-					),
-				clearIndicator: () =>
-					"text-muted hover:text-foreground cursor-pointer px-1",
-				menu: () =>
-					cn(
-						"z-50 mt-1 overflow-hidden rounded-lg border border-border bg-surface text-foreground shadow-[0px_4px_12px_rgba(0,0,0,0.06)]",
-						contentClassName,
-					),
-				menuList: () => "p-1 max-h-72",
-				option: ({ isFocused, isSelected, isDisabled }) =>
-					cn(
-						"relative flex w-full cursor-default select-none items-center rounded-md py-1.5 px-2 text-sm outline-none",
-						isFocused && !isSelected && "bg-muted-subtle",
-						isSelected && "bg-primary-subtle text-primary",
-						isDisabled && "pointer-events-none opacity-50",
-					),
-				noOptionsMessage: () => "py-6 text-center text-sm text-muted",
-				loadingMessage: () => "py-6 text-center text-sm text-muted",
-				loadingIndicator: () => "text-muted",
-			}),
-			[size, error, className, contentClassName],
-		);
+	const classNames: ClassNamesConfig<
+		RSOption<TMeta>,
+		false,
+		RSGroup<TMeta>
+	> = React.useMemo(
+		() => ({
+			control: ({ isFocused, isDisabled }) =>
+				cn(
+					"flex w-full items-center justify-between rounded-lg border bg-surface px-3 text-sm text-foreground transition",
+					size === "sm" ? "min-h-8 py-0.5" : "min-h-9 py-1",
+					isFocused
+						? "border-primary ring-2 ring-primary"
+						: "border-border-strong",
+					isDisabled && "cursor-not-allowed opacity-50",
+					error && "border-danger",
+					className,
+				),
+			valueContainer: () => "gap-1 p-0",
+			placeholder: () => "text-muted",
+			singleValue: () => "text-foreground",
+			input: () =>
+				"text-sm text-foreground [&_input]:focus:ring-0 [&_input]:focus:outline-none",
+			indicatorsContainer: () => "gap-1",
+			indicatorSeparator: () => "hidden",
+			dropdownIndicator: ({ isFocused }) =>
+				cn(
+					"text-muted hover:text-foreground px-1",
+					isFocused && "text-foreground",
+				),
+			clearIndicator: () =>
+				"text-muted hover:text-foreground cursor-pointer px-1",
+			menu: () =>
+				cn(
+					"z-50 mt-1 overflow-hidden rounded-lg border border-border bg-surface text-foreground shadow-[0px_4px_12px_rgba(0,0,0,0.06)]",
+					contentClassName,
+				),
+			menuList: () => "p-1 max-h-72",
+			option: ({ isFocused, isSelected, isDisabled }) =>
+				cn(
+					"relative flex w-full cursor-default select-none items-center rounded-md py-1.5 px-2 text-sm outline-none",
+					isFocused && !isSelected && "bg-muted-subtle",
+					isSelected && "bg-primary-subtle text-primary",
+					isDisabled && "pointer-events-none opacity-50",
+				),
+			noOptionsMessage: () => "py-6 text-center text-sm text-muted",
+			loadingMessage: () => "py-6 text-center text-sm text-muted",
+			loadingIndicator: () => "text-muted",
+		}),
+		[size, error, className, contentClassName],
+	);
 
 	const components = React.useMemo(() => {
-		const c: SelectComponentsConfig<RSOption<TMeta>, false, RSGroup<TMeta>> = {
+		const c: SelectComponentsConfig<
+			RSOption<TMeta>,
+			false,
+			RSGroup<TMeta>
+		> = {
 			IndicatorSeparator: () => null,
 		};
 		if (renderOption) {
-			c.Option = (props: OptionProps<RSOption<TMeta>, false, RSGroup<TMeta>>) => (
+			c.Option = (
+				props: OptionProps<RSOption<TMeta>, false, RSGroup<TMeta>>,
+			) => (
 				<RSComponents.Option {...props}>
 					{renderOption(props.data)}
 				</RSComponents.Option>
 			);
 		} else {
-			c.Option = (props: OptionProps<RSOption<TMeta>, false, RSGroup<TMeta>>) => (
+			c.Option = (
+				props: OptionProps<RSOption<TMeta>, false, RSGroup<TMeta>>,
+			) => (
 				<RSComponents.Option {...props}>
 					<div className="flex w-full items-center justify-between gap-2">
 						<span className="truncate">{props.data.label}</span>
@@ -166,10 +177,8 @@ export function SearchableSelect<TMeta = unknown>({
 
 	const handleFilterOption = React.useMemo(() => {
 		if (filterOption) {
-			return (
-				candidate: { data: RSOption<TMeta> },
-				raw: string,
-			) => filterOption(candidate.data, raw);
+			return (candidate: { data: RSOption<TMeta> }, raw: string) =>
+				filterOption(candidate.data, raw);
 		}
 		return (candidate: { data: RSOption<TMeta> }, raw: string) => {
 			const q = raw.trim().toLowerCase();

@@ -40,6 +40,14 @@ CREATE TRIGGER trg_time_logs_updated_at
 ALTER TABLE public.user_sprint_capacity
   ADD COLUMN IF NOT EXISTS logged_hours NUMERIC(6,2) NOT NULL DEFAULT 0;
 
+-- Extend column-level UPDATE grant introduced in 023 so backend rollups
+-- (assigned_hours + logged_hours) succeed under the authenticated role.
+-- Service role still bypasses, but this keeps behavior consistent across
+-- environments where the backend client is not service_role.
+REVOKE UPDATE ON public.user_sprint_capacity FROM authenticated;
+GRANT  UPDATE (capacity_hours, assigned_hours, logged_hours, updated_at)
+  ON public.user_sprint_capacity TO authenticated;
+
 -- ---------------------------------------------------------------
 -- RLS: read for any authenticated user; writes via backend (service role).
 -- Backend controller enforces "assignee or admin/manager" semantics.
