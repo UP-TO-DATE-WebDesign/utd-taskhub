@@ -1,13 +1,17 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { Loader2, Reply, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
 import { usePermission } from "@/hooks/usePermission";
 import { getInitials, profileColorClass } from "./types";
+import { CommentComposer } from "./CommentComposer";
+import {
+	type ProjectMember,
+	listMembers,
+} from "@/services/project-member.service";
 import {
 	type TaskComment,
 	listTaskComments,
@@ -63,13 +67,30 @@ export function TaskComments({ projectId, taskId }: Props) {
 	const { can } = usePermission();
 	const canComment = can("Create & edit tasks");
 	const [items, setItems] = useState<TaskComment[]>([]);
+	const [members, setMembers] = useState<ProjectMember[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [body, setBody] = useState("");
+	const [bodyMentions, setBodyMentions] = useState<string[]>([]);
 	const [submitting, setSubmitting] = useState(false);
 	const [replyTo, setReplyTo] = useState<string | null>(null);
 	const [replyBody, setReplyBody] = useState("");
+	const [replyMentions, setReplyMentions] = useState<string[]>([]);
 	const [replySubmitting, setReplySubmitting] = useState(false);
 	const [deletingId, setDeletingId] = useState<string | null>(null);
+
+	useEffect(() => {
+		let active = true;
+		listMembers(projectId)
+			.then((data) => {
+				if (active) setMembers(data);
+			})
+			.catch(() => {
+				if (active) setMembers([]);
+			});
+		return () => {
+			active = false;
+		};
+	}, [projectId]);
 
 	useEffect(() => {
 		let active = true;
@@ -106,9 +127,11 @@ export function TaskComments({ projectId, taskId }: Props) {
 				taskId,
 				trimmed,
 				null,
+				bodyMentions,
 			);
 			setItems((prev) => [...prev, created]);
 			setBody("");
+			setBodyMentions([]);
 		} catch (e) {
 			toast.error("Failed to post comment", {
 				description: (e as Error).message,
@@ -128,9 +151,11 @@ export function TaskComments({ projectId, taskId }: Props) {
 				taskId,
 				trimmed,
 				parentId,
+				replyMentions,
 			);
 			setItems((prev) => [...prev, created]);
 			setReplyBody("");
+			setReplyMentions([]);
 			setReplyTo(null);
 		} catch (e) {
 			toast.error("Failed to post reply", {
@@ -177,12 +202,14 @@ export function TaskComments({ projectId, taskId }: Props) {
 				<div key={thread.root.id} className="space-y-2">
 					<CommentRow
 						comment={thread.root}
+						members={members}
 						currentUserId={user?.id ?? null}
 						canReply={canComment}
 						deleting={deletingId === thread.root.id}
 						onReply={() => {
 							setReplyTo(thread.root.id);
 							setReplyBody("");
+							setReplyMentions([]);
 						}}
 						onDelete={() => handleDelete(thread.root)}
 					/>
@@ -192,6 +219,7 @@ export function TaskComments({ projectId, taskId }: Props) {
 								<CommentRow
 									key={r.id}
 									comment={r}
+									members={members}
 									currentUserId={user?.id ?? null}
 									canReply={false}
 									deleting={deletingId === r.id}
@@ -202,14 +230,22 @@ export function TaskComments({ projectId, taskId }: Props) {
 						</div>
 					)}
 					{replyTo === thread.root.id && canComment && (
-						<div className="ml-10 pl-3 border-l border-border">
-							<ReplyComposer
+						<div className="ml-10 pl-3 border-l border-border pt-2">
+							<CommentComposer
+								projectId={projectId}
 								value={replyBody}
 								submitting={replySubmitting}
-								onChange={setReplyBody}
+								placeholder="Write a reply..."
+								submitLabel="Reply"
+								autoFocus
+								onChange={(v, ids) => {
+									setReplyBody(v);
+									setReplyMentions(ids);
+								}}
 								onCancel={() => {
 									setReplyTo(null);
 									setReplyBody("");
+									setReplyMentions([]);
 								}}
 								onSubmit={() => handleReply(thread.root.id)}
 							/>
@@ -220,10 +256,14 @@ export function TaskComments({ projectId, taskId }: Props) {
 
 			{canComment && (
 				<div className="pt-2">
-					<RootComposer
+					<CommentComposer
+						projectId={projectId}
 						value={body}
 						submitting={submitting}
-						onChange={setBody}
+						onChange={(v, ids) => {
+							setBody(v);
+							setBodyMentions(ids);
+						}}
 						onSubmit={handleSubmit}
 					/>
 				</div>
@@ -232,8 +272,56 @@ export function TaskComments({ projectId, taskId }: Props) {
 	);
 }
 
+function renderBodyWithMentions(
+	body: string,
+	mentionedIds: string[],
+	members: ProjectMember[],
+) {
+	if (!mentionedIds || mentionedIds.length === 0) return body;
+
+	const names: string[] = [];
+	for (const id of mentionedIds) {
+		const m = members.find((x) => x.user_id === id);
+		const name = m?.profiles.full_name?.trim();
+		if (name) names.push(name);
+	}
+	if (names.length === 0) return body;
+
+	names.sort((a, b) => b.length - a.length);
+	const escaped = names.map((n) => n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+	const re = new RegExp(`@(${escaped.join("|")})`, "g");
+
+	const out: React.ReactNode[] = [];
+	let lastIndex = 0;
+	let match: RegExpExecArray | null;
+	let key = 0;
+	while ((match = re.exec(body)) !== null) {
+		if (match.index > lastIndex) {
+			out.push(
+				<Fragment key={`t-${key++}`}>
+					{body.slice(lastIndex, match.index)}
+				</Fragment>,
+			);
+		}
+		out.push(
+			<span
+				key={`m-${key++}`}
+				className="text-primary font-medium bg-primary/10 rounded px-0.5"
+			>
+				{match[0]}
+			</span>,
+		);
+		lastIndex = match.index + match[0].length;
+	}
+	if (lastIndex < body.length) {
+		out.push(<Fragment key={`t-${key++}`}>{body.slice(lastIndex)}</Fragment>);
+	}
+	return out;
+}
+
 function CommentRow({
 	comment,
+	members,
 	currentUserId,
 	canReply,
 	deleting,
@@ -241,6 +329,7 @@ function CommentRow({
 	onDelete,
 }: {
 	comment: TaskComment;
+	members: ProjectMember[];
 	currentUserId: string | null;
 	canReply: boolean;
 	deleting: boolean;
@@ -272,7 +361,11 @@ function CommentRow({
 					</span>
 				</div>
 				<p className="text-sm text-foreground whitespace-pre-wrap mt-0.5">
-					{comment.body}
+					{renderBodyWithMentions(
+						comment.body,
+						comment.mentioned_user_ids ?? [],
+						members,
+					)}
 				</p>
 				<div className="flex items-center gap-3 mt-1">
 					{canReply && (
@@ -301,91 +394,6 @@ function CommentRow({
 						</button>
 					)}
 				</div>
-			</div>
-		</div>
-	);
-}
-
-function RootComposer({
-	value,
-	submitting,
-	onChange,
-	onSubmit,
-}: {
-	value: string;
-	submitting: boolean;
-	onChange: (v: string) => void;
-	onSubmit: () => void;
-}) {
-	const ref = useRef<HTMLTextAreaElement>(null);
-	return (
-		<div className="flex flex-col gap-2">
-			<textarea
-				ref={ref}
-				value={value}
-				onChange={(e) => onChange(e.target.value)}
-				placeholder="Add a comment..."
-				rows={2}
-				className="w-full text-sm rounded-md border border-border bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 resize-y"
-			/>
-			<div className="flex justify-end">
-				<Button
-					size="sm"
-					onClick={onSubmit}
-					disabled={submitting || !value.trim()}
-				>
-					{submitting && (
-						<Loader2 className="h-3.5 w-3.5 animate-spin mr-2" />
-					)}
-					Comment
-				</Button>
-			</div>
-		</div>
-	);
-}
-
-function ReplyComposer({
-	value,
-	submitting,
-	onChange,
-	onCancel,
-	onSubmit,
-}: {
-	value: string;
-	submitting: boolean;
-	onChange: (v: string) => void;
-	onCancel: () => void;
-	onSubmit: () => void;
-}) {
-	return (
-		<div className="flex flex-col gap-2 pt-2">
-			<textarea
-				autoFocus
-				value={value}
-				onChange={(e) => onChange(e.target.value)}
-				placeholder="Write a reply..."
-				rows={2}
-				className="w-full text-sm! rounded-md border border-border bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 resize-y"
-			/>
-			<div className="flex justify-end gap-2">
-				<Button
-					size="sm"
-					variant="ghost"
-					onClick={onCancel}
-					disabled={submitting}
-				>
-					Cancel
-				</Button>
-				<Button
-					size="sm"
-					onClick={onSubmit}
-					disabled={submitting || !value.trim()}
-				>
-					{submitting && (
-						<Loader2 className="h-3.5 w-3.5 animate-spin mr-2" />
-					)}
-					Reply
-				</Button>
 			</div>
 		</div>
 	);

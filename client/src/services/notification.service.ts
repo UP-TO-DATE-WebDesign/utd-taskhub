@@ -9,7 +9,8 @@ export type NotificationType =
 	| "task.overdue"
 	| "sprint.started"
 	| "sprint.ended"
-	| "role.changed";
+	| "role.changed"
+	| "comment.mentioned";
 
 export interface NotificationData {
 	project_id?: string;
@@ -22,6 +23,7 @@ export interface NotificationData {
 	role_key?: string;
 	scope?: "global" | "project";
 	due_date?: string;
+	comment_id?: string;
 }
 
 export interface Notification {

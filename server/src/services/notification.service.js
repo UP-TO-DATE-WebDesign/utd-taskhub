@@ -11,6 +11,7 @@ export const NotificationType = Object.freeze({
 	SPRINT_STARTED: "sprint.started",
 	SPRINT_ENDED: "sprint.ended",
 	ROLE_CHANGED: "role.changed",
+	COMMENT_MENTION: "comment.mentioned",
 });
 
 export async function createNotifications({

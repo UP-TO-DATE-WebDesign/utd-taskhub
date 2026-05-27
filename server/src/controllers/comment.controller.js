@@ -5,6 +5,28 @@ import {
 	logActivity,
 	resolveProjectIdFromTaskOrTicket,
 } from "../services/activity-log.service.js";
+import {
+	createNotifications,
+	NotificationType,
+} from "../services/notification.service.js";
+
+async function sanitizeMentions(ids, projectId, authorId) {
+	if (!Array.isArray(ids) || ids.length === 0 || !projectId) return [];
+	const unique = [...new Set(ids.filter(Boolean))].filter((id) => id !== authorId);
+	if (unique.length === 0) return [];
+
+	const { data, error } = await supabase
+		.from("project_members")
+		.select("user_id")
+		.eq("project_id", projectId)
+		.in("user_id", unique);
+
+	if (error) {
+		console.error("[mentions] sanitize failed:", error.message);
+		return [];
+	}
+	return data.map((row) => row.user_id);
+}
 
 function snippet(body) {
 	if (!body) return "";
@@ -18,6 +40,7 @@ const COMMENT_SELECT = `
 	task_id,
 	ticket_id,
 	parent_comment_id,
+	mentioned_user_ids,
 	created_at,
 	updated_at,
 	author:profiles!comments_created_by_fkey (
@@ -88,6 +111,17 @@ export function makeCreateComment(parentIdParam) {
 				}
 			}
 
+			const projectId = await resolveProjectIdFromTaskOrTicket({
+				taskId: parentIdParam === "taskId" ? parentId : null,
+				ticketId: parentIdParam === "ticketId" ? parentId : null,
+			});
+
+			const sanitizedMentions = await sanitizeMentions(
+				req.body.mentioned_user_ids,
+				projectId,
+				req.profile.id,
+			);
+
 			const { data, error } = await supabase
 				.from("comments")
 				.insert({
@@ -95,6 +129,7 @@ export function makeCreateComment(parentIdParam) {
 					body: req.body.body.trim(),
 					parent_comment_id: parentCommentId,
 					created_by: req.profile.id,
+					mentioned_user_ids: sanitizedMentions,
 				})
 				.select(COMMENT_SELECT)
 				.single();
@@ -102,10 +137,6 @@ export function makeCreateComment(parentIdParam) {
 			if (error) throw error;
 
 			(async () => {
-				const projectId = await resolveProjectIdFromTaskOrTicket({
-					taskId: parentIdParam === "taskId" ? parentId : null,
-					ticketId: parentIdParam === "ticketId" ? parentId : null,
-				});
 				if (projectId) {
 					logActivity({
 						projectId,
@@ -117,6 +148,20 @@ export function makeCreateComment(parentIdParam) {
 							snippet: snippet(data.body),
 							task_id: data.task_id,
 							ticket_id: data.ticket_id,
+						},
+					});
+				}
+				if (sanitizedMentions.length) {
+					createNotifications({
+						userIds: sanitizedMentions,
+						type: NotificationType.COMMENT_MENTION,
+						title: `${req.profile.full_name || req.profile.email} mentioned you`,
+						body: snippet(data.body),
+						data: {
+							task_id: data.task_id,
+							ticket_id: data.ticket_id,
+							comment_id: data.id,
+							project_id: projectId,
 						},
 					});
 				}
@@ -141,13 +186,15 @@ export function makeUpdateComment(parentIdParam) {
 				return res.status(400).json({ success: false, message: "Validation failed.", errors });
 			}
 
-			if (req.body.body === undefined) {
+			const hasBody = req.body.body !== undefined;
+			const hasMentions = req.body.mentioned_user_ids !== undefined;
+			if (!hasBody && !hasMentions) {
 				return res.status(400).json({ success: false, message: "No valid fields provided for update." });
 			}
 
 			const { data: existing, error: findError } = await supabase
 				.from("comments")
-				.select("id, created_by")
+				.select("id, created_by, mentioned_user_ids")
 				.eq("id", commentId)
 				.eq(column, parentId)
 				.maybeSingle();
@@ -162,20 +209,40 @@ export function makeUpdateComment(parentIdParam) {
 				return res.status(403).json({ success: false, message: "You can only edit your own comments." });
 			}
 
+			const projectId = await resolveProjectIdFromTaskOrTicket({
+				taskId: parentIdParam === "taskId" ? parentId : null,
+				ticketId: parentIdParam === "ticketId" ? parentId : null,
+			});
+
+			const updatePayload = {};
+			if (hasBody) updatePayload.body = req.body.body.trim();
+			let sanitizedMentions = null;
+			if (hasMentions) {
+				sanitizedMentions = await sanitizeMentions(
+					req.body.mentioned_user_ids,
+					projectId,
+					req.profile.id,
+				);
+				updatePayload.mentioned_user_ids = sanitizedMentions;
+			}
+
 			const { data, error } = await supabase
 				.from("comments")
-				.update({ body: req.body.body.trim() })
+				.update(updatePayload)
 				.eq("id", commentId)
 				.select(COMMENT_SELECT)
 				.single();
 
 			if (error) throw error;
 
+			const prevMentions = Array.isArray(existing.mentioned_user_ids)
+				? existing.mentioned_user_ids
+				: [];
+			const newlyMentioned = sanitizedMentions
+				? sanitizedMentions.filter((id) => !prevMentions.includes(id))
+				: [];
+
 			(async () => {
-				const projectId = await resolveProjectIdFromTaskOrTicket({
-					taskId: parentIdParam === "taskId" ? parentId : null,
-					ticketId: parentIdParam === "ticketId" ? parentId : null,
-				});
 				if (projectId) {
 					logActivity({
 						projectId,
@@ -187,6 +254,20 @@ export function makeUpdateComment(parentIdParam) {
 							snippet: snippet(data.body),
 							task_id: data.task_id,
 							ticket_id: data.ticket_id,
+						},
+					});
+				}
+				if (newlyMentioned.length) {
+					createNotifications({
+						userIds: newlyMentioned,
+						type: NotificationType.COMMENT_MENTION,
+						title: `${req.profile.full_name || req.profile.email} mentioned you`,
+						body: snippet(data.body),
+						data: {
+							task_id: data.task_id,
+							ticket_id: data.ticket_id,
+							comment_id: data.id,
+							project_id: projectId,
 						},
 					});
 				}

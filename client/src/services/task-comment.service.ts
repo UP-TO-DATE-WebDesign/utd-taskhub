@@ -13,6 +13,7 @@ export interface TaskComment {
 	task_id: string | null;
 	ticket_id: string | null;
 	parent_comment_id: string | null;
+	mentioned_user_ids: string[];
 	created_at: string;
 	updated_at: string;
 	author: CommentAuthor | null;
@@ -35,6 +36,7 @@ export async function createTaskComment(
 	taskId: string,
 	body: string,
 	parentCommentId: string | null = null,
+	mentionedUserIds: string[] = [],
 ): Promise<TaskComment> {
 	const res = await api.post<{
 		success: boolean;
@@ -43,6 +45,7 @@ export async function createTaskComment(
 	}>(`/projects/${projectId}/tasks/${taskId}/comments`, {
 		body,
 		parent_comment_id: parentCommentId,
+		mentioned_user_ids: mentionedUserIds,
 	});
 	return res.data;
 }
