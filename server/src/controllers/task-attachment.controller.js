@@ -133,7 +133,7 @@ export async function createAttachment(req, res, next) {
 			.from(env.supabaseTaskAttachmentsBucket)
 			.getPublicUrl(objectPath);
 
-		const { data: attachment, error: insertError } = await supabaseAdmin
+		const { data: attachment, error: insertError } = await req.supabase
 			.from("task_attachments")
 			.insert({
 				task_id: taskId,
