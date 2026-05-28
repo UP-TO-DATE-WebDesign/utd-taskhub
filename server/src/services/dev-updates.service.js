@@ -47,7 +47,10 @@ export async function bulkImportUpdates(updates) {
 
 export async function generateReport(month, year) {
 	try {
-		const { data } = await client().post("/generate-report", { month, year });
+		const { data } = await client().post("/generate-report", {
+			month,
+			year,
+		});
 		return data;
 	} catch (error) {
 		throw normalizeError(error, "generate-report");

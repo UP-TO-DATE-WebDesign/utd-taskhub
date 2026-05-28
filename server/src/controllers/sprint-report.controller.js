@@ -31,6 +31,7 @@ function decodeDataUrl(data) {
 // Returns the saved row, or null when the sprint has no completed work.
 export async function generateAndStoreSprintReport({ sprintId, profileId }) {
 	const built = await buildSprintUpdates(sprintId);
+
 	if (!built) {
 		const err = new Error("Sprint not found.");
 		err.statusCode = 404;
@@ -39,9 +40,13 @@ export async function generateAndStoreSprintReport({ sprintId, profileId }) {
 
 	const { sprint, updates, month, year } = built;
 
-	await bulkImportUpdates(updates);
-	const report = await generateReport(month, year);
+	const bulkData = await bulkImportUpdates(updates);
 
+	/****
+	 * DO NOT DELETE
+	 * Commented for a reason, 
+	 * Generate Report through API call is not Confirmed
+	const report = await generateReport(month, year);
 	const row = {
 		sprint_id: sprintId,
 		month,
@@ -58,9 +63,10 @@ export async function generateAndStoreSprintReport({ sprintId, profileId }) {
 		.upsert(row, { onConflict: "sprint_id" })
 		.select(REPORT_SELECT)
 		.single();
+	*****/
 
 	if (error) throw error;
-	return data;
+	return bulkData;
 }
 
 export async function generateSprintReport(req, res, next) {
@@ -68,7 +74,8 @@ export async function generateSprintReport(req, res, next) {
 		if (!isAdminOrManager(req.profile)) {
 			return res.status(403).json({
 				success: false,
-				message: "Only admins and managers can generate sprint reports.",
+				message:
+					"Only admins and managers can generate sprint reports.",
 			});
 		}
 
@@ -87,9 +94,11 @@ export async function generateSprintReport(req, res, next) {
 		res.status(201).json({ success: true, data: saved });
 	} catch (error) {
 		if (error.statusCode) {
-			return res
-				.status(error.statusCode)
-				.json({ success: false, message: error.message });
+			return res.status(error.statusCode).json({
+				success: false,
+				body: req.body,
+				message: error.message,
+			});
 		}
 		next(error);
 	}
@@ -146,14 +155,16 @@ export async function uploadDevUpdateImage(req, res, next) {
 
 		const buffer = decodeDataUrl(req.body?.data);
 		if (!buffer || buffer.length === 0) {
-			return res
-				.status(400)
-				.json({ success: false, message: "Image contents are required." });
+			return res.status(400).json({
+				success: false,
+				message: "Image contents are required.",
+			});
 		}
 		if (buffer.length > IMAGE_MAX_BYTES) {
-			return res
-				.status(400)
-				.json({ success: false, message: "Image must be 10 MB or smaller." });
+			return res.status(400).json({
+				success: false,
+				message: "Image must be 10 MB or smaller.",
+			});
 		}
 
 		const optimized = await sharp(buffer)

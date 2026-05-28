@@ -1,5 +1,6 @@
 import { supabaseAdmin } from "../config/supabase.js";
 import { env } from "../config/env.js";
+import { lexicalToPlainText } from "../utils/lexical-text.js";
 
 // Maps a sprint's completed work into gist "dev update" objects for the
 // external Dev Updates & Reports API.
@@ -10,6 +11,13 @@ const TICKET_TYPE_TO_UPDATE = {
 	support: "Enhancement",
 	issue: "Fix",
 	other: "Chore",
+};
+const TASK_TYPE_TO_UPDATE = {
+	task: "Feature",
+	bug: "Fix",
+	feature: "Feature",
+	story: "Feature",
+	epic: "Feature",
 };
 
 function appOf(project) {
@@ -39,7 +47,7 @@ export async function buildSprintUpdates(sprintId) {
 	const { data: tasks, error: tasksErr } = await supabaseAdmin
 		.from("tasks")
 		.select(
-			"id, title, description, status, ticket_id, updated_at, project_id, project:projects ( name, slug, app_domain )",
+			"id, title, description, status, ticket_id, updated_at, project_id, project:projects ( name, slug, app_domain ), task_type:task_types ( key )",
 		)
 		.eq("sprint_id", sprintId)
 		.eq("status", "done");
@@ -48,19 +56,19 @@ export async function buildSprintUpdates(sprintId) {
 	const updates = [];
 
 	for (const t of tasks ?? []) {
+		const description = lexicalToPlainText(t.description);
 		updates.push({
-			app: appOf(t.project),
+			// app: appOf(t.project),
+			app: "testing-report.tasks.com", //appOf(tk.project),
 			date: isoDate(t.updated_at, fallbackDate),
-			type: "Feature",
+			type: TASK_TYPE_TO_UPDATE[t.task_type?.key] ?? "Feature",
 			change: t.title,
-			...(t.description ? { description: t.description } : {}),
+			...(description ? { description } : {}),
 			url: `${env.appUrl}/projects/${t.project_id}`,
 		});
 	}
 
-	const ticketIds = (tasks ?? [])
-		.map((t) => t.ticket_id)
-		.filter(Boolean);
+	const ticketIds = (tasks ?? []).map((t) => t.ticket_id).filter(Boolean);
 
 	if (ticketIds.length > 0) {
 		const { data: tickets, error: ticketsErr } = await supabaseAdmin
@@ -73,12 +81,13 @@ export async function buildSprintUpdates(sprintId) {
 		if (ticketsErr) throw ticketsErr;
 
 		for (const tk of tickets ?? []) {
+			const description = lexicalToPlainText(tk.description);
 			updates.push({
-				app: appOf(tk.project),
+				app: "testing-report.tickets.com", //appOf(tk.project),
 				date: isoDate(tk.updated_at, fallbackDate),
 				type: TICKET_TYPE_TO_UPDATE[tk.type] || "Fix",
 				change: tk.title,
-				...(tk.description ? { description: tk.description } : {}),
+				...(description ? { description } : {}),
 				url: `${env.appUrl}/projects/${tk.project_id}`,
 			});
 		}
