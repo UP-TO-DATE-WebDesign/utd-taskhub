@@ -1,6 +1,39 @@
 import { supabase } from "../config/supabase.js";
 import { userHasGlobalPermission } from "./permission.middleware.js";
 
+const UUID_RE =
+	/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// Resolves a slug param to the project UUID so downstream middleware
+// (requireProjectMember) and controllers can rely on req.params.id being a UUID.
+// No-op when the param is already a UUID. Must run before requireProjectMember.
+export async function resolveProjectRef(req, res, next) {
+	try {
+		const ref = req.params.id;
+		if (!ref || UUID_RE.test(ref)) return next();
+
+		const { data, error } = await supabase
+			.from("projects")
+			.select("id")
+			.eq("slug", ref)
+			.maybeSingle();
+
+		if (error) return next(error);
+
+		if (!data) {
+			return res.status(404).json({
+				success: false,
+				message: "Project not found.",
+			});
+		}
+
+		req.params.id = data.id;
+		next();
+	} catch (error) {
+		next(error);
+	}
+}
+
 // Verifies the authenticated user is a member of the project.
 // Attaches req.membership. Must run after requireAuth.
 // Admin users bypass the membership check with a synthetic owner membership.

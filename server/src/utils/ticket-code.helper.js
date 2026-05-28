@@ -43,3 +43,31 @@ export async function generateUniqueProjectKey(supabase, name) {
 		if (suffix > 9999) throw new Error("Could not allocate unique project key.");
 	}
 }
+
+// Slugify project name into a URL-friendly slug candidate.
+export function slugifyProjectSlug(name) {
+	const base = (name || "")
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, "-")
+		.replace(/^-+|-+$/g, "");
+	return base.length > 0 ? base : "project";
+}
+
+export async function generateUniqueProjectSlug(supabase, name) {
+	const base = slugifyProjectSlug(name);
+	let candidate = base;
+	let suffix = 1;
+
+	while (true) {
+		const { data, error } = await supabase
+			.from("projects")
+			.select("id")
+			.eq("slug", candidate)
+			.maybeSingle();
+		if (error) throw error;
+		if (!data) return candidate;
+		candidate = `${base}-${suffix}`;
+		suffix += 1;
+		if (suffix > 9999) throw new Error("Could not allocate unique project slug.");
+	}
+}

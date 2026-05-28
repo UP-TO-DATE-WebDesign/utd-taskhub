@@ -15,6 +15,7 @@ import { listProjectActivity } from "../controllers/project-activity.controller.
 import { requireAuth } from "../middlewares/auth.middleware.js";
 import {
 	requireProjectMember,
+	resolveProjectRef,
 } from "../middlewares/project.middleware.js";
 import {
 	requirePermission,
@@ -25,7 +26,7 @@ const router = express.Router();
 
 // Project CRUD
 router.get("/", requireAuth, getProjects);
-router.get("/:id", requireAuth, requireProjectMember, getProjectById);
+router.get("/:id", requireAuth, resolveProjectRef, requireProjectMember, getProjectById);
 router.post("/", requireAuth, requirePermission("projects.create"), createProject);
 router.patch(
 	"/:id",

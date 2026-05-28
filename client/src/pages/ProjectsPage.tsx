@@ -85,6 +85,8 @@ const AVATAR_COLORS = [
 const EMPTY_FORM = {
 	name: "",
 	key: "",
+	slug: "",
+	appDomain: "",
 	status: "planning" as ProjectStatus,
 	description: "",
 	iconType: "icon" as ProjectIconType,
@@ -97,6 +99,13 @@ const EMPTY_FORM = {
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
+
+function slugify(name: string): string {
+	return name
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, "-")
+		.replace(/^-+|-+$/g, "");
+}
 
 function getInitials(name: string | null): string {
 	if (!name) return "?";
@@ -322,6 +331,7 @@ function NewProjectDialog({
 	profilesLoading: boolean;
 }) {
 	const [form, setForm] = useState(EMPTY_FORM);
+	const [slugTouched, setSlugTouched] = useState(false);
 	const [errors, setErrors] = useState<{
 		name?: string;
 		icon?: string;
@@ -333,7 +343,13 @@ function NewProjectDialog({
 		key: K,
 		value: (typeof EMPTY_FORM)[K],
 	) {
-		setForm((prev) => ({ ...prev, [key]: value }));
+		setForm((prev) => {
+			const next = { ...prev, [key]: value };
+			if (key === "name" && !slugTouched) {
+				next.slug = slugify(value as string);
+			}
+			return next;
+		});
 		if (key === "name") setErrors((prev) => ({ ...prev, name: undefined }));
 	}
 
@@ -382,6 +398,8 @@ function NewProjectDialog({
 			const project = await createProject({
 				name: form.name.trim(),
 				key: form.key.trim().toUpperCase() || undefined,
+				slug: form.slug.trim().toLowerCase() || undefined,
+				app_domain: form.appDomain.trim() || undefined,
 				description: projectDescriptionText(form.description)
 					? form.description
 					: undefined,
@@ -403,6 +421,7 @@ function NewProjectDialog({
 
 			onCreate(project);
 			setForm(EMPTY_FORM);
+			setSlugTouched(false);
 			setErrors({});
 			onClose();
 			toast.success("Project created", { description: project.name });
@@ -421,6 +440,7 @@ function NewProjectDialog({
 	function handleOpenChange(open: boolean) {
 		if (!open) {
 			setForm(EMPTY_FORM);
+			setSlugTouched(false);
 			setErrors({});
 		}
 		if (!open) onClose();
@@ -477,6 +497,38 @@ function NewProjectDialog({
 							2-10 uppercase letters or digits. Used as ticket
 							code prefix (e.g. WEB-001).
 						</p>
+					</div>
+
+					{/* Slug */}
+					<div>
+						<label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+							Project Slug
+						</label>
+						<Input
+							placeholder="Auto-generated from name"
+							value={form.slug}
+							onChange={(e) => {
+								setSlugTouched(true);
+								set("slug", slugify(e.target.value));
+							}}
+							className="font-mono"
+						/>
+						<p className="text-xs text-muted-foreground mt-1">
+							Used in the project URL (e.g. /projects/{form.slug ||
+								"my-project"}).
+						</p>
+					</div>
+
+					{/* App Domain */}
+					<div>
+						<label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+							App Domain
+						</label>
+						<Input
+							placeholder="e.g. contentkit.uptodatesites.com"
+							value={form.appDomain}
+							onChange={(e) => set("appDomain", e.target.value)}
+						/>
 					</div>
 
 					{/* Status + Sprint Name */}
@@ -941,7 +993,7 @@ export default function ProjectsPage() {
 						<ProjectCard
 							key={p.id}
 							project={p}
-							onClick={() => navigate(`/projects/${p.id}`)}
+							onClick={() => navigate(`/projects/${p.slug ?? p.id}`)}
 						/>
 					))}
 				</div>
@@ -985,7 +1037,7 @@ export default function ProjectsPage() {
 										key={p.id}
 										project={p}
 										onClick={() =>
-											navigate(`/projects/${p.id}`)
+											navigate(`/projects/${p.slug ?? p.id}`)
 										}
 									/>
 								))}

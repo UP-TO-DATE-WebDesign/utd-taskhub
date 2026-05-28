@@ -8,6 +8,8 @@ export interface Project {
 	id: string;
 	name: string;
 	key: string;
+	slug: string;
+	app_domain: string | null;
 	description: string | null;
 	status: ProjectStatus;
 	icon_type: "icon" | "image" | null;
@@ -27,6 +29,8 @@ export interface Project {
 export interface CreateProjectPayload {
 	name: string;
 	key?: string;
+	slug?: string;
+	app_domain?: string | null;
 	description?: string;
 	status?: ProjectStatus;
 	icon_type?: "icon" | "image";
@@ -40,6 +44,8 @@ export interface CreateProjectPayload {
 export interface UpdateProjectPayload {
 	name?: string;
 	key?: string;
+	slug?: string;
+	app_domain?: string | null;
 	description?: string;
 	status?: ProjectStatus;
 	icon_type?: "icon" | "image";

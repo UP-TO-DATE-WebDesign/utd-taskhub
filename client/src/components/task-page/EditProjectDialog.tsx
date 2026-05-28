@@ -33,6 +33,8 @@ import { getInitials, avatarColor } from "./utils";
 
 const EDIT_EMPTY = {
 	name: "",
+	slug: "",
+	appDomain: "",
 	status: "planning" as ProjectStatus,
 	iconType: "icon" as ProjectIconType,
 	iconValue: DEFAULT_PROJECT_ICON,
@@ -70,6 +72,8 @@ export function EditProjectDialog({
 		setInitialMemberIds(ids);
 		setForm({
 			name: project.name,
+			slug: project.slug ?? "",
+			appDomain: project.app_domain ?? "",
 			status: project.status,
 			iconType: project.icon_type ?? "icon",
 			iconValue: project.icon_value ?? DEFAULT_PROJECT_ICON,
@@ -136,6 +140,8 @@ export function EditProjectDialog({
 		try {
 			const updated = await updateProject(project.id, {
 				name: form.name.trim(),
+				slug: form.slug.trim().toLowerCase() || undefined,
+				app_domain: form.appDomain.trim() || null,
 				description: projectDescriptionText(form.description)
 					? form.description
 					: "",
@@ -203,6 +209,39 @@ export function EditProjectDialog({
 								{errors.name}
 							</p>
 						)}
+					</div>
+
+					{/* Slug + App Domain */}
+					<div className="grid grid-cols-2 gap-4">
+						<div>
+							<label className="text-sm font-medium text-muted-foreground mb-1.5 block">
+								Project Slug
+							</label>
+							<Input
+								value={form.slug}
+								onChange={(e) =>
+									set(
+										"slug",
+										e.target.value
+											.toLowerCase()
+											.replace(/[^a-z0-9-]/g, ""),
+									)
+								}
+								className="font-mono"
+							/>
+						</div>
+						<div>
+							<label className="text-sm font-medium text-muted-foreground mb-1.5 block">
+								App Domain
+							</label>
+							<Input
+								placeholder="e.g. contentkit.uptodatesites.com"
+								value={form.appDomain}
+								onChange={(e) =>
+									set("appDomain", e.target.value)
+								}
+							/>
+						</div>
 					</div>
 
 					{/* Status + Sprint Name */}

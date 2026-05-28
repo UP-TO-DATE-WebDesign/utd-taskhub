@@ -2,11 +2,33 @@ const allowedStatuses = ["planning", "in-progress", "on-hold", "completed"];
 const allowedIconTypes = ["icon", "image"];
 const maxIconValueLength = 1_000_000;
 const PROJECT_KEY_RE = /^[A-Z0-9]{2,10}$/;
+const PROJECT_SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const APP_DOMAIN_RE = /^([a-z0-9-]+\.)+[a-z]{2,}$/i;
 
 export function validateProjectKey(key) {
 	if (typeof key !== "string") return "Project key must be a string.";
 	if (!PROJECT_KEY_RE.test(key)) {
 		return "Project key must be 2-10 uppercase letters or digits.";
+	}
+	return null;
+}
+
+export function validateProjectSlug(slug) {
+	if (typeof slug !== "string") return "Project slug must be a string.";
+	const value = slug.trim().toLowerCase();
+	if (value.length < 1 || value.length > 60) {
+		return "Project slug must be 1-60 characters.";
+	}
+	if (!PROJECT_SLUG_RE.test(value)) {
+		return "Project slug must be lowercase letters, digits, and hyphens.";
+	}
+	return null;
+}
+
+export function validateAppDomain(domain) {
+	if (typeof domain !== "string") return "App domain must be a string.";
+	if (!APP_DOMAIN_RE.test(domain.trim())) {
+		return "App domain must be a valid hostname (e.g. app.example.com).";
 	}
 	return null;
 }
@@ -85,6 +107,16 @@ export function validateCreateProject(payload) {
 		if (err) errors.push(err);
 	}
 
+	if (payload.slug !== undefined && payload.slug !== null && payload.slug !== "") {
+		const err = validateProjectSlug(payload.slug);
+		if (err) errors.push(err);
+	}
+
+	if (payload.app_domain !== undefined && payload.app_domain !== null && payload.app_domain !== "") {
+		const err = validateAppDomain(payload.app_domain);
+		if (err) errors.push(err);
+	}
+
 	validateSprintFields(payload, errors);
 	validateIconFields(payload, errors);
 
@@ -112,6 +144,16 @@ export function validateUpdateProject(payload) {
 
 	if (payload.key !== undefined && payload.key !== null) {
 		const err = validateProjectKey(payload.key);
+		if (err) errors.push(err);
+	}
+
+	if (payload.slug !== undefined && payload.slug !== null && payload.slug !== "") {
+		const err = validateProjectSlug(payload.slug);
+		if (err) errors.push(err);
+	}
+
+	if (payload.app_domain !== undefined && payload.app_domain !== null && payload.app_domain !== "") {
+		const err = validateAppDomain(payload.app_domain);
 		if (err) errors.push(err);
 	}
 

@@ -17,6 +17,8 @@ import { projectDescriptionText } from "@/components/projects/project-descriptio
 type FormState = {
 	name: string;
 	key: string;
+	slug: string;
+	appDomain: string;
 	status: ProjectStatus;
 	description: string;
 	tags: string[];
@@ -27,6 +29,8 @@ function buildInitialForm(project: Project): FormState {
 	return {
 		name: project.name,
 		key: project.key,
+		slug: project.slug ?? "",
+		appDomain: project.app_domain ?? "",
 		status: project.status,
 		description: project.description ?? "",
 		tags: [...(project.tags ?? [])],
@@ -83,6 +87,15 @@ export function GeneralSection({
 		if (trimmedName !== project.name) diff.name = trimmedName;
 		const trimmedKey = form.key.trim().toUpperCase();
 		if (trimmedKey !== project.key) diff.key = trimmedKey;
+
+		const trimmedSlug = form.slug.trim().toLowerCase();
+		if (trimmedSlug !== (project.slug ?? "")) diff.slug = trimmedSlug;
+
+		const trimmedDomain = form.appDomain.trim();
+		if (trimmedDomain !== (project.app_domain ?? "")) {
+			diff.app_domain = trimmedDomain || null;
+		}
+
 		if (form.status !== project.status) diff.status = form.status;
 
 		const currentDesc = project.description ?? "";
@@ -105,6 +118,10 @@ export function GeneralSection({
 		}
 		if (diff.name !== undefined && diff.name.length === 0) {
 			toast.error("Project name is required.");
+			return;
+		}
+		if (diff.slug !== undefined && diff.slug.length === 0) {
+			toast.error("Project slug is required.");
 			return;
 		}
 		setSaving(true);
@@ -157,6 +174,44 @@ export function GeneralSection({
 						<p className="text-[11px] text-muted-foreground mt-1">
 							Prefix for ticket codes (e.g. WEB-001).
 						</p>
+					</div>
+				</div>
+
+				<div className="grid grid-cols-2 gap-4">
+					<div>
+						<label className="text-sm font-medium text-muted-foreground mb-1.5 block">
+							Project Slug
+						</label>
+						<Input
+							value={form.slug}
+							onChange={(e) =>
+								setField(
+									"slug",
+									e.target.value
+										.toLowerCase()
+										.replace(/[^a-z0-9-]/g, ""),
+								)
+							}
+							disabled={saving}
+							className="font-mono"
+						/>
+						<p className="text-[11px] text-muted-foreground mt-1">
+							Used in the project URL (/projects/{form.slug ||
+								"my-project"}).
+						</p>
+					</div>
+					<div>
+						<label className="text-sm font-medium text-muted-foreground mb-1.5 block">
+							App Domain
+						</label>
+						<Input
+							placeholder="e.g. contentkit.uptodatesites.com"
+							value={form.appDomain}
+							onChange={(e) =>
+								setField("appDomain", e.target.value)
+							}
+							disabled={saving}
+						/>
 					</div>
 				</div>
 

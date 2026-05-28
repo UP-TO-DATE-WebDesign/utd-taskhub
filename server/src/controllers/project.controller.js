@@ -3,7 +3,13 @@ import {
 	validateCreateProject,
 	validateUpdateProject,
 } from "../utils/project.validator.js";
-import { generateUniqueProjectKey } from "../utils/ticket-code.helper.js";
+import {
+	generateUniqueProjectKey,
+	generateUniqueProjectSlug,
+} from "../utils/ticket-code.helper.js";
+
+const UUID_RE =
+	/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 import { logActivity } from "../services/activity-log.service.js";
 
 export async function getProjects(req, res, next) {
@@ -57,7 +63,7 @@ export async function getProjectById(req, res, next) {
 			.select(
 				"*, project_members(user_id, role, joined_at, profiles(id, full_name, email, avatar_url)), sprint:sprints!projects_sprint_id_fkey(id, name, start_date, end_date, status)",
 			)
-			.eq("id", id)
+			.eq(UUID_RE.test(id) ? "id" : "slug", id)
 			.maybeSingle();
 
 		if (error) throw error;
@@ -101,11 +107,17 @@ export async function createProject(req, res, next) {
 			sprint_id,
 			tags,
 			key,
+			slug,
+			app_domain,
 		} = req.body;
 
 		const projectKey = key?.trim()
 			? key.trim().toUpperCase()
 			: await generateUniqueProjectKey(supabase, name);
+
+		const projectSlug = slug?.trim()
+			? slug.trim().toLowerCase()
+			: await generateUniqueProjectSlug(supabase, name);
 
 		const { data, error } = await supabase
 			.from("projects")
@@ -120,6 +132,8 @@ export async function createProject(req, res, next) {
 				sprint_id: sprint_id || null,
 				tags: Array.isArray(tags) ? tags : [],
 				key: projectKey,
+				slug: projectSlug,
+				app_domain: app_domain?.trim() || null,
 				created_by: req.profile.id,
 			})
 			.select()
@@ -129,7 +143,7 @@ export async function createProject(req, res, next) {
 			if (error.code === "23505") {
 				return res.status(409).json({
 					success: false,
-					message: "Project key already in use.",
+					message: "Project key or slug already in use.",
 				});
 			}
 			throw error;
@@ -220,6 +234,14 @@ export async function updateProject(req, res, next) {
 			updateData.key = req.body.key?.trim().toUpperCase() || null;
 		}
 
+		if (req.body.slug !== undefined) {
+			updateData.slug = req.body.slug?.trim().toLowerCase() || null;
+		}
+
+		if (req.body.app_domain !== undefined) {
+			updateData.app_domain = req.body.app_domain?.trim() || null;
+		}
+
 		if (Object.keys(updateData).length === 0) {
 			return res.status(400).json({
 				success: false,
@@ -238,7 +260,7 @@ export async function updateProject(req, res, next) {
 			if (error.code === "23505") {
 				return res.status(409).json({
 					success: false,
-					message: "Project key already in use.",
+					message: "Project key or slug already in use.",
 				});
 			}
 			throw error;
