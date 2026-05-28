@@ -60,13 +60,13 @@ const SprintCapacity = ({ userId }: SprintCapacityProps) => {
 		);
 	}
 
-	const assignedPct = Math.min(
-		Math.round((data.assignedHours / data.capacityHours) * 100),
+	const consumedPct = Math.min(
+		Math.round((data.consumedHours / data.capacityHours) * 100),
 		100,
 	);
-	const remainingPct = 100 - assignedPct;
+	const remainingPct = 100 - consumedPct;
 	const barColor =
-		assignedPct >= 75 ? (data.isOverbooked ? "red" : "orange") : "blue";
+		consumedPct >= 75 ? (data.isOverbooked ? "red" : "orange") : "blue";
 
 	return (
 		<div className="flex flex-col w-full mt-4 gap-1">
@@ -78,8 +78,8 @@ const SprintCapacity = ({ userId }: SprintCapacityProps) => {
 			</span>
 
 			<Progress.Root size="lg">
-				<Progress.Section value={assignedPct} color={barColor} animated>
-					<Progress.Label>{assignedPct}%</Progress.Label>
+				<Progress.Section value={consumedPct} color={barColor} animated>
+					<Progress.Label>{consumedPct}%</Progress.Label>
 				</Progress.Section>
 				<Progress.Section value={remainingPct} color="#b8bbc1">
 					<Progress.Label>{remainingPct}%</Progress.Label>
@@ -93,7 +93,7 @@ const SprintCapacity = ({ userId }: SprintCapacityProps) => {
 							data.isOverbooked ? "text-danger" : "text-primary"
 						}
 					>
-						{data.assignedHours}h
+						{data.consumedHours}h
 					</b>
 					<span className="text-muted-foreground">
 						{" "}

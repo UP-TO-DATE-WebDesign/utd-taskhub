@@ -446,10 +446,10 @@ export function EditTaskDialog({
 						<div className="grid grid-cols-2 gap-2">
 							{profiles.map((profile, idx) => {
 								const cap = capacityMap.get(profile.id);
-								const assignedPct = cap
+								const consumedPct = cap
 									? Math.min(
 											Math.round(
-												(cap.assignedHours /
+												(cap.consumedHours /
 													cap.capacityHours) *
 													100,
 											),
@@ -496,7 +496,7 @@ export function EditTaskDialog({
 											</div>
 										</div>
 										{cap !== undefined &&
-											assignedPct !== null && (
+											consumedPct !== null && (
 												<div className="w-full flex flex-col gap-0.5">
 													<div className="h-1 w-full rounded-full bg-muted/50 overflow-hidden">
 														<div
@@ -507,7 +507,7 @@ export function EditTaskDialog({
 																	: "bg-primary",
 															)}
 															style={{
-																width: `${assignedPct}%`,
+																width: `${consumedPct}%`,
 															}}
 														/>
 													</div>
@@ -519,7 +519,7 @@ export function EditTaskDialog({
 																: "text-muted-foreground",
 														)}
 													>
-														{cap.assignedHours}h /{" "}
+														{cap.consumedHours}h /{" "}
 														{cap.capacityHours}h
 													</span>
 												</div>

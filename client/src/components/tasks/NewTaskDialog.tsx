@@ -382,10 +382,10 @@ export function NewTaskDialog({
 						<div className="grid grid-cols-2 gap-2">
 							{profiles.map((profile, idx) => {
 								const cap = capacityMap.get(profile.id);
-								const assignedPct = cap
+								const consumedPct = cap
 									? Math.min(
 											Math.round(
-												(cap.assignedHours /
+												(cap.consumedHours /
 													cap.capacityHours) *
 													100,
 											),
@@ -432,13 +432,13 @@ export function NewTaskDialog({
 											</div>
 										</div>
 										{cap !== undefined &&
-											assignedPct !== null && (
+											consumedPct !== null && (
 												<div className="w-full flex flex-col gap-0.5">
 													<div className="h-1 w-full rounded-full bg-muted/50 overflow-hidden">
 														<div
 															className={cn(
 																"h-full rounded-full transition-all",
-																cap.assignedHours >=
+																cap.consumedHours >=
 																	30
 																	? cap.isOverbooked
 																		? "bg-danger"
@@ -446,14 +446,14 @@ export function NewTaskDialog({
 																	: "bg-primary",
 															)}
 															style={{
-																width: `${assignedPct}%`,
+																width: `${consumedPct}%`,
 															}}
 														/>
 													</div>
 													<span
 														className={cn(
 															"text-[9px]",
-															cap.assignedHours >=
+															cap.consumedHours >=
 																75
 																? cap.isOverbooked
 																	? "text-danger"
@@ -461,7 +461,7 @@ export function NewTaskDialog({
 																: "text-muted-foreground",
 														)}
 													>
-														{cap.assignedHours}h /{" "}
+														{cap.consumedHours}h /{" "}
 														{cap.capacityHours}h
 													</span>
 												</div>

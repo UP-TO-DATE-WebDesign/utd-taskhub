@@ -7,6 +7,7 @@ export interface SprintCapacitySummary {
   capacityHours: number;
   assignedHours: number;
   loggedHours: number;
+  consumedHours: number;
   remainingHours: number;
   isOverbooked: boolean;
 }

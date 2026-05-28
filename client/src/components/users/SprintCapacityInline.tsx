@@ -57,18 +57,18 @@ const SprintCapacityInline = ({
 		);
 	}
 
-	const assignedPct = Math.min(
-		Math.round((capacity.assignedHours / capacity.capacityHours) * 100),
+	const consumedPct = Math.min(
+		Math.round((capacity.consumedHours / capacity.capacityHours) * 100),
 		100,
 	);
-	const remainingPct = 100 - assignedPct;
-	const color = barColor(assignedPct, capacity.isOverbooked);
+	const remainingPct = 100 - consumedPct;
+	const color = barColor(consumedPct, capacity.isOverbooked);
 
 	if (variant === "row") {
 		return (
 			<div className="flex flex-col gap-1 min-w-[140px] max-w-[180px]">
 				<Progress.Root size="sm">
-					<Progress.Section value={assignedPct} color={color} />
+					<Progress.Section value={consumedPct} color={color} />
 					<Progress.Section value={remainingPct} color="#b8bbc1" />
 				</Progress.Root>
 				<div className="flex items-center justify-between gap-2">
@@ -80,7 +80,7 @@ const SprintCapacityInline = ({
 									: "text-primary"
 							}
 						>
-							{capacity.assignedHours}h
+							{capacity.consumedHours}h
 						</b>
 						<span className="text-muted-foreground">
 							{" "}
@@ -116,7 +116,7 @@ const SprintCapacityInline = ({
 									: "text-primary"
 							}
 						>
-							{capacity.assignedHours}h
+							{capacity.consumedHours}h
 						</b>
 						<span className="text-muted-foreground">
 							{" "}
@@ -132,8 +132,8 @@ const SprintCapacityInline = ({
 			</div>
 
 			<Progress.Root size="lg">
-				<Progress.Section value={assignedPct} color={color} animated>
-					<Progress.Label>{assignedPct}%</Progress.Label>
+				<Progress.Section value={consumedPct} color={color} animated>
+					<Progress.Label>{consumedPct}%</Progress.Label>
 				</Progress.Section>
 				<Progress.Section value={remainingPct} color="#b8bbc1">
 					<Progress.Label>{remainingPct}%</Progress.Label>

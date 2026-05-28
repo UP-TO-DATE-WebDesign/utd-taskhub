@@ -85,6 +85,37 @@ export async function calculateLoggedHours(client, userId, sprintId) {
 	);
 }
 
+export async function calculateConsumedHours(client, userId, sprintId) {
+	const { data: tasks, error: tErr } = await client
+		.from("tasks")
+		.select("id, estimated_time")
+		.eq("assigned_to", userId)
+		.eq("sprint_id", sprintId)
+		.neq("status", "cancelled");
+	if (tErr) throw tErr;
+
+	const { data: logs, error: lErr } = await client
+		.from("time_logs")
+		.select("task_id, duration_minutes")
+		.eq("user_id", userId)
+		.eq("sprint_id", sprintId);
+	if (lErr) throw lErr;
+
+	const loggedByTask = new Map();
+	for (const l of logs || []) {
+		loggedByTask.set(
+			l.task_id,
+			(loggedByTask.get(l.task_id) || 0) + (l.duration_minutes || 0) / 60,
+		);
+	}
+
+	return (tasks || []).reduce((sum, t) => {
+		const est = (t.estimated_time || 0) / 60;
+		const logged = loggedByTask.get(t.id) || 0;
+		return sum + Math.max(est, logged);
+	}, 0);
+}
+
 export async function getCapacitySummary(client, userId) {
 	const sprint = await getActiveSprint(client);
 	if (!sprint) return null;
@@ -96,6 +127,11 @@ export async function getCapacitySummary(client, userId) {
 		sprint.id,
 	);
 	const loggedHours = await calculateLoggedHours(client, userId, sprint.id);
+	const consumedHours = await calculateConsumedHours(
+		client,
+		userId,
+		sprint.id,
+	);
 
 	return {
 		userId,
@@ -106,7 +142,8 @@ export async function getCapacitySummary(client, userId) {
 		capacityHours: record.capacity_hours,
 		assignedHours,
 		loggedHours,
-		remainingHours: record.capacity_hours - assignedHours,
-		isOverbooked: assignedHours > record.capacity_hours,
+		consumedHours,
+		remainingHours: record.capacity_hours - consumedHours,
+		isOverbooked: consumedHours > record.capacity_hours,
 	};
 }
