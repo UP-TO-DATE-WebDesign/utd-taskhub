@@ -514,8 +514,8 @@ function NewProjectDialog({
 							className="font-mono"
 						/>
 						<p className="text-xs text-muted-foreground mt-1">
-							Used in the project URL (e.g. /projects/{form.slug ||
-								"my-project"}).
+							Used in the project URL (e.g. /projects/
+							{form.slug || "my-project"}).
 						</p>
 					</div>
 
@@ -544,7 +544,10 @@ function NewProjectDialog({
 								}
 								options={[
 									{ value: "planning", label: "Planning" },
-									{ value: "in-progress", label: "In Progress" },
+									{
+										value: "in-progress",
+										label: "In Progress",
+									},
 									{ value: "on-hold", label: "On Hold" },
 									{ value: "completed", label: "Completed" },
 								]}
@@ -993,7 +996,7 @@ export default function ProjectsPage() {
 						<ProjectCard
 							key={p.id}
 							project={p}
-							onClick={() => navigate(`/projects/${p.slug ?? p.id}`)}
+							onClick={() => navigate(`/projects/${p.id}`)}
 						/>
 					))}
 				</div>
@@ -1037,7 +1040,7 @@ export default function ProjectsPage() {
 										key={p.id}
 										project={p}
 										onClick={() =>
-											navigate(`/projects/${p.slug ?? p.id}`)
+											navigate(`/projects/${p.id}`)
 										}
 									/>
 								))}
