@@ -116,6 +116,42 @@ function detectMention(text: string, caret: number): MentionState {
 	return INACTIVE;
 }
 
+// When caret sits inside an already-inserted "@Full Name" token, re-open the
+// picker so the user can swap the mention without deleting it by hand.
+function findMentionTokenAtCaret(
+	text: string,
+	caret: number,
+	members: ProjectMember[],
+): MentionState {
+	let best: MentionState = INACTIVE;
+	let bestLen = 0;
+
+	for (const m of members) {
+		const name = m.profiles.full_name?.trim() || m.profiles.email;
+		if (!name) continue;
+		const token = `@${name}`;
+		let from = 0;
+		let idx = text.indexOf(token, from);
+		while (idx !== -1) {
+			const start = idx;
+			const end = idx + token.length;
+			// caret anywhere within the token (inclusive of both edges)
+			if (caret >= start && caret <= end && token.length > bestLen) {
+				best = {
+					active: true,
+					query: name,
+					tokenStart: start,
+					cursor: end,
+				};
+				bestLen = token.length;
+			}
+			from = idx + 1;
+			idx = text.indexOf(token, from);
+		}
+	}
+	return best;
+}
+
 export function CommentComposer({
 	projectId,
 	value,
@@ -135,10 +171,15 @@ export function CommentComposer({
 	const mentionedIdsRef = useRef<Set<string>>(new Set());
 
 	function updateMention(text: string, caret: number) {
-		const m = detectMention(text, caret);
+		let m = detectMention(text, caret);
+		if (!m.active) {
+			m = findMentionTokenAtCaret(text, caret, members);
+		}
 		setMention(m);
 		if (m.active && textareaRef.current) {
-			setCaretCoords(getCaretCoordinates(textareaRef.current, m.tokenStart));
+			setCaretCoords(
+				getCaretCoordinates(textareaRef.current, m.tokenStart),
+			);
 		} else {
 			setCaretCoords(null);
 		}
@@ -233,7 +274,8 @@ export function CommentComposer({
 		const name = member.profiles.full_name?.trim() || member.profiles.email;
 		const before = value.slice(0, mention.tokenStart);
 		const after = value.slice(mention.cursor);
-		const insertion = `@${name} `;
+		// Avoid a double space when replacing a token already followed by one.
+		const insertion = after.startsWith(" ") ? `@${name}` : `@${name} `;
 		const next = before + insertion + after;
 		mentionedIdsRef.current.add(member.user_id);
 		const ids = emitMentions(next);
@@ -254,6 +296,7 @@ export function CommentComposer({
 	return (
 		<div className="relative flex flex-col gap-2">
 			<textarea
+				contentEditable={true}
 				ref={textareaRef}
 				value={value}
 				onChange={handleChange}
@@ -270,12 +313,12 @@ export function CommentComposer({
 			/>
 			{showDropdown && (
 				<div
-						className="absolute z-30 w-72 max-w-full rounded-md border border-border bg-surface shadow-md overflow-hidden"
-						style={{
-							top: caretCoords?.top ?? "100%",
-							left: caretCoords ? Math.max(0, caretCoords.left) : 0,
-						}}
-					>
+					className="absolute z-30 w-72 max-w-full rounded-md border border-border bg-surface shadow-md overflow-hidden"
+					style={{
+						top: caretCoords?.top ?? "100%",
+						left: caretCoords ? Math.max(0, caretCoords.left) : 0,
+					}}
+				>
 					<ul className="max-h-56 overflow-y-auto py-1">
 						{filtered.map((m, idx) => {
 							const name =
@@ -342,15 +385,15 @@ export function CommentComposer({
 					</Button>
 				)}
 				<Button
-						size="sm"
-						onClick={onSubmit}
-						disabled={submitting || !value.trim()}
-					>
-						{submitting && (
-							<Loader2 className="h-3.5 w-3.5 animate-spin mr-2" />
-						)}
-						{submitLabel}
-					</Button>
+					size="sm"
+					onClick={onSubmit}
+					disabled={submitting || !value.trim()}
+				>
+					{submitting && (
+						<Loader2 className="h-3.5 w-3.5 animate-spin mr-2" />
+					)}
+					{submitLabel}
+				</Button>
 			</div>
 		</div>
 	);
