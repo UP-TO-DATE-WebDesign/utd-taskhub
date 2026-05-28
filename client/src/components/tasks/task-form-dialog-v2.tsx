@@ -505,7 +505,8 @@ export function TaskFormDialogV2({
 										cap && cap.capacityHours > 0
 											? Math.min(
 													Math.round(
-														(cap.consumedHours / cap.capacityHours) *
+														((cap.consumedHours ?? 0) /
+															cap.capacityHours) *
 															100,
 													),
 													100,
@@ -552,7 +553,7 @@ export function TaskFormDialogV2({
 															/>
 														</div>
 														<span className="text-[9px] text-muted">
-															{cap.consumedHours}h/{cap.capacityHours}h
+															{cap.consumedHours ?? 0}h/{cap.capacityHours}h
 														</span>
 													</div>
 												)}

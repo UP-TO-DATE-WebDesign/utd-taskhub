@@ -57,10 +57,13 @@ const SprintCapacityInline = ({
 		);
 	}
 
-	const consumedPct = Math.min(
-		Math.round((capacity.consumedHours / capacity.capacityHours) * 100),
-		100,
-	);
+	const consumedHours = capacity.consumedHours ?? 0;
+	const consumedPct = capacity.capacityHours
+		? Math.min(
+				Math.round((consumedHours / capacity.capacityHours) * 100),
+				100,
+			)
+		: 0;
 	const remainingPct = 100 - consumedPct;
 	const color = barColor(consumedPct, capacity.isOverbooked);
 
@@ -80,7 +83,7 @@ const SprintCapacityInline = ({
 									: "text-primary"
 							}
 						>
-							{capacity.consumedHours}h
+							{consumedHours}h
 						</b>
 						<span className="text-muted-foreground">
 							{" "}
@@ -116,7 +119,7 @@ const SprintCapacityInline = ({
 									: "text-primary"
 							}
 						>
-							{capacity.consumedHours}h
+							{consumedHours}h
 						</b>
 						<span className="text-muted-foreground">
 							{" "}

@@ -60,10 +60,13 @@ const SprintCapacity = ({ userId }: SprintCapacityProps) => {
 		);
 	}
 
-	const consumedPct = Math.min(
-		Math.round((data.consumedHours / data.capacityHours) * 100),
-		100,
-	);
+	const consumedHours = data.consumedHours ?? 0;
+	const consumedPct = data.capacityHours
+		? Math.min(
+				Math.round((consumedHours / data.capacityHours) * 100),
+				100,
+			)
+		: 0;
 	const remainingPct = 100 - consumedPct;
 	const barColor =
 		consumedPct >= 75 ? (data.isOverbooked ? "red" : "orange") : "blue";
@@ -93,7 +96,7 @@ const SprintCapacity = ({ userId }: SprintCapacityProps) => {
 							data.isOverbooked ? "text-danger" : "text-primary"
 						}
 					>
-						{data.consumedHours}h
+						{consumedHours}h
 					</b>
 					<span className="text-muted-foreground">
 						{" "}

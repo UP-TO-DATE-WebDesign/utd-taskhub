@@ -382,16 +382,17 @@ export function NewTaskDialog({
 						<div className="grid grid-cols-2 gap-2">
 							{profiles.map((profile, idx) => {
 								const cap = capacityMap.get(profile.id);
-								const consumedPct = cap
-									? Math.min(
-											Math.round(
-												(cap.consumedHours /
-													cap.capacityHours) *
-													100,
-											),
-											100,
-										)
-									: null;
+								const consumedPct =
+									cap && cap.capacityHours > 0
+										? Math.min(
+												Math.round(
+													((cap.consumedHours ?? 0) /
+														cap.capacityHours) *
+														100,
+												),
+												100,
+											)
+										: null;
 								return (
 									<button
 										key={profile.id}
@@ -438,7 +439,7 @@ export function NewTaskDialog({
 														<div
 															className={cn(
 																"h-full rounded-full transition-all",
-																cap.consumedHours >=
+																(cap.consumedHours ?? 0) >=
 																	30
 																	? cap.isOverbooked
 																		? "bg-danger"
@@ -453,7 +454,7 @@ export function NewTaskDialog({
 													<span
 														className={cn(
 															"text-[9px]",
-															cap.consumedHours >=
+															(cap.consumedHours ?? 0) >=
 																75
 																? cap.isOverbooked
 																	? "text-danger"
@@ -461,7 +462,7 @@ export function NewTaskDialog({
 																: "text-muted-foreground",
 														)}
 													>
-														{cap.consumedHours}h /{" "}
+														{cap.consumedHours ?? 0}h /{" "}
 														{cap.capacityHours}h
 													</span>
 												</div>
