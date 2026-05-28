@@ -45,6 +45,7 @@ interface Props {
 	parentTaskId?: string;
 	lockedProjectId?: string;
 	stages?: WorkflowStage[];
+	filterProject?: string;
 }
 
 export function NewTaskDialogV2({
@@ -56,13 +57,14 @@ export function NewTaskDialogV2({
 	parentTaskId,
 	lockedProjectId,
 	stages,
+	filterProject,
 }: Props) {
 	const [title, setTitle] = useState("");
 	const [description, setDescription] = useState("");
 	const [priority, setPriority] = useState<ApiTaskPriority>("medium");
 	const [status, setStatus] = useState<ApiTaskStatus>("todo");
 	const [projectId, setProjectId] = useState<string>(
-		lockedProjectId ?? projects[0]?.id ?? "",
+		filterProject ?? lockedProjectId ?? projects[0]?.id ?? "",
 	);
 	const [sprintId, setSprintId] = useState<string | null>(null);
 	const [assigneeId, setAssigneeId] = useState<string | null>(null);
@@ -81,14 +83,14 @@ export function NewTaskDialogV2({
 		setDescription("");
 		setPriority("medium");
 		setStatus("todo");
-		setProjectId(lockedProjectId ?? projects[0]?.id ?? "");
+		setProjectId(filterProject ?? lockedProjectId ?? projects[0]?.id ?? "");
 		setSprintId(null);
 		setAssigneeId(null);
 		setDueDate(null);
 		setEstimatedTime(0);
 		setTags([]);
 		setSubmitting(false);
-	}, [open, lockedProjectId, projects]);
+	}, [open, lockedProjectId, filterProject, projects]);
 
 	useEffect(() => {
 		if (!open) return;
@@ -307,24 +309,34 @@ export function NewTaskDialogV2({
 									<span className="inline-flex items-center gap-2">
 										<span
 											className="inline-flex h-4 w-4 items-center justify-center rounded text-white"
-											style={{ background: opt.meta?.color }}
+											style={{
+												background: opt.meta?.color,
+											}}
 										>
 											<Icon
-												name={opt.meta?.icon as IconName}
+												name={
+													opt.meta?.icon as IconName
+												}
 												className="h-2.5 w-2.5"
 											/>
 										</span>
-										<span className="text-base">{opt.label}</span>
+										<span className="text-base">
+											{opt.label}
+										</span>
 									</span>
 								)}
 								renderValue={(opt) => (
 									<span className="inline-flex items-center gap-2">
 										<span
 											className="inline-flex h-4 w-4 items-center justify-center rounded text-white"
-											style={{ background: opt.meta?.color }}
+											style={{
+												background: opt.meta?.color,
+											}}
 										>
 											<Icon
-												name={opt.meta?.icon as IconName}
+												name={
+													opt.meta?.icon as IconName
+												}
 												className="h-2.5 w-2.5"
 											/>
 										</span>
@@ -365,9 +377,15 @@ export function NewTaskDialogV2({
 										renderValue={(opt) => (
 											<span
 												className="inline-flex items-center gap-2 font-medium"
-												style={{ color: opt.meta?.color }}
+												style={{
+													color: opt.meta?.color,
+												}}
 											>
-												<StageDot color={opt.meta?.color ?? ""} />
+												<StageDot
+													color={
+														opt.meta?.color ?? ""
+													}
+												/>
 												{opt.label}
 											</span>
 										)}

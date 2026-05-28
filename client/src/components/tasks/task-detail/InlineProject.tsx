@@ -22,7 +22,7 @@ export function InlineProject({
 }) {
 	const [editing, setEditing] = useState(false);
 	const [saving, setSaving] = useState(false);
-	const current = projects.find((p) => p.id === projectId);
+	const current = projects.find((p) => p.id === projectId) || null;
 
 	async function pick(v: string) {
 		if (!v || v === projectId) {
@@ -79,6 +79,7 @@ export function InlineProject({
 					placeholder="Select project"
 				/>
 			</div>
+			{projectId}
 			{saving && (
 				<Loader2 className="h-3.5 w-3.5 animate-spin text-muted" />
 			)}

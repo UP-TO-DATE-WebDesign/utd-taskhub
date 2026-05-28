@@ -621,7 +621,6 @@ export default function TasksPage() {
 					setSearch("");
 				}}
 			/>
-
 			{/* Board view */}
 			{view === "board" && (
 				<DndContext
@@ -682,6 +681,7 @@ export default function TasksPage() {
 				parentTaskId={childParent?.id}
 				lockedProjectId={childParent?.project_id}
 				stages={stages}
+				filterProject={filterProject}
 			/>
 
 			<EditTaskDialog
