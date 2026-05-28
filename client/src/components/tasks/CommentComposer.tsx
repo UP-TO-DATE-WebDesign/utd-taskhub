@@ -74,7 +74,6 @@ function getCaretCoordinates(
 	const style = window.getComputedStyle(textarea);
 	const mirror = document.createElement("div");
 	for (const prop of MIRROR_COPY_PROPS) {
-		// @ts-expect-error indexing CSSStyleDeclaration by known string keys
 		mirror.style[prop] = style[prop];
 	}
 	mirror.style.position = "absolute";
