@@ -12,19 +12,21 @@ const markdownComponents: Components = {
 		</h2>
 	),
 	h3: ({ children }) => (
-		<h3 className="text-base font-bold text-foreground mb-1">{children}</h3>
+		<h3 className="text-base font-bold text-foreground mb-1 mt-10">
+			{children}
+		</h3>
 	),
 	h4: ({ children }) => (
-		<h4 className="text-[11px] mb-1 font-bold uppercase tracking-widest text-primary ml-2">
+		<h4 className="text-[11px] mb-1 font-bold uppercase tracking-widest text-primary ml-5 mt-4">
 			{children}
 		</h4>
 	),
 	p: ({ children }) => <p className="leading-6">{children}</p>,
 	ul: ({ children }) => (
-		<ul className="list-disc space-y-1 pl-5 ml-5">{children}</ul>
+		<ul className="list-disc space-y-1 pl-5 ml-10 mb-2">{children}</ul>
 	),
 	ol: ({ children }) => (
-		<ol className="list-decimal space-y-1 pl-5 ml-5">{children}</ol>
+		<ol className="list-decimal space-y-1 pl-5 ml-10 mb-2">{children}</ol>
 	),
 	li: ({ children }) => <li>{children}</li>,
 	a: ({ children, href }) => (
