@@ -2,6 +2,15 @@
 
 ## May 2026
 
+### Week 5
+
+#### Tasks
+- Creator name and email shown in the task detail dialog.
+- Task type mapped to update type with lexical description parsing.
+
+#### Interface
+- Navigation link style refinements and added icon.
+
 ### Week 4
 
 #### Interface
