@@ -7,19 +7,24 @@ type Status = "loading" | "ready" | "error";
 const markdownComponents: Components = {
 	h1: () => null,
 	h2: ({ children }) => (
-		<h2 className="border-b border-border pb-2 text-lg font-semibold text-foreground">
+		<h2 className="border-b border-border pb-2 text-xl font-bold text-foreground">
 			{children}
 		</h2>
 	),
 	h3: ({ children }) => (
-		<h3 className="text-base font-semibold text-foreground">{children}</h3>
+		<h3 className="text-base font-bold text-foreground mb-1">{children}</h3>
+	),
+	h4: ({ children }) => (
+		<h4 className="text-[11px] mb-1 font-bold uppercase tracking-widest text-primary ml-2">
+			{children}
+		</h4>
 	),
 	p: ({ children }) => <p className="leading-6">{children}</p>,
 	ul: ({ children }) => (
-		<ul className="list-disc space-y-1.5 pl-5">{children}</ul>
+		<ul className="list-disc space-y-1 pl-5 ml-5">{children}</ul>
 	),
 	ol: ({ children }) => (
-		<ol className="list-decimal space-y-1.5 pl-5">{children}</ol>
+		<ol className="list-decimal space-y-1 pl-5 ml-5">{children}</ol>
 	),
 	li: ({ children }) => <li>{children}</li>,
 	a: ({ children, href }) => (
@@ -41,7 +46,8 @@ export default function WhatsNewPage() {
 
 		fetch("/changelog.md")
 			.then((res) => {
-				if (!res.ok) throw new Error(`Failed to load changelog: ${res.status}`);
+				if (!res.ok)
+					throw new Error(`Failed to load changelog: ${res.status}`);
 				return res.text();
 			})
 			.then((text) => {
@@ -74,7 +80,9 @@ export default function WhatsNewPage() {
 			)}
 
 			{status === "error" && (
-				<p className="text-sm text-muted-foreground">Could not load updates.</p>
+				<p className="text-sm text-muted-foreground">
+					Could not load updates.
+				</p>
 			)}
 
 			{status === "ready" && content.trim() === "" && (
