@@ -1,10 +1,4 @@
-import {
-	useCallback,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -41,6 +35,70 @@ const INACTIVE: MentionState = {
 	cursor: -1,
 };
 
+interface CaretCoords {
+	top: number;
+	left: number;
+}
+
+const MIRROR_COPY_PROPS = [
+	"boxSizing",
+	"width",
+	"borderTopWidth",
+	"borderRightWidth",
+	"borderBottomWidth",
+	"borderLeftWidth",
+	"paddingTop",
+	"paddingRight",
+	"paddingBottom",
+	"paddingLeft",
+	"fontStyle",
+	"fontVariant",
+	"fontWeight",
+	"fontStretch",
+	"fontSize",
+	"fontFamily",
+	"lineHeight",
+	"letterSpacing",
+	"textTransform",
+	"wordSpacing",
+	"whiteSpace",
+	"wordWrap",
+	"overflowWrap",
+	"tabSize",
+] as const;
+
+function getCaretCoordinates(
+	textarea: HTMLTextAreaElement,
+	position: number,
+): CaretCoords {
+	const style = window.getComputedStyle(textarea);
+	const mirror = document.createElement("div");
+	for (const prop of MIRROR_COPY_PROPS) {
+		// @ts-expect-error indexing CSSStyleDeclaration by known string keys
+		mirror.style[prop] = style[prop];
+	}
+	mirror.style.position = "absolute";
+	mirror.style.visibility = "hidden";
+	mirror.style.whiteSpace = "pre-wrap";
+	mirror.style.wordWrap = "break-word";
+	mirror.style.overflow = "hidden";
+	mirror.style.top = "0";
+	mirror.style.left = "-9999px";
+
+	mirror.textContent = textarea.value.slice(0, position);
+	const marker = document.createElement("span");
+	marker.textContent = textarea.value.slice(position) || ".";
+	mirror.appendChild(marker);
+
+	document.body.appendChild(mirror);
+	const lineHeight = parseFloat(style.lineHeight) || 18;
+	const top = marker.offsetTop - textarea.scrollTop + lineHeight;
+	const left = marker.offsetLeft - textarea.scrollLeft;
+	document.body.removeChild(mirror);
+
+	return { top, left };
+}
+
 function detectMention(text: string, caret: number): MentionState {
 	if (caret <= 0) return INACTIVE;
 	let i = caret - 1;
@@ -72,8 +130,19 @@ export function CommentComposer({
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
 	const [members, setMembers] = useState<ProjectMember[]>([]);
 	const [mention, setMention] = useState<MentionState>(INACTIVE);
+	const [caretCoords, setCaretCoords] = useState<CaretCoords | null>(null);
 	const [highlight, setHighlight] = useState(0);
 	const mentionedIdsRef = useRef<Set<string>>(new Set());
+
+	function updateMention(text: string, caret: number) {
+		const m = detectMention(text, caret);
+		setMention(m);
+		if (m.active && textareaRef.current) {
+			setCaretCoords(getCaretCoordinates(textareaRef.current, m.tokenStart));
+		} else {
+			setCaretCoords(null);
+		}
+	}
 
 	useEffect(() => {
 		let active = true;
@@ -123,8 +192,7 @@ export function CommentComposer({
 	function handleChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
 		const next = e.target.value;
 		const caret = e.target.selectionStart ?? next.length;
-		const m = detectMention(next, caret);
-		setMention(m);
+		updateMention(next, caret);
 		const ids = emitMentions(next);
 		onChange(next, ids);
 	}
@@ -138,7 +206,9 @@ export function CommentComposer({
 			}
 			if (e.key === "ArrowUp") {
 				e.preventDefault();
-				setHighlight((h) => (h - 1 + filtered.length) % filtered.length);
+				setHighlight(
+					(h) => (h - 1 + filtered.length) % filtered.length,
+				);
 				return;
 			}
 			if (e.key === "Enter" || e.key === "Tab") {
@@ -149,6 +219,7 @@ export function CommentComposer({
 			if (e.key === "Escape") {
 				e.preventDefault();
 				setMention(INACTIVE);
+				setCaretCoords(null);
 				return;
 			}
 		}
@@ -168,6 +239,7 @@ export function CommentComposer({
 		const ids = emitMentions(next);
 		onChange(next, ids);
 		setMention(INACTIVE);
+		setCaretCoords(null);
 		queueMicrotask(() => {
 			const el = textareaRef.current;
 			if (!el) return;
@@ -187,8 +259,9 @@ export function CommentComposer({
 				onChange={handleChange}
 				onKeyDown={handleKeyDown}
 				onSelect={(e) => {
-					const caret = e.currentTarget.selectionStart ?? value.length;
-					setMention(detectMention(value, caret));
+					const caret =
+						e.currentTarget.selectionStart ?? value.length;
+					updateMention(value, caret);
 				}}
 				autoFocus={autoFocus}
 				placeholder={placeholder}
@@ -196,10 +269,17 @@ export function CommentComposer({
 				className="w-full text-sm rounded-md border border-border bg-background px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 resize-y"
 			/>
 			{showDropdown && (
-				<div className="absolute z-30 top-full left-0 mt-1 w-72 max-w-full rounded-md border border-border bg-surface shadow-md overflow-hidden">
+				<div
+						className="absolute z-30 w-72 max-w-full rounded-md border border-border bg-surface shadow-md overflow-hidden"
+						style={{
+							top: caretCoords?.top ?? "100%",
+							left: caretCoords ? Math.max(0, caretCoords.left) : 0,
+						}}
+					>
 					<ul className="max-h-56 overflow-y-auto py-1">
 						{filtered.map((m, idx) => {
-							const name = m.profiles.full_name || m.profiles.email;
+							const name =
+								m.profiles.full_name || m.profiles.email;
 							const initials = getInitials(name);
 							const color = profileColorClass(m.user_id);
 							return (
@@ -220,16 +300,23 @@ export function CommentComposer({
 									>
 										<Avatar className="h-6 w-6 shrink-0">
 											{m.profiles.avatar_url ? (
-												<AvatarImage src={m.profiles.avatar_url} />
+												<AvatarImage
+													src={m.profiles.avatar_url}
+												/>
 											) : null}
 											<AvatarFallback
-												className={cn("text-[10px] text-white", color)}
+												className={cn(
+													"text-[10px] text-white",
+													color,
+												)}
 											>
 												{initials}
 											</AvatarFallback>
 										</Avatar>
 										<div className="min-w-0 flex-1">
-											<div className="truncate text-foreground">{name}</div>
+											<div className="truncate text-foreground">
+												{name}
+											</div>
 											{m.profiles.full_name && (
 												<div className="truncate text-[11px] text-muted">
 													{m.profiles.email}
@@ -255,15 +342,15 @@ export function CommentComposer({
 					</Button>
 				)}
 				<Button
-					size="sm"
-					onClick={onSubmit}
-					disabled={submitting || !value.trim()}
-				>
-					{submitting && (
-						<Loader2 className="h-3.5 w-3.5 animate-spin mr-2" />
-					)}
-					{submitLabel}
-				</Button>
+						size="sm"
+						onClick={onSubmit}
+						disabled={submitting || !value.trim()}
+					>
+						{submitting && (
+							<Loader2 className="h-3.5 w-3.5 animate-spin mr-2" />
+						)}
+						{submitLabel}
+					</Button>
 			</div>
 		</div>
 	);
