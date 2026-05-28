@@ -63,9 +63,12 @@ export function NewTaskDialogV2({
 	const [description, setDescription] = useState("");
 	const [priority, setPriority] = useState<ApiTaskPriority>("medium");
 	const [status, setStatus] = useState<ApiTaskStatus>("todo");
-	const [projectId, setProjectId] = useState<string>(
-		filterProject ?? lockedProjectId ?? projects[0]?.id ?? "",
-	);
+	const defaultProjectId =
+		(filterProject && filterProject !== "all" ? filterProject : null) ??
+		lockedProjectId ??
+		projects[0]?.id ??
+		"";
+	const [projectId, setProjectId] = useState<string>(defaultProjectId);
 	const [sprintId, setSprintId] = useState<string | null>(null);
 	const [assigneeId, setAssigneeId] = useState<string | null>(null);
 	const [dueDate, setDueDate] = useState<string | null>(null);
@@ -83,7 +86,7 @@ export function NewTaskDialogV2({
 		setDescription("");
 		setPriority("medium");
 		setStatus("todo");
-		setProjectId(filterProject ?? lockedProjectId ?? projects[0]?.id ?? "");
+		setProjectId(defaultProjectId);
 		setSprintId(null);
 		setAssigneeId(null);
 		setDueDate(null);
@@ -159,7 +162,7 @@ export function NewTaskDialogV2({
 			assigned_to: assigneeId ?? undefined,
 			due_date: dueDate ?? undefined,
 			tags: tags.length ? tags : undefined,
-			project_id: projectId == "all" ? "" : projectId,
+			project_id: projectId,
 			sprint_id: sprintId ?? undefined,
 			estimated_time: estimatedTime || undefined,
 			parent_task_id: parentTaskId,
