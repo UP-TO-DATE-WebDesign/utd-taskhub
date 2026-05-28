@@ -22,6 +22,11 @@ export const env = {
 	supabaseTicketAttachmentsBucket:
 		process.env.SUPABASE_TICKET_ATTACHMENTS_BUCKET || "ticket-attachments",
 
+	devUpdatesApiUrl:
+		process.env.DEV_UPDATES_API_URL ||
+		"https://contentkit.uptodatesites.com/api/dev-updates",
+	devUpdatesApiToken: process.env.DEV_UPDATES_API_TOKEN,
+
 	GMAIL_USER: process.env.GMAIL_USER,
 	GMAIL_APP_PASSWORD: process.env.GMAIL_APP_PASSWORD,
 	MAIL_SENDER_NAME: process.env.MAIL_SENDER_NAME,

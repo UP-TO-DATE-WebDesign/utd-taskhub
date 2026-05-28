@@ -9,6 +9,7 @@ import {
 	NotificationType,
 } from "../services/notification.service.js";
 import { notifyTicketClosed } from "../services/ticket-notify.service.js";
+import { generateAndStoreSprintReport } from "./sprint-report.controller.js";
 
 async function getActiveProfileIds(excludeId) {
 	const { data, error } = await supabaseAdmin
@@ -358,6 +359,13 @@ export async function endSprint(req, res, next) {
 				}),
 			)
 			.catch((e) => console.error("[notif]", e));
+
+		generateAndStoreSprintReport({
+			sprintId,
+			profileId: req.profile.id,
+		}).catch((e) =>
+			console.error("[sprint-report] auto-generate failed:", e.message ?? e),
+		);
 
 		res.status(200).json({
 			success: true,

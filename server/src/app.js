@@ -25,6 +25,7 @@ import workflowStageRoutes from "./routes/workflow-stage.routes.js";
 import notificationRoutes from "./routes/notifications.routes.js";
 import adminReportRoutes from "./routes/admin-report.routes.js";
 import adminReportRealRoutes from "./routes/admin-report-real.routes.js";
+import sprintReportRoutes from "./routes/sprint-report.routes.js";
 import trashRoutes from "./routes/trash.routes.js";
 import apiKeyRoutes from "./routes/api-key.routes.js";
 import externalRoutes from "./routes/external.routes.js";
@@ -118,6 +119,7 @@ app.use(
 app.use(`/api/${env.apiVersion}/notifications`, notificationRoutes);
 app.use(`/api/${env.apiVersion}/admin`, adminReportRealRoutes);
 app.use(`/api/${env.apiVersion}/admin`, adminReportRoutes);
+app.use(`/api/${env.apiVersion}/admin`, sprintReportRoutes);
 app.use(`/api/${env.apiVersion}/trash`, trashRoutes);
 app.use(`/api/${env.apiVersion}/api-keys`, apiKeyRoutes);
 app.use(`/api/${env.apiVersion}/external`, externalApiLimiter, externalRoutes);

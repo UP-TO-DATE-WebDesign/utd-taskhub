@@ -42,6 +42,7 @@ import {
 	getAdminReports,
 	type AdminReportPayload,
 } from "@/services/admin-report.service";
+import DevUpdatesReportsCard from "./DevUpdatesReportsCard";
 
 /* --------------------------------- CSV --------------------------------- */
 
@@ -909,6 +910,8 @@ export default function ReportsPage() {
 					</div>
 				</Card>
 			</div>
+
+			<DevUpdatesReportsCard />
 
 			<p className="text-right text-xs text-muted">
 				Generated at {new Date(data.generatedAt).toLocaleString()}
