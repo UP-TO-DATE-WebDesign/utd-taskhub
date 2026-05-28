@@ -2,86 +2,46 @@
 
 ## May 2026
 
-### Week 5
+### Week 5 (May 24 - 30)
 
-#### Tasks
-- Creator name and email shown in the task detail dialog.
-- Task type mapped to update type with lexical description parsing.
+- Time logging - full CRUD + UI, workspace toggle
+- External API + API keys - user-managed keys for tickets/tasks, endpoint reference, Postman collection
+- Ticket detail page + attachments
+- Task @mention comments - with notifications
+- Sprint dev-updates reporting via external API
+- What's New changelog page
+- Trash - admin recoverable deletes in settings
+- Project slug + app_domain fields
+- Task detail - creator name/email, task type on create/edit forms
+- Header navigation icons + ticket code on task cards
 
-#### Interface
-- Navigation link style refinements and added icon.
+### Week 4 (May 17 - 23)
 
-### Week 4
+- Per-project workflow stages - drag-to-reorder, board driven by stages
+- Task type management - settings + applied to forms and views
+- Password reset flow
+- Searchable select - migrated all dropdowns and pickers
+- Task attachments - upload, list, delete
+- Task comments - create, list, delete
+- Start Sprint modal - pulls candidate tasks atomically
+- Task filters - search, sprint, user
+- SWR data fetching - Projects, Tickets, Dashboard
+- Skeleton loading states across pages
+- Member picker for assignees + avatar image support
 
-#### Interface
-- New What's New changelog page, linked from the footer.
-- Header navigation icons.
-- Searchable select inputs across filters, dialogs, and pickers.
+### Week 3 (May 10 - 16)
 
-#### Tasks
-- Task comments with @mention support, edit, and notifications.
-- Ticket code and estimated time shown on task cards.
-- Task type applied to create and edit forms.
-- Task dialog stage indicators and priority colors.
-
-#### Time logging
-- Time logging with full CRUD and UI integration.
-- Workspace feature flag to enable or disable time logging.
-
-#### Sprints
-- Sprint dev-updates reporting via external API.
-- Sprint capacity display per user.
-
-#### Projects
-- Project slug and app_domain fields.
-
-#### Tickets
-- Ticket detail page with attachments on create, edit, and detail.
-
-#### API and integrations
-- Reveal and copy full API key from your profile.
-- API endpoint reference and Postman collection.
-- External API with user-managed API keys for tickets and tasks.
-
-#### Settings and admin
-- Trash section in settings.
-
-#### Other
-- Bug fixes and improvements.
-
-### Week 3
-
-#### Tasks
-- Per-project workflow stages with drag-to-reorder.
-- Copy task link and view task detail.
-- Task filters by search, sprint, and user.
-- "Assign to me" quick action on assignee.
-- Upload, list, and delete attachments on tasks.
-- Confirm dialog before deleting a task.
-- Inline editing on task detail for title, description, priority, assignee, due date, tags, estimated time, and sprint.
-- New task create and edit dialogs with a sidebar layout.
-
-#### Tickets
-- Member picker for ticket assignees.
-- Editable ticket code with project key prefix and live uniqueness check.
-
-#### Sprints
-- Start Sprint modal pulls in candidate tasks atomically.
-
-#### Projects
-- Project Activity tab with a hybrid activity feed.
-
-#### Auth
-- Password reset flow.
-- Session persists across browser tabs.
-
-#### Settings and admin
-- Task type management.
-
-#### Interface
-- Skeleton loading states across pages.
-- Avatar image support with initials fallback.
-- Searchable member select.
-
-#### Other
-- Bug fixes and improvements.
+- TaskDetailDialogV2 - sidebar layout, inline edit, child tasks, paste images/code
+- Editable ticket code - project key prefix, live uniqueness check
+- Ticket close endpoint - resolution + end-sprint close
+- Trash - admin recoverable deletes for projects/tasks/tickets/sprints/users
+- SSE notifications + history + bell UI
+- Project Activity tab - hybrid activity feed
+- Google sign-in via Supabase OAuth (PKCE)
+- Sprint workweek (Mon-Fri) + Start Sprint button
+- Sprint Capacity - backend + RLS
+- User invitations with email notifications
+- User profile page with avatar upload
+- Role-based permissions - frontend gates + server RBAC
+- Sentry error logging - client + server
+- Security hardening - auth rate-limiting, SSE token handshake, atomic ticket codes
