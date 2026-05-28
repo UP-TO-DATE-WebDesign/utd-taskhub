@@ -302,6 +302,15 @@ export function TaskDetailDialogV2({
 										}
 									/>
 								)}
+								{task?.created_by && (
+									<p className="mt-4 -mb-2 italic text-[10px] text-muted">
+										Created by{" "}
+										<span className="font-medium">
+											{task.created_by.full_name ??
+												task.created_by.email}
+										</span>
+									</p>
+								)}
 							</div>
 
 							{/* Subtasks */}
@@ -560,28 +569,44 @@ export function TaskDetailDialogV2({
 										<div className="flex-1 min-w-0">
 											<SearchableSelect<{ color: string }>
 												value={task.apiStatus}
-												onValueChange={handleStatusChange}
+												onValueChange={
+													handleStatusChange
+												}
 												disabled={statusSaving}
 												size="sm"
 												placeholder="Select status"
-												options={stageList.map((stage) => ({
-													value: stage.key,
-													label: stage.name,
-													meta: { color: stage.color },
-												}))}
+												options={stageList.map(
+													(stage) => ({
+														value: stage.key,
+														label: stage.name,
+														meta: {
+															color: stage.color,
+														},
+													}),
+												)}
 												renderOption={(opt) => (
 													<StageChip
 														label={opt.label}
-														color={opt.meta?.color ?? ""}
+														color={
+															opt.meta?.color ??
+															""
+														}
 													/>
 												)}
 												renderValue={(opt) => (
 													<span
 														className="inline-flex items-center gap-2 font-medium"
-														style={{ color: opt.meta?.color }}
+														style={{
+															color: opt.meta
+																?.color,
+														}}
 													>
 														<StageDot
-															color={opt.meta?.color ?? ""}
+															color={
+																opt.meta
+																	?.color ??
+																""
+															}
 														/>
 														{opt.label}
 													</span>

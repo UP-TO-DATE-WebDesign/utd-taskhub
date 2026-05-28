@@ -26,6 +26,7 @@ export interface UiTask {
 	columnId: ColumnId;
 	priority: ApiTaskPriority;
 	assigned_to: ApiTask["assigned_to"];
+	created_by: ApiTask["created_by"] | null;
 	due_date: string | null;
 	tags: string[];
 	estimated_time: number;
@@ -142,6 +143,7 @@ export function toUiTask(t: ApiTask): UiTask {
 		columnId: t.status,
 		priority: t.priority,
 		assigned_to: t.assigned_to,
+		created_by: t.created_by ?? null,
 		due_date: t.due_date,
 		tags: t.tags ?? [],
 		estimated_time: t.estimated_time ?? 0,
