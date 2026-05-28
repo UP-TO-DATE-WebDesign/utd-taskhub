@@ -203,14 +203,14 @@ export default function AppLayout() {
 									}
 									className={({ isActive }) =>
 										cn(
-											"flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md transition-colors",
+											"flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md group hover:scale-105 duration-300 transition-all",
 											isActive
 												? "text-primary font-medium border-b-2 border-primary rounded-none"
 												: "text-muted-foreground hover:text-foreground hover:bg-muted-subtle",
 										)
 									}
 								>
-									<Icon className="h-3 w-3 shrink-0" />
+									<Icon className="h-4 w-4 shrink-0 group-hover:text-primary duration-300" />
 									{!link.iconOnly && link.label}
 								</NavLink>
 							);
