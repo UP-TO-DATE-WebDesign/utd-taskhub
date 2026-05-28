@@ -6,7 +6,22 @@ import {
 	useLocation,
 	useNavigate,
 } from "react-router-dom";
-import { Bell, User, LogOut, Menu, ChevronDown } from "lucide-react";
+import {
+	Bell,
+	User,
+	LogOut,
+	Menu,
+	ChevronDown,
+	LayoutDashboard,
+	FolderKanban,
+	ListChecks,
+	Ticket,
+	Zap,
+	Users,
+	BarChart3,
+	Settings,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
 	DropdownMenu,
@@ -30,14 +45,41 @@ import { useNotificationStream } from "@/hooks/useNotificationStream";
 import type { Notification } from "@/services/notification.service";
 import SprintCapacity from "@/components/users/SprintCapacity";
 
-const navLinks = [
-	{ to: "/", label: "Dashboard", end: true, feature: null },
-	{ to: "/projects", label: "Projects", feature: null },
-	{ to: "/tasks", label: "Tasks", feature: null },
-	{ to: "/tickets", label: "Tickets", feature: null },
-	{ to: "/sprints", label: "Sprints", feature: "View sprints" },
-	{ to: "/users", label: "Users", feature: "View users" },
-	{ to: "/settings", label: "Settings", feature: "Workspace settings" },
+type NavLinkItem = {
+	to: string;
+	label: string;
+	icon: LucideIcon;
+	end?: boolean;
+	feature: string | null;
+	iconOnly?: boolean;
+};
+
+const navLinks: NavLinkItem[] = [
+	{
+		to: "/",
+		label: "Dashboard",
+		icon: LayoutDashboard,
+		end: true,
+		feature: null,
+	},
+	{ to: "/projects", label: "Projects", icon: FolderKanban, feature: null },
+	{ to: "/tasks", label: "Tasks", icon: ListChecks, feature: null },
+	{ to: "/tickets", label: "Tickets", icon: Ticket, feature: null },
+	{ to: "/sprints", label: "Sprints", icon: Zap, feature: "View sprints" },
+	{ to: "/users", label: "Users", icon: Users, feature: "View users" },
+	{
+		to: "/admin/reports",
+		label: "Reports",
+		icon: BarChart3,
+		feature: "Workspace settings",
+	},
+	{
+		to: "/settings",
+		label: "Settings",
+		icon: Settings,
+		feature: "Workspace settings",
+		iconOnly: true,
+	},
 ];
 
 function formatRelativeTime(iso: string): string {
@@ -146,23 +188,33 @@ export default function AppLayout() {
 					</Link>
 
 					<nav className="hidden items-center gap-1 lg:flex">
-						{visibleNavLinks.map((link) => (
-							<NavLink
-								key={link.to}
-								to={link.to}
-								end={link.end}
-								className={({ isActive }) =>
-									cn(
-										"px-3 py-1.5 text-sm rounded-md transition-colors",
-										isActive
-											? "text-primary font-medium border-b-2 border-primary rounded-none"
-											: "text-muted-foreground hover:text-foreground hover:bg-muted-subtle",
-									)
-								}
-							>
-								{link.label}
-							</NavLink>
-						))}
+						{visibleNavLinks.map((link) => {
+							const Icon = link.icon;
+							return (
+								<NavLink
+									key={link.to}
+									to={link.to}
+									end={link.end}
+									title={
+										link.iconOnly ? link.label : undefined
+									}
+									aria-label={
+										link.iconOnly ? link.label : undefined
+									}
+									className={({ isActive }) =>
+										cn(
+											"flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md transition-colors",
+											isActive
+												? "text-primary font-medium border-b-2 border-primary rounded-none"
+												: "text-muted-foreground hover:text-foreground hover:bg-muted-subtle",
+										)
+									}
+								>
+									<Icon className="h-3 w-3 shrink-0" />
+									{!link.iconOnly && link.label}
+								</NavLink>
+							);
+						})}
 					</nav>
 
 					<div className="ml-auto flex items-center gap-1.5 sm:gap-3">
@@ -343,24 +395,28 @@ export default function AppLayout() {
 						aria-label="Mobile navigation"
 					>
 						<div className="mx-auto flex max-w-[1280px] flex-col gap-1">
-							{visibleNavLinks.map((link) => (
-								<NavLink
-									key={link.to}
-									to={link.to}
-									end={link.end}
-									onClick={() => setMobileNavOpen(false)}
-									className={({ isActive }) =>
-										cn(
-											"flex w-full items-center rounded-md px-3 py-2.5 text-sm transition-colors",
-											isActive
-												? "bg-primary-subtle font-medium text-primary"
-												: "text-muted-foreground hover:bg-muted-subtle hover:text-foreground",
-										)
-									}
-								>
-									{link.label}
-								</NavLink>
-							))}
+							{visibleNavLinks.map((link) => {
+								const Icon = link.icon;
+								return (
+									<NavLink
+										key={link.to}
+										to={link.to}
+										end={link.end}
+										onClick={() => setMobileNavOpen(false)}
+										className={({ isActive }) =>
+											cn(
+												"flex w-full items-center gap-2.5 rounded-md px-3 py-2.5 text-sm transition-colors",
+												isActive
+													? "bg-primary-subtle font-medium text-primary"
+													: "text-muted-foreground hover:bg-muted-subtle hover:text-foreground",
+											)
+										}
+									>
+										<Icon className="h-4 w-4 shrink-0" />
+										{link.label}
+									</NavLink>
+								);
+							})}
 						</div>
 					</nav>
 				)}
@@ -384,6 +440,12 @@ export default function AppLayout() {
 						aria-label="Footer navigation"
 						className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm"
 					>
+						<a
+							href="/whats-new"
+							className="text-muted-foreground transition-colors hover:text-foreground focus:outline-none focus-visible:text-foreground"
+						>
+							What's New
+						</a>
 						<a
 							href="/terms"
 							className="text-muted-foreground transition-colors hover:text-foreground focus:outline-none focus-visible:text-foreground"
