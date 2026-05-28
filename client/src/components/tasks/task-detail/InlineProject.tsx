@@ -79,7 +79,6 @@ export function InlineProject({
 					placeholder="Select project"
 				/>
 			</div>
-			{projectId}
 			{saving && (
 				<Loader2 className="h-3.5 w-3.5 animate-spin text-muted" />
 			)}

@@ -159,7 +159,7 @@ export function NewTaskDialogV2({
 			assigned_to: assigneeId ?? undefined,
 			due_date: dueDate ?? undefined,
 			tags: tags.length ? tags : undefined,
-			project_id: projectId,
+			project_id: projectId == "all" ? "" : projectId,
 			sprint_id: sprintId ?? undefined,
 			estimated_time: estimatedTime || undefined,
 			parent_task_id: parentTaskId,
@@ -434,7 +434,7 @@ export function NewTaskDialogV2({
 									canEdit
 									locked={!!lockedProjectId}
 									onSave={async (v) => {
-										setProjectId(v);
+										setProjectId(v == "all" ? "" : v);
 										setSprintId(null);
 									}}
 								/>
