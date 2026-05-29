@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Calendar, Clock, Loader2 } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, Eye, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatDate } from "@/lib/utils";
 import { listSprints, type Sprint } from "@/services/sprint.service";
 import { listAllTasks, type Task } from "@/services/task.service";
+import { listProjects, type Project } from "@/services/project.service";
+import { TaskPreviewDialog } from "@/components/tasks/TaskPreviewDialog";
 import {
 	STATUS_BADGE,
 	formatSprintRange,
@@ -50,7 +52,13 @@ function groupTasksByStatus(tasks: Task[]): { status: string; tasks: Task[] }[] 
 
 // ── Task Row ──────────────────────────────────────────────────────────────────
 
-function SprintTaskRow({ task }: { task: Task }) {
+function SprintTaskRow({
+	task,
+	onPreview,
+}: {
+	task: Task;
+	onPreview: (task: Task) => void;
+}) {
 	const assignee = task.assigned_to;
 	const badge = TASK_STATUS_BADGE[task.status];
 	return (
@@ -107,6 +115,16 @@ function SprintTaskRow({ task }: { task: Task }) {
 				) : (
 					<span className="h-6 w-6" />
 				)}
+				<Button
+					size="icon"
+					variant="ghost"
+					className="h-8 w-8 text-muted hover:text-foreground"
+					onClick={() => onPreview(task)}
+					title="Preview task"
+					aria-label="Preview task"
+				>
+					<Eye className="h-4 w-4" />
+				</Button>
 			</div>
 		</Card>
 	);
@@ -119,21 +137,28 @@ export default function SprintPage() {
 	const navigate = useNavigate();
 	const [sprint, setSprint] = useState<Sprint | null>(null);
 	const [tasks, setTasks] = useState<Task[]>([]);
+	const [projects, setProjects] = useState<Project[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [notFound, setNotFound] = useState(false);
+	const [previewTask, setPreviewTask] = useState<Task | null>(null);
 
 	useEffect(() => {
 		if (!sprintId) return;
 		let active = true;
 		setLoading(true);
 		setNotFound(false);
-		Promise.all([listSprints(), listAllTasks({ sprint_id: sprintId })])
-			.then(([sprints, sprintTasks]) => {
+		Promise.all([
+			listSprints(),
+			listAllTasks({ sprint_id: sprintId }),
+			listProjects(),
+		])
+			.then(([sprints, sprintTasks, projectList]) => {
 				if (!active) return;
 				const found = sprints.find((s) => s.id === sprintId) ?? null;
 				setSprint(found);
 				setNotFound(!found);
 				setTasks(sprintTasks);
+				setProjects(projectList);
 			})
 			.catch(() => {
 				if (active) toast.error("Failed to load sprint");
@@ -223,7 +248,11 @@ export default function SprintPage() {
 									</div>
 									<div className="space-y-2">
 										{groupTasks.map((task) => (
-											<SprintTaskRow key={task.id} task={task} />
+											<SprintTaskRow
+												key={task.id}
+												task={task}
+												onPreview={setPreviewTask}
+											/>
 										))}
 									</div>
 								</div>
@@ -232,6 +261,14 @@ export default function SprintPage() {
 					)}
 				</>
 			)}
+
+			<TaskPreviewDialog
+				task={previewTask}
+				projects={projects}
+				allTasks={tasks}
+				onClose={() => setPreviewTask(null)}
+				onOpenTask={setPreviewTask}
+			/>
 		</div>
 	);
 }
