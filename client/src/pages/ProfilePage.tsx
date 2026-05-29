@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { CalendarDays, KeyRound, Mail, ShieldCheck, UserCog } from "lucide-react";
+import { CalendarDays, KeyRound, Mail, Palette, ShieldCheck, UserCog } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -9,6 +9,7 @@ import { useAuth } from "@/context/AuthContext";
 import { getProfile, type Profile } from "@/services/profile.service";
 import { ProfilePersonalSection } from "@/components/profile/ProfilePersonalSection";
 import { ProfileApiKeysSection } from "@/components/profile/ProfileApiKeysSection";
+import { ProfileAppearanceSection } from "@/components/profile/ProfileAppearanceSection";
 
 const STATUS_VARIANT: Record<string, string> = {
 	active: "bg-success-subtle text-success border-success/20",
@@ -23,10 +24,11 @@ const ROLE_VARIANT: Record<string, string> = {
 	user: "bg-muted-subtle text-muted-foreground border-border",
 };
 
-type TabId = "personal" | "api-keys";
+type TabId = "personal" | "appearance" | "api-keys";
 
 const TABS: { id: TabId; label: string; icon: typeof UserCog }[] = [
 	{ id: "personal", label: "Personal Info", icon: UserCog },
+	{ id: "appearance", label: "Appearance", icon: Palette },
 	{ id: "api-keys", label: "API Keys", icon: KeyRound },
 ];
 
@@ -175,6 +177,7 @@ export default function ProfilePage() {
 							onProfileChange={setProfile}
 						/>
 					)}
+					{activeTab === "appearance" && <ProfileAppearanceSection />}
 					{activeTab === "api-keys" && <ProfileApiKeysSection />}
 				</div>
 			</div>

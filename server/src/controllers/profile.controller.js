@@ -10,7 +10,7 @@ const AVATAR_MIME_TYPES = new Map([
 	["image/webp", "webp"],
 	["image/gif", "gif"],
 ]);
-const PROFILE_SELECT = "id, email, full_name, avatar_url, role, role_id, status, created_at, updated_at, global_role:roles!profiles_role_id_fkey(id, key, name, scope)";
+const PROFILE_SELECT = "id, email, full_name, avatar_url, role, role_id, status, theme, created_at, updated_at, global_role:roles!profiles_role_id_fkey(id, key, name, scope)";
 
 function decodeAvatar(data) {
 	if (typeof data !== "string" || data.trim().length === 0) {
@@ -108,6 +108,10 @@ export async function updateProfile(req, res, next) {
 
 		if (req.body.avatar_url !== undefined) {
 			updateData.avatar_url = req.body.avatar_url?.trim() || null;
+		}
+
+		if (req.body.theme !== undefined) {
+			updateData.theme = req.body.theme;
 		}
 
 		// Permission-protected fields

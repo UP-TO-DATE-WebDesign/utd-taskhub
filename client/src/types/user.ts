@@ -5,6 +5,8 @@ export interface GlobalRole {
 	scope: string;
 }
 
+export type Theme = "light" | "dark" | "system";
+
 export interface User {
 	id: string;
 	email: string;
@@ -13,5 +15,6 @@ export interface User {
 	role: string;
 	global_role?: GlobalRole;
 	status: string;
+	theme?: Theme;
 	created_at: string;
 }

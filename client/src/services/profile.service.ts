@@ -1,4 +1,5 @@
 import { api } from "@/lib/api";
+import type { Theme } from "@/types/user";
 
 export interface Profile {
 	id: string;
@@ -7,12 +8,14 @@ export interface Profile {
 	avatar_url: string | null;
 	role: string;
 	status: string;
+	theme?: Theme;
 	created_at?: string;
 }
 
 export interface UpdateProfilePayload {
 	full_name?: string | null;
 	avatar_url?: string | null;
+	theme?: Theme;
 }
 
 function readFileAsDataUrl(file: File): Promise<string> {

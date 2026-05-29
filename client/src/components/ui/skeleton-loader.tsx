@@ -7,7 +7,7 @@ export default function SkeletonLoader({
 }: SkeletonLoaderProps) {
 	return (
 		<div
-			className={`animate-pulse rounded-md bg-slate-200/80 ${className}`}
+			className={`animate-pulse rounded-md bg-border ${className}`}
 		/>
 	);
 }

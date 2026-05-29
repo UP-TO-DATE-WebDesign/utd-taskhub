@@ -6,6 +6,7 @@ import "react-day-picker/style.css";
 import App from "./App.tsx";
 import "@mantine/core/styles.css";
 import { AuthProvider } from "@/context/AuthContext";
+import { ThemeProvider } from "@/context/ThemeContext";
 import { MantineProvider } from "@mantine/core";
 import { SWRConfig } from "swr";
 
@@ -27,6 +28,7 @@ createRoot(document.getElementById("root")!).render(
 	<StrictMode>
 		<Sentry.ErrorBoundary fallback={<div className="p-6">Something went wrong.</div>}>
 			<AuthProvider>
+				<ThemeProvider>
 				<MantineProvider>
 					<SWRConfig
 						value={{
@@ -42,6 +44,7 @@ createRoot(document.getElementById("root")!).render(
 						<App />
 					</SWRConfig>
 				</MantineProvider>
+				</ThemeProvider>
 			</AuthProvider>
 		</Sentry.ErrorBoundary>
 	</StrictMode>,

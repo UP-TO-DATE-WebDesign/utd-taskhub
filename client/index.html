@@ -5,6 +5,23 @@
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>TaskHub - Project Management Tool</title>
+		<script>
+			(function () {
+				try {
+					var t = localStorage.getItem("theme") || "system";
+					var dark =
+						t === "dark" ||
+						(t === "system" &&
+							window.matchMedia("(prefers-color-scheme: dark)").matches);
+					var root = document.documentElement;
+					if (dark) root.classList.add("dark");
+					root.setAttribute(
+						"data-mantine-color-scheme",
+						dark ? "dark" : "light",
+					);
+				} catch (e) {}
+			})();
+		</script>
 	</head>
 	<body>
 		<div id="root"></div>
