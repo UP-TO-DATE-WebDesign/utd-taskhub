@@ -80,7 +80,8 @@ function downloadCSV(filename: string, rows: Record<string, unknown>[]) {
 function useCurrentUserRole(): string {
 	try {
 		const raw =
-			(typeof window !== "undefined" && window.localStorage.getItem("user")) ||
+			(typeof window !== "undefined" &&
+				window.localStorage.getItem("user")) ||
 			"";
 		if (raw) {
 			const parsed = JSON.parse(raw);
@@ -96,7 +97,9 @@ function Unauthorized() {
 	return (
 		<div className="mx-auto flex max-w-[1280px] flex-col items-center justify-center px-6 py-24 text-center">
 			<Ban className="mb-3 h-10 w-10 text-danger" />
-			<h2 className="text-2xl font-semibold text-foreground">Unauthorized</h2>
+			<h2 className="text-2xl font-semibold text-foreground">
+				Unauthorized
+			</h2>
 			<p className="mt-2 max-w-md text-sm text-muted">
 				You do not have permission to view the Admin Reports page.
 			</p>
@@ -106,10 +109,7 @@ function Unauthorized() {
 
 /* --------------------------- Status/Priority --------------------------- */
 
-const STATUS_VARIANT: Record<
-	string,
-	"done" | "high" | "urgent" | "default"
-> = {
+const STATUS_VARIANT: Record<string, "done" | "high" | "urgent" | "default"> = {
 	"On Track": "done",
 	"At Risk": "high",
 	Blocked: "urgent",
@@ -166,7 +166,9 @@ export default function ReportsPage() {
 			} catch (err) {
 				if (mounted) {
 					setError(
-						err instanceof Error ? err.message : "Failed to load reports",
+						err instanceof Error
+							? err.message
+							: "Failed to load reports",
 					);
 				}
 			} finally {
@@ -250,7 +252,9 @@ export default function ReportsPage() {
 					<div className="flex items-start gap-3 text-danger">
 						<AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
 						<div className="flex-1">
-							<p className="font-medium">Failed to load reports</p>
+							<p className="font-medium">
+								Failed to load reports
+							</p>
 							<p className="mt-1 text-sm">{error}</p>
 						</div>
 						<Button
@@ -313,7 +317,8 @@ export default function ReportsPage() {
 						Admin Reports
 					</h1>
 					<p className="mt-1 text-sm text-muted">
-						Hello {firstName}, here is the cross-project analytics snapshot.
+						Hello {firstName}, here is the cross-project analytics
+						snapshot.
 					</p>
 				</div>
 
@@ -334,7 +339,10 @@ export default function ReportsPage() {
 							onClick={() =>
 								downloadCSV(
 									"projects",
-									pss.projects as unknown as Record<string, unknown>[],
+									pss.projects as unknown as Record<
+										string,
+										unknown
+									>[],
 								)
 							}
 						>
@@ -344,7 +352,10 @@ export default function ReportsPage() {
 							onClick={() =>
 								downloadCSV(
 									"task-completion",
-									data.taskCompletion as unknown as Record<string, unknown>[],
+									data.taskCompletion as unknown as Record<
+										string,
+										unknown
+									>[],
 								)
 							}
 						>
@@ -354,7 +365,10 @@ export default function ReportsPage() {
 							onClick={() =>
 								downloadCSV(
 									"burn-chart",
-									data.burnChart.data as unknown as Record<string, unknown>[],
+									data.burnChart.data as unknown as Record<
+										string,
+										unknown
+									>[],
 								)
 							}
 						>
@@ -364,7 +378,10 @@ export default function ReportsPage() {
 							onClick={() =>
 								downloadCSV(
 									"cumulative-flow",
-									data.cumulativeFlow as unknown as Record<string, unknown>[],
+									data.cumulativeFlow as unknown as Record<
+										string,
+										unknown
+									>[],
 								)
 							}
 						>
@@ -374,7 +391,10 @@ export default function ReportsPage() {
 							onClick={() =>
 								downloadCSV(
 									"overdue-tasks",
-									data.overdueTasks as unknown as Record<string, unknown>[],
+									data.overdueTasks as unknown as Record<
+										string,
+										unknown
+									>[],
 								)
 							}
 						>
@@ -384,7 +404,10 @@ export default function ReportsPage() {
 							onClick={() =>
 								downloadCSV(
 									"velocity",
-									data.velocity as unknown as Record<string, unknown>[],
+									data.velocity as unknown as Record<
+										string,
+										unknown
+									>[],
 								)
 							}
 						>
@@ -394,7 +417,10 @@ export default function ReportsPage() {
 							onClick={() =>
 								downloadCSV(
 									"time-tracking",
-									data.timeTracking as unknown as Record<string, unknown>[],
+									data.timeTracking as unknown as Record<
+										string,
+										unknown
+									>[],
 								)
 							}
 						>
@@ -421,8 +447,9 @@ export default function ReportsPage() {
 				))}
 			</div>
 
+			<DevUpdatesReportsCard />
 			{/* Projects breakdown */}
-			<Card className="mb-6 overflow-hidden p-0">
+			<Card className="my-6 overflow-hidden p-0">
 				<div className="flex items-center justify-between border-b border-border px-5 py-4">
 					<div>
 						<h2 className="text-base font-semibold text-foreground">
@@ -439,7 +466,10 @@ export default function ReportsPage() {
 						onClick={() =>
 							downloadCSV(
 								"projects",
-								pss.projects as unknown as Record<string, unknown>[],
+								pss.projects as unknown as Record<
+									string,
+									unknown
+								>[],
 							)
 						}
 					>
@@ -478,7 +508,12 @@ export default function ReportsPage() {
 										{p.name}
 									</td>
 									<td className="px-4 py-4">
-										<Badge variant={STATUS_VARIANT[p.status] ?? "default"}>
+										<Badge
+											variant={
+												STATUS_VARIANT[p.status] ??
+												"default"
+											}
+										>
 											{p.status}
 										</Badge>
 									</td>
@@ -493,7 +528,9 @@ export default function ReportsPage() {
 											<div className="h-1.5 w-full overflow-hidden rounded-full bg-border">
 												<div
 													className="h-full rounded-full bg-primary transition-all"
-													style={{ width: `${p.progress}%` }}
+													style={{
+														width: `${p.progress}%`,
+													}}
 												/>
 											</div>
 											<span className="w-10 text-right text-xs font-medium text-foreground">
@@ -529,7 +566,10 @@ export default function ReportsPage() {
 							onClick={() =>
 								downloadCSV(
 									"task-completion",
-									data.taskCompletion as unknown as Record<string, unknown>[],
+									data.taskCompletion as unknown as Record<
+										string,
+										unknown
+									>[],
 								)
 							}
 						>
@@ -539,7 +579,10 @@ export default function ReportsPage() {
 					<div style={{ height: 280 }}>
 						<ResponsiveContainer width="100%" height="100%">
 							<LineChart data={data.taskCompletion}>
-								<CartesianGrid strokeDasharray="3 3" stroke={CHART.grid} />
+								<CartesianGrid
+									strokeDasharray="3 3"
+									stroke={CHART.grid}
+								/>
 								<XAxis dataKey="date" tick={CHART.tickStyle} />
 								<YAxis tick={CHART.tickStyle} />
 								<Tooltip {...tooltipStyle} />
@@ -584,7 +627,10 @@ export default function ReportsPage() {
 							onClick={() =>
 								downloadCSV(
 									"burn-chart",
-									data.burnChart.data as unknown as Record<string, unknown>[],
+									data.burnChart.data as unknown as Record<
+										string,
+										unknown
+									>[],
 								)
 							}
 						>
@@ -594,7 +640,10 @@ export default function ReportsPage() {
 					<div style={{ height: 280 }}>
 						<ResponsiveContainer width="100%" height="100%">
 							<LineChart data={data.burnChart.data}>
-								<CartesianGrid strokeDasharray="3 3" stroke={CHART.grid} />
+								<CartesianGrid
+									strokeDasharray="3 3"
+									stroke={CHART.grid}
+								/>
 								<XAxis dataKey="day" tick={CHART.tickStyle} />
 								<YAxis tick={CHART.tickStyle} />
 								<Tooltip {...tooltipStyle} />
@@ -649,7 +698,10 @@ export default function ReportsPage() {
 						onClick={() =>
 							downloadCSV(
 								"cumulative-flow",
-								data.cumulativeFlow as unknown as Record<string, unknown>[],
+								data.cumulativeFlow as unknown as Record<
+									string,
+									unknown
+								>[],
 							)
 						}
 					>
@@ -659,7 +711,10 @@ export default function ReportsPage() {
 				<div style={{ height: 320 }}>
 					<ResponsiveContainer width="100%" height="100%">
 						<AreaChart data={data.cumulativeFlow}>
-							<CartesianGrid strokeDasharray="3 3" stroke={CHART.grid} />
+							<CartesianGrid
+								strokeDasharray="3 3"
+								stroke={CHART.grid}
+							/>
 							<XAxis dataKey="date" tick={CHART.tickStyle} />
 							<YAxis tick={CHART.tickStyle} />
 							<Tooltip {...tooltipStyle} />
@@ -726,7 +781,10 @@ export default function ReportsPage() {
 						onClick={() =>
 							downloadCSV(
 								"overdue-tasks",
-								data.overdueTasks as unknown as Record<string, unknown>[],
+								data.overdueTasks as unknown as Record<
+									string,
+									unknown
+								>[],
 							)
 						}
 					>
@@ -769,7 +827,9 @@ export default function ReportsPage() {
 											<span className="text-sm font-medium text-foreground">
 												{t.title}
 											</span>
-											<span className="text-xs text-muted">{t.id}</span>
+											<span className="text-xs text-muted">
+												{t.id}
+											</span>
 										</div>
 									</td>
 									<td className="px-4 py-4 text-sm text-muted-foreground">
@@ -782,7 +842,12 @@ export default function ReportsPage() {
 										{t.deadline}
 									</td>
 									<td className="px-4 py-4">
-										<Badge variant={PRIORITY_VARIANT[t.priority] ?? "default"}>
+										<Badge
+											variant={
+												PRIORITY_VARIANT[t.priority] ??
+												"default"
+											}
+										>
 											{t.priority}
 										</Badge>
 									</td>
@@ -820,7 +885,10 @@ export default function ReportsPage() {
 							onClick={() =>
 								downloadCSV(
 									"velocity",
-									data.velocity as unknown as Record<string, unknown>[],
+									data.velocity as unknown as Record<
+										string,
+										unknown
+									>[],
 								)
 							}
 						>
@@ -830,8 +898,14 @@ export default function ReportsPage() {
 					<div style={{ height: 280 }}>
 						<ResponsiveContainer width="100%" height="100%">
 							<BarChart data={data.velocity}>
-								<CartesianGrid strokeDasharray="3 3" stroke={CHART.grid} />
-								<XAxis dataKey="sprint" tick={CHART.tickStyle} />
+								<CartesianGrid
+									strokeDasharray="3 3"
+									stroke={CHART.grid}
+								/>
+								<XAxis
+									dataKey="sprint"
+									tick={CHART.tickStyle}
+								/>
 								<YAxis tick={CHART.tickStyle} />
 								<Tooltip {...tooltipStyle} />
 								<Legend wrapperStyle={{ fontSize: 12 }} />
@@ -871,7 +945,10 @@ export default function ReportsPage() {
 							onClick={() =>
 								downloadCSV(
 									"time-tracking",
-									data.timeTracking as unknown as Record<string, unknown>[],
+									data.timeTracking as unknown as Record<
+										string,
+										unknown
+									>[],
 								)
 							}
 						>
@@ -881,7 +958,10 @@ export default function ReportsPage() {
 					<div style={{ height: 280 }}>
 						<ResponsiveContainer width="100%" height="100%">
 							<BarChart data={data.timeTracking}>
-								<CartesianGrid strokeDasharray="3 3" stroke={CHART.grid} />
+								<CartesianGrid
+									strokeDasharray="3 3"
+									stroke={CHART.grid}
+								/>
 								<XAxis
 									dataKey="project"
 									tick={CHART.tickStyle}
@@ -910,8 +990,6 @@ export default function ReportsPage() {
 					</div>
 				</Card>
 			</div>
-
-			<DevUpdatesReportsCard />
 
 			<p className="text-right text-xs text-muted">
 				Generated at {new Date(data.generatedAt).toLocaleString()}
