@@ -45,6 +45,7 @@ import { useNotificationStream } from "@/hooks/useNotificationStream";
 import type { Notification } from "@/services/notification.service";
 import SprintCapacity from "@/components/users/SprintCapacity";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { useTheme } from "@/context/ThemeContext";
 
 type NavLinkItem = {
 	to: string;
@@ -112,6 +113,7 @@ function routeForNotification(n: Notification): string | null {
 export default function AppLayout() {
 	const { user, logout } = useAuth();
 	const { can } = usePermission();
+	const { theme } = useTheme();
 	const navigate = useNavigate();
 	const location = useLocation();
 	const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -182,7 +184,11 @@ export default function AppLayout() {
 						className="mr-2 flex min-w-0 shrink-0 items-center gap-2 lg:mr-4"
 					>
 						<img
-							src="/logo.svg"
+							src={
+								theme == "dark"
+									? "/logo-light.svg"
+									: "/logo.svg"
+							}
 							alt="TaskHub"
 							className="h-7 w-auto max-w-[110px] sm:h-8 sm:max-w-[132px]"
 						/>

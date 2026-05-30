@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { CalendarDays, KeyRound, Mail, Palette, ShieldCheck, UserCog } from "lucide-react";
+import { Bell, CalendarDays, KeyRound, Mail, Palette, ShieldCheck, UserCog } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -10,6 +10,7 @@ import { getProfile, type Profile } from "@/services/profile.service";
 import { ProfilePersonalSection } from "@/components/profile/ProfilePersonalSection";
 import { ProfileApiKeysSection } from "@/components/profile/ProfileApiKeysSection";
 import { ProfileAppearanceSection } from "@/components/profile/ProfileAppearanceSection";
+import { ProfileNotificationsSection } from "@/components/profile/ProfileNotificationsSection";
 
 const STATUS_VARIANT: Record<string, string> = {
 	active: "bg-success-subtle text-success border-success/20",
@@ -24,11 +25,12 @@ const ROLE_VARIANT: Record<string, string> = {
 	user: "bg-muted-subtle text-muted-foreground border-border",
 };
 
-type TabId = "personal" | "appearance" | "api-keys";
+type TabId = "personal" | "appearance" | "notifications" | "api-keys";
 
 const TABS: { id: TabId; label: string; icon: typeof UserCog }[] = [
 	{ id: "personal", label: "Personal Info", icon: UserCog },
 	{ id: "appearance", label: "Appearance", icon: Palette },
+	{ id: "notifications", label: "Notifications", icon: Bell },
 	{ id: "api-keys", label: "API Keys", icon: KeyRound },
 ];
 
@@ -74,12 +76,16 @@ export default function ProfilePage() {
 					<Skeleton className="h-7 w-32" />
 					<Skeleton className="mt-1 h-4 w-56" />
 				</div>
-				<div className="grid gap-4 sm:gap-6 md:grid-cols-[280px_1fr]">
-					<Card className="flex flex-col items-center gap-4 p-4 sm:p-6">
-						<Skeleton className="h-20 w-20 rounded-full" />
-						<Skeleton className="h-5 w-36" />
-						<Skeleton className="h-4 w-48" />
-						<Skeleton className="h-5 w-20 rounded-full" />
+				<div className="space-y-4 sm:space-y-6">
+					<Card className="overflow-hidden p-0">
+						<Skeleton className="h-20 w-full rounded-none sm:h-28" />
+						<div className="flex items-end gap-4 px-4 pb-4 sm:px-6 sm:pb-6">
+							<Skeleton className="-mt-10 h-20 w-20 rounded-full border-4 border-card sm:-mt-14 sm:h-28 sm:w-28" />
+							<div className="space-y-2 pb-1">
+								<Skeleton className="h-5 w-36" />
+								<Skeleton className="h-4 w-48" />
+							</div>
+						</div>
 					</Card>
 					<Card className="p-4 sm:p-6">
 						<Skeleton className="mb-4 h-5 w-40" />
@@ -108,47 +114,54 @@ export default function ProfilePage() {
 				</p>
 			</div>
 
-			<div className="grid gap-4 sm:gap-6 md:grid-cols-[280px_1fr]">
-				<Card className="flex flex-col items-center gap-3 p-4 sm:p-6 text-center">
-					<Avatar className="h-20 w-20 text-xl">
-						{profile.avatar_url && (
-							<AvatarImage src={profile.avatar_url} alt={displayName} />
-						)}
-						<AvatarFallback className="text-lg">
-							{initials}
-						</AvatarFallback>
-					</Avatar>
+			<div className="space-y-4 sm:space-y-6">
+				<Card className="overflow-hidden p-0">
+					<div className="h-20 w-full bg-gradient-to-r from-primary/15 via-accent/10 to-primary/15 sm:h-28" />
+					<div className="flex flex-col gap-4 px-4 pb-4 sm:px-6 sm:pb-6 md:flex-row md:items-end md:justify-between">
+						<div className="flex flex-col items-center gap-3 text-center md:flex-row md:items-end md:gap-4 md:text-left">
+							<Avatar className="-mt-10 h-20 w-20 border-4 border-card text-xl sm:-mt-14 sm:h-28 sm:w-28">
+								{profile.avatar_url && (
+									<AvatarImage src={profile.avatar_url} alt={displayName} />
+								)}
+								<AvatarFallback className="text-2xl">
+									{initials}
+								</AvatarFallback>
+							</Avatar>
 
-					<div>
-						<p className="text-base font-semibold text-foreground">
-							{displayName}
-						</p>
-						<p className="mt-0.5 flex items-center justify-center gap-1 text-xs text-muted-foreground break-all">
-							<Mail className="h-3 w-3 shrink-0" />
-							<span className="break-all">{profile.email}</span>
-						</p>
+							<div className="min-w-0 md:pb-1">
+								<p className="text-lg font-semibold text-foreground sm:text-xl">
+									{displayName}
+								</p>
+								<p className="mt-0.5 flex items-center justify-center gap-1 text-xs text-muted-foreground md:justify-start">
+									<Mail className="h-3 w-3 shrink-0" />
+									<span className="break-all">{profile.email}</span>
+								</p>
+							</div>
+						</div>
+
+						<div className="flex flex-col items-center gap-2 md:items-end md:pb-1">
+							<div className="flex flex-wrap justify-center gap-2 md:justify-end">
+								<span
+									className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize ${ROLE_VARIANT[profile.role] ?? ROLE_VARIANT.user}`}
+								>
+									<ShieldCheck className="h-3 w-3" />
+									{profile.role}
+								</span>
+								<span
+									className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize ${STATUS_VARIANT[profile.status] ?? STATUS_VARIANT.active}`}
+								>
+									{profile.status}
+								</span>
+							</div>
+
+							{profile.created_at && (
+								<p className="flex items-center gap-1 text-xs text-muted-foreground">
+									<CalendarDays className="h-3 w-3" />
+									Joined {formatDate(profile.created_at)}
+								</p>
+							)}
+						</div>
 					</div>
-
-					<div className="flex flex-wrap justify-center gap-2">
-						<span
-							className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize ${ROLE_VARIANT[profile.role] ?? ROLE_VARIANT.user}`}
-						>
-							<ShieldCheck className="h-3 w-3" />
-							{profile.role}
-						</span>
-						<span
-							className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize ${STATUS_VARIANT[profile.status] ?? STATUS_VARIANT.active}`}
-						>
-							{profile.status}
-						</span>
-					</div>
-
-					{profile.created_at && (
-						<p className="flex items-center gap-1 text-xs text-muted-foreground">
-							<CalendarDays className="h-3 w-3" />
-							Joined {formatDate(profile.created_at)}
-						</p>
-					)}
 				</Card>
 
 				<div className="space-y-4 min-w-0">
@@ -178,6 +191,7 @@ export default function ProfilePage() {
 						/>
 					)}
 					{activeTab === "appearance" && <ProfileAppearanceSection />}
+					{activeTab === "notifications" && <ProfileNotificationsSection />}
 					{activeTab === "api-keys" && <ProfileApiKeysSection />}
 				</div>
 			</div>
