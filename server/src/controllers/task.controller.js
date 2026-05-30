@@ -418,10 +418,12 @@ export async function updateTask(req, res, next) {
 
 			const oldAssigneeId = existing.assigned_to;
 			const newAssigneeId = data.assigned_to?.id ?? null;
+			const assigneeChanged =
+				"assigned_to" in updateData && newAssigneeId !== oldAssigneeId;
+
 			if (
-				"assigned_to" in updateData &&
+				assigneeChanged &&
 				newAssigneeId &&
-				newAssigneeId !== oldAssigneeId &&
 				newAssigneeId !== req.profile.id
 			) {
 				createNotifications({
@@ -430,6 +432,24 @@ export async function updateTask(req, res, next) {
 					title: "Task assigned to you",
 					body: data.title,
 					data: { project_id: data.project_id, task_id: data.id },
+				}).catch((e) => console.error("[notif]", e));
+			} else if (
+				!assigneeChanged &&
+				oldAssigneeId &&
+				oldAssigneeId !== req.profile.id &&
+				Object.keys(updateData).length > 0
+			) {
+				// Assignee unchanged but someone else edited their task.
+				createNotifications({
+					userIds: [oldAssigneeId],
+					type: NotificationType.TASK_UPDATED,
+					title: "A task assigned to you was updated",
+					body: data.title,
+					data: {
+						project_id: data.project_id,
+						task_id: data.id,
+						changed_fields: Object.keys(updateData),
+					},
 				}).catch((e) => console.error("[notif]", e));
 			}
 		}

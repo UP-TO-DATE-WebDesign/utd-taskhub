@@ -243,6 +243,16 @@ export async function removeMember(req, res, next) {
 
 		if (error) throw error;
 
+		if (userId && userId !== req.profile.id) {
+			createNotifications({
+				userIds: [userId],
+				type: NotificationType.PROJECT_MEMBER_REMOVED,
+				title: "Removed from a project",
+				body: `You were removed from a project by ${req.profile.full_name ?? "a teammate"}.`,
+				data: { project_id: projectId },
+			}).catch((e) => console.error("[notif]", e));
+		}
+
 		logActivity({
 			projectId,
 			actorId: req.profile.id,

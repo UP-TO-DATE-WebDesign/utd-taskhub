@@ -1,8 +1,13 @@
 import { Router } from "express";
-import { supabase } from "../config/supabase.js";
+import { supabase, supabaseAdmin } from "../config/supabase.js";
 import { requireAuth } from "../middlewares/auth.middleware.js";
 import { register as registerSseClient } from "../services/sse-hub.service.js";
 import { issueTicket, consumeTicket } from "../services/sse-ticket.service.js";
+import {
+	mergeSettings,
+	applySettingsPatch,
+	validateNotificationSettings,
+} from "../utils/notification-settings.js";
 
 const router = Router();
 
@@ -27,6 +32,68 @@ router.post("/stream/ticket", (req, res) => {
 		success: true,
 		data: { ticket, expires_in: expiresIn },
 	});
+});
+
+router.get("/settings", async (req, res, next) => {
+	try {
+		const { data, error } = await supabase
+			.from("profiles")
+			.select("notification_settings")
+			.eq("id", req.profile.id)
+			.maybeSingle();
+
+		if (error) throw error;
+
+		res.status(200).json({
+			success: true,
+			data: { settings: mergeSettings(data?.notification_settings) },
+		});
+	} catch (err) {
+		next(err);
+	}
+});
+
+router.patch("/settings", async (req, res, next) => {
+	try {
+		const errors = validateNotificationSettings(req.body);
+		if (errors.length > 0) {
+			return res.status(400).json({
+				success: false,
+				message: "Validation failed.",
+				errors,
+			});
+		}
+
+		const { data: existing, error: readError } = await supabase
+			.from("profiles")
+			.select("notification_settings")
+			.eq("id", req.profile.id)
+			.maybeSingle();
+
+		if (readError) throw readError;
+
+		const nextSettings = applySettingsPatch(
+			existing?.notification_settings,
+			req.body,
+		);
+
+		const { data, error } = await supabaseAdmin
+			.from("profiles")
+			.update({ notification_settings: nextSettings })
+			.eq("id", req.profile.id)
+			.select("notification_settings")
+			.maybeSingle();
+
+		if (error) throw error;
+
+		res.status(200).json({
+			success: true,
+			message: "Notification settings updated.",
+			data: { settings: mergeSettings(data?.notification_settings) },
+		});
+	} catch (err) {
+		next(err);
+	}
 });
 
 router.get("/", async (req, res, next) => {
