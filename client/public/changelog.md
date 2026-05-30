@@ -4,6 +4,12 @@
 
 ### Week 5 (May 24 - 30)
 
+- Dark mode - account-tied light/dark/system switcher
+- Profile notifications tab - email + system preferences, top header layout
+- Loading skeletons - dashboard, projects, project detail, tasks page
+- Dev Updates & Reports - tabbed UI with filters and pagination
+- Sprint Page - clickable detail page with tasks, preview-only task dialog
+- Sprint capacity - count actual logged time against capacity
 - Time logging - full CRUD + UI, workspace toggle
 - External API + API keys - user-managed keys for tickets/tasks, endpoint reference, Postman collection
 - Ticket detail page + attachments
