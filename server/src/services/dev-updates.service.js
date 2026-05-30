@@ -45,6 +45,18 @@ export async function bulkImportUpdates(updates) {
 	}
 }
 
+export async function listUpdates(params = {}) {
+	try {
+		const { app, type, search, page, limit } = params;
+		const { data } = await client().get("/", {
+			params: { app, type, search, page, limit },
+		});
+		return data;
+	} catch (error) {
+		throw normalizeError(error, "list-updates");
+	}
+}
+
 export async function generateReport(month, year) {
 	try {
 		const { data } = await client().post("/generate-report", {

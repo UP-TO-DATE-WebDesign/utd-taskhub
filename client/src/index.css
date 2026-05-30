@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   /* ── Primary (Blue) ─────────────────────────────── */
   --color-primary:            #0058be;
@@ -56,19 +58,65 @@
   --radius-full: 9999px;
 }
 
+/* ── Dark mode token overrides (applied via .dark on <html>) ───── */
+.dark {
+  /* Brand: lighten for contrast on dark surfaces */
+  --color-primary:            #5b9bff;
+  --color-primary-hover:      #7eb0ff;
+  --color-primary-subtle:     #16243d;
+  --color-primary-foreground: #0b1220;
+
+  --color-secondary:            #34d399;
+  --color-secondary-hover:      #6ee7b7;
+  --color-secondary-subtle:     #0f2a22;
+  --color-secondary-foreground: #06281d;
+
+  --color-accent:            #fbbf24;
+  --color-accent-hover:      #fcd34d;
+  --color-accent-subtle:     #2b2110;
+  --color-accent-foreground: #2a1a00;
+
+  --color-danger:            #f87171;
+  --color-danger-hover:      #fca5a5;
+  --color-danger-subtle:     #2e1414;
+  --color-danger-foreground: #2a0606;
+
+  --color-warning:            #fb923c;
+  --color-warning-hover:      #fdba74;
+  --color-warning-subtle:     #2a1709;
+  --color-warning-foreground: #2a1400;
+
+  /* Muted */
+  --color-muted:            #8b90a0;
+  --color-muted-foreground: #a8adbd;
+  --color-muted-subtle:     #1d212b;
+
+  /* Layout */
+  --color-background:    #0f1117;
+  --color-foreground:    #e6e8f0;
+  --color-surface:       #171a22;
+  --color-border:        #2a2e3a;
+  --color-border-strong: #3a3f4d;
+}
+
 @layer base {
   *, *::before, *::after { box-sizing: border-box; }
 
-  body {
-    margin: 0;
-    background-color: #f9f9ff;
-    color: #191b23;
-    font-family: "Inter", system-ui, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
+  html { color-scheme: light; }
+  html.dark { color-scheme: dark; }
 
   #root { min-height: 100svh; }
 
   button, a, [role="button"] { cursor: pointer; }
+}
+
+/* Unlayered + higher specificity so it wins over Mantine's unlayered body rule. */
+html body {
+  margin: 0;
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: "Inter", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }

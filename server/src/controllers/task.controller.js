@@ -644,7 +644,8 @@ export async function moveTask(req, res, next) {
 
 export async function getAllTasks(req, res, next) {
 	try {
-		const { project_id, status, priority, assigned_to, search } = req.query;
+		const { project_id, status, priority, assigned_to, search, sprint_id } =
+			req.query;
 
 		let query = supabase
 			.from("tasks")
@@ -652,6 +653,7 @@ export async function getAllTasks(req, res, next) {
 			.order("created_at", { ascending: false });
 
 		if (project_id) query = query.eq("project_id", project_id);
+		if (sprint_id) query = query.eq("sprint_id", sprint_id);
 		if (status) query = query.eq("status", status);
 		if (priority) query = query.eq("priority", priority);
 		if (assigned_to) query = query.eq("assigned_to", assigned_to);

@@ -4,7 +4,7 @@ const COLUMN_CARD_COUNTS = [3, 2, 2, 1, 2];
 
 function TaskCardSkeleton() {
 	return (
-		<div className="rounded-xl border border-border bg-white p-3 flex flex-col gap-2.5 shadow-sm">
+		<div className="rounded-xl border-border bg-border/10 p-3 flex flex-col gap-2.5 shadow-sm">
 			<div className="flex items-center justify-between">
 				<Skeleton className="h-4 w-14 rounded-full" />
 				<Skeleton className="h-3 w-3 rounded-full" />

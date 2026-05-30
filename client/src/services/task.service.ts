@@ -88,6 +88,7 @@ export interface UpdateTaskPayload {
 
 export interface ListAllTasksParams {
 	project_id?: string;
+	sprint_id?: string;
 	status?: ApiTaskStatus;
 	priority?: ApiTaskPriority;
 	assigned_to?: string;
@@ -99,6 +100,7 @@ export async function listAllTasks(
 ): Promise<Task[]> {
 	const query = new URLSearchParams();
 	if (params?.project_id) query.set("project_id", params.project_id);
+	if (params?.sprint_id) query.set("sprint_id", params.sprint_id);
 	if (params?.status) query.set("status", params.status);
 	if (params?.priority) query.set("priority", params.priority);
 	if (params?.assigned_to) query.set("assigned_to", params.assigned_to);

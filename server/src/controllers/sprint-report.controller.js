@@ -5,6 +5,7 @@ import {
 	bulkImportUpdates,
 	generateReport,
 	uploadImage,
+	listUpdates,
 } from "../services/dev-updates.service.js";
 
 const REPORT_SELECT = `
@@ -99,6 +100,29 @@ export async function generateSprintReport(req, res, next) {
 				body: req.body,
 				message: error.message,
 			});
+		}
+		next(error);
+	}
+}
+
+export async function listDevUpdates(req, res, next) {
+	try {
+		if (!isAdminOrManager(req.profile)) {
+			return res.status(403).json({
+				success: false,
+				message: "Only admins and managers can view dev updates.",
+			});
+		}
+
+		const { app, type, search, page, limit } = req.query;
+		const data = await listUpdates({ app, type, search, page, limit });
+
+		res.status(200).json({ success: true, ...data });
+	} catch (error) {
+		if (error.statusCode) {
+			return res
+				.status(error.statusCode)
+				.json({ success: false, message: error.message });
 		}
 		next(error);
 	}

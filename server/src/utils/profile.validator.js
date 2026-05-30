@@ -1,5 +1,6 @@
 const ALLOWED_ROLES = ["admin", "manager", "developer", "user"];
 const ALLOWED_STATUSES = ["active", "invited", "disabled"];
+const ALLOWED_THEMES = ["light", "dark", "system"];
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export function validateUpdateProfile(payload, isAdmin = false) {
@@ -27,6 +28,13 @@ export function validateUpdateProfile(payload, isAdmin = false) {
 		typeof payload.avatar_url !== "string"
 	) {
 		errors.push("Avatar URL must be a string.");
+	}
+
+	if (
+		payload.theme !== undefined &&
+		!ALLOWED_THEMES.includes(payload.theme)
+	) {
+		errors.push(`Theme must be one of: ${ALLOWED_THEMES.join(", ")}.`);
 	}
 
 	// role and status are admin-only fields

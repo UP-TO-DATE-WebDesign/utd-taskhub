@@ -27,12 +27,68 @@ export interface SprintReport {
 	} | null;
 }
 
-export interface UploadImageResult {
-	success: boolean;
-	url: string;
-	originalSize: number;
-	optimizedSize: number;
-	savings: string;
+export const DEV_UPDATE_TYPES = [
+	"Feature",
+	"Fix",
+	"Enhancement",
+	"Chore",
+	"Refactor",
+	"Style",
+	"Docs",
+	"Perf",
+] as const;
+
+export type DevUpdateType = (typeof DEV_UPDATE_TYPES)[number];
+
+export interface DevUpdate {
+	id: string;
+	app: string;
+	date: string;
+	type: string;
+	change: string;
+	description?: string;
+	url?: string;
+	images?: string[];
+	createdBy?: {
+		id: number;
+		firstName: string;
+		lastName: string;
+	};
+}
+
+export interface DevUpdatesListResult {
+	updates: DevUpdate[];
+	total: number;
+	apps: string[];
+}
+
+export interface DevUpdatesFilters {
+	app?: string;
+	type?: string;
+	search?: string;
+	page?: number;
+	limit?: number;
+}
+
+export async function listDevUpdates(
+	filters: DevUpdatesFilters = {},
+): Promise<DevUpdatesListResult> {
+	const qs = new URLSearchParams();
+	if (filters.app) qs.set("app", filters.app);
+	if (filters.type) qs.set("type", filters.type);
+	if (filters.search) qs.set("search", filters.search);
+	if (filters.page) qs.set("page", String(filters.page));
+	if (filters.limit) qs.set("limit", String(filters.limit));
+	const suffix = qs.toString() ? `?${qs.toString()}` : "";
+
+	const res = await api.get<{ success: boolean } & DevUpdatesListResult>(
+		`/admin/dev-updates${suffix}`,
+	);
+	return {
+		updates: res.updates ?? [],
+		total: res.total ?? 0,
+		apps: res.apps ?? [],
+	};
 }
 
 export async function listSprintReports(
@@ -62,20 +118,3 @@ export async function generateSprintReport(
 	return res.data;
 }
 
-function fileToDataUrl(file: File): Promise<string> {
-	return new Promise((resolve, reject) => {
-		const reader = new FileReader();
-		reader.onload = () => resolve(reader.result as string);
-		reader.onerror = () => reject(reader.error);
-		reader.readAsDataURL(file);
-	});
-}
-
-export async function uploadDevUpdateImage(
-	file: File,
-): Promise<UploadImageResult> {
-	const data = await fileToDataUrl(file);
-	return api.post<UploadImageResult>("/admin/sprint-reports/upload-image", {
-		data,
-	});
-}

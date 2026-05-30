@@ -21,6 +21,7 @@ import AcceptInvitationPage from '@/pages/AcceptInvitationPage'
 import AuthCallbackPage from '@/pages/AuthCallbackPage'
 import ProfilePage from '@/pages/ProfilePage'
 import SprintsPage from '@/pages/SprintsPage'
+import SprintPage from '@/pages/SprintPage'
 import TermsPage from '@/pages/TermsPage'
 import PrivacyPage from '@/pages/PrivacyPage'
 import ContactPage from '@/pages/ContactPage'
@@ -54,6 +55,7 @@ function App() {
             <Route path="/projects/:projectId/tickets/:ticketId" element={<TicketDetailPage />} />
             <Route element={<RoleGuard feature="View sprints" />}>
               <Route path="/sprints" element={<SprintsPage />} />
+              <Route path="/sprints/:sprintId" element={<SprintPage />} />
             </Route>
             <Route path="/kanban" element={<div className="p-6 text-[#191b23]">Kanban Board (coming soon)</div>} />
             <Route path="/analytics" element={<div className="p-6 text-[#191b23]">Analytics (coming soon)</div>} />

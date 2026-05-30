@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Plus, Loader2, Pencil, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -26,17 +27,9 @@ import {
 } from "@/services/sprint.service";
 import { toast } from "sonner";
 import { SprintsListSkeleton } from "@/components/sprints/SprintsListSkeleton";
+import { STATUS_BADGE, formatSprintRange } from "@/components/sprints/sprint-utils";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
-
-const STATUS_BADGE: Record<
-	SprintStatus,
-	{ variant: "todo" | "in-progress" | "done"; label: string }
-> = {
-	planned: { variant: "todo", label: "Planned" },
-	active: { variant: "in-progress", label: "Active" },
-	completed: { variant: "done", label: "Completed" },
-};
 
 type WeekRange = { start: Date; end: Date };
 
@@ -45,17 +38,6 @@ const EMPTY_FORM = {
 	week: null as WeekRange | null,
 	status: "planned" as SprintStatus,
 };
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function formatSprintRange(start: string, end: string): string {
-	const s = new Date(start + "T00:00:00");
-	const e = new Date(end + "T00:00:00");
-	if (s.getMonth() === e.getMonth() && s.getFullYear() === e.getFullYear()) {
-		return `${format(s, "MMM d")} – ${format(e, "d, yyyy")}`;
-	}
-	return `${format(s, "MMM d")} – ${format(e, "MMM d, yyyy")}`;
-}
 
 // ── New Sprint Dialog ─────────────────────────────────────────────────────────
 
@@ -339,6 +321,7 @@ function EditSprintDialog({
 // ── SprintsPage ───────────────────────────────────────────────────────────────
 
 export default function SprintsPage() {
+	const navigate = useNavigate();
 	const [sprints, setSprints] = useState<Sprint[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [newOpen, setNewOpen] = useState(false);
@@ -438,14 +421,18 @@ export default function SprintsPage() {
 								key={sprint.id}
 								className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:gap-4"
 							>
-								<div className="min-w-0 flex-1">
-									<p className="text-sm font-semibold text-foreground">
+								<button
+									type="button"
+									onClick={() => navigate(`/sprints/${sprint.id}`)}
+									className="min-w-0 flex-1 text-left group cursor-pointer"
+								>
+									<p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
 										{sprint.name}
 									</p>
 									<p className="text-xs text-muted mt-0.5">
 										{formatSprintRange(sprint.start_date, sprint.end_date)}
 									</p>
-								</div>
+								</button>
 
 								<div className="flex items-center justify-between gap-3 sm:contents">
 									<Badge variant={variant} className="shrink-0">{label}</Badge>
