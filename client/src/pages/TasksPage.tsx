@@ -637,7 +637,6 @@ export default function TasksPage() {
 								stage={stage}
 								tasks={filteredColumns[stage.key] ?? []}
 								projects={projects}
-								onEdit={setEditTask}
 								onDelete={handleDeleteTask}
 								onView={setViewTask}
 							/>

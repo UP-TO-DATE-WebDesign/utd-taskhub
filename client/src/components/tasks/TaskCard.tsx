@@ -12,7 +12,6 @@ import {
 	GripVertical,
 	Trash2,
 	CheckCircle2,
-	Pencil,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -155,13 +154,11 @@ export const TaskCardContent = memo(TaskCardContentBase);
 function SortableTaskCardBase({
 	task,
 	projects,
-	onEdit,
 	onDelete,
 	onView,
 }: {
 	task: UiTask;
 	projects: Project[];
-	onEdit: (task: UiTask) => void;
 	onDelete: (task: UiTask) => void;
 	onView: (task: UiTask) => void;
 }) {
@@ -264,14 +261,12 @@ function BoardColumnBase({
 	stage,
 	tasks,
 	projects,
-	onEdit,
 	onDelete,
 	onView,
 }: {
 	stage: WorkflowStage;
 	tasks: UiTask[];
 	projects: Project[];
-	onEdit: (task: UiTask) => void;
 	onDelete: (task: UiTask) => void;
 	onView: (task: UiTask) => void;
 }) {
@@ -311,7 +306,6 @@ function BoardColumnBase({
 							key={task.id}
 							task={task}
 							projects={projects}
-							onEdit={onEdit}
 							onDelete={onDelete}
 							onView={onView}
 						/>
