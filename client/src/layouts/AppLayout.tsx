@@ -44,6 +44,7 @@ import { usePermission } from "@/hooks/usePermission";
 import { useNotificationStream } from "@/hooks/useNotificationStream";
 import type { Notification } from "@/services/notification.service";
 import SprintCapacity from "@/components/users/SprintCapacity";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 type NavLinkItem = {
 	to: string;
@@ -342,7 +343,7 @@ export default function AppLayout() {
 									<ChevronDown className="hidden h-3 w-3 text-muted-foreground sm:block" />
 								</button>
 							</DropdownMenuTrigger>
-							<DropdownMenuContent align="end" className="w-48">
+							<DropdownMenuContent align="end" className="w-56">
 								<DropdownMenuLabel className="px-3 py-2 flex flex-col items-center justify-center">
 									<div className="my-2">
 										<Avatar className="h-10 w-10">
@@ -367,6 +368,13 @@ export default function AppLayout() {
 									</div>
 									<SprintCapacity userId={user?.id} />
 								</DropdownMenuLabel>
+								<DropdownMenuSeparator />
+								<div className="flex items-center justify-between gap-2 px-3 py-1.5">
+									<p className="text-xs font-medium text-muted-foreground">
+										Theme
+									</p>
+									<ThemeToggle />
+								</div>
 								<DropdownMenuSeparator />
 								<DropdownMenuItem
 									className="gap-2 px-3"
