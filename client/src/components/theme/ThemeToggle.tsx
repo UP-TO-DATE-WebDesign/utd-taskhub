@@ -23,7 +23,7 @@ export function ThemeToggle({
 			role="radiogroup"
 			aria-label="Theme"
 			className={cn(
-				"inline-flex items-center gap-1 rounded-md border border-border bg-muted-subtle p-0.5",
+				"inline-flex items-center gap-1 rounded-sm border border-border bg-muted-subtle p-0.5",
 				className,
 			)}
 		>
@@ -41,7 +41,7 @@ export function ThemeToggle({
 							"flex items-center justify-center gap-1.5 rounded px-2 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
 							showLabels ? "flex-1" : "",
 							active
-								? "bg-surface text-primary shadow-sm"
+								? "bg-surface text-primary"
 								: "text-muted-foreground hover:text-foreground",
 						)}
 					>

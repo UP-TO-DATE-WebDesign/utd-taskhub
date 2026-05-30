@@ -189,11 +189,11 @@ function SortableTaskCardBase({
 			onMouseLeave={() => setConfirming(false)}
 			onClick={() => onView(task)}
 		>
-			<div className="absolute w-1/2 bg-linear-to-r from-white-50 to-white transition-all divide-gray-200 h-full right-0 opacity-0 group-hover:opacity-100" />
+			<div className="absolute w-3/4 bg-linear-to-r from-white-50 dark:from-black-50 to-white dark:to-black transition-all divide-gray-200 h-full right-0 opacity-0 group-hover:opacity-100" />
 			<div
 				{...attributes}
 				{...listeners}
-				className="absolute top-4 bg-white right-1.5 z-10 p-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing text-muted hover:text-primary"
+				className="absolute top-4 bg-white dark:bg-black right-1.5 z-10 p-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing text-muted hover:text-primary"
 				onClick={(e) => e.stopPropagation()}
 			>
 				<Tooltip>
@@ -206,26 +206,8 @@ function SortableTaskCardBase({
 				</Tooltip>
 			</div>
 			<div
-				className="absolute top-16 right-2 z-10 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity rounded hidden!"
-				onClick={(e) => e.stopPropagation()}
-			>
-				<Tooltip>
-					<TooltipTrigger asChild>
-						<button
-							type="button"
-							onClick={() => onEdit(task)}
-							className="p-0.5 rounded transition-colors text-muted hover:text-primary"
-						>
-							<Pencil className="h-3.5 w-3.5" />
-						</button>
-					</TooltipTrigger>
-					<TooltipContent side="left">
-						Click to edit task
-					</TooltipContent>
-				</Tooltip>
-			</div>
-			<div
-				className="absolute bottom-3 right-2 z-10 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white pl-4"
+				className="absolute bottom-3 right-2 z-10 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-surface dark:bg-transparent dark:from-black-50
+dark:to-black pl-4 mt-0.5"
 				onClick={(e) => e.stopPropagation()}
 			>
 				<Tooltip>

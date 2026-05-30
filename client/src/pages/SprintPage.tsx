@@ -25,7 +25,14 @@ import { toast } from "sonner";
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 // Display order for task status groups; unknown keys sort last.
-const STATUS_ORDER = ["done", "qa", "in-progress", "todo", "backlog", "cancelled"];
+const STATUS_ORDER = [
+	"done",
+	"qa",
+	"in-progress",
+	"todo",
+	"backlog",
+	"cancelled",
+];
 
 function humanizeStatus(status: string): string {
 	return status
@@ -34,7 +41,9 @@ function humanizeStatus(status: string): string {
 		.join(" ");
 }
 
-function groupTasksByStatus(tasks: Task[]): { status: string; tasks: Task[] }[] {
+function groupTasksByStatus(
+	tasks: Task[],
+): { status: string; tasks: Task[] }[] {
 	const map = new Map<string, Task[]>();
 	for (const t of tasks) {
 		const list = map.get(t.status) ?? [];
@@ -65,8 +74,12 @@ function SprintTaskRow({
 		<Card className="flex items-center gap-3 px-4 py-3">
 			<div className="min-w-0 flex-1">
 				<div className="flex items-center gap-2 flex-wrap">
-					<Badge variant={task.priority} className="text-[10px] shrink-0">
-						{task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+					<Badge
+						variant={task.priority}
+						className="text-[10px] shrink-0"
+					>
+						{task.priority.charAt(0).toUpperCase() +
+							task.priority.slice(1)}
 					</Badge>
 					{task.ticket?.ticket_code && (
 						<span className="text-[10px] bg-muted-subtle text-muted-foreground px-1.5 py-0.5 rounded font-medium font-mono">
@@ -174,7 +187,7 @@ export default function SprintPage() {
 	const groups = useMemo(() => groupTasksByStatus(tasks), [tasks]);
 
 	return (
-		<div className="p-6 max-w-4xl mx-auto">
+		<div className="p-6 max-w-[1280px] mx-auto">
 			<Button
 				variant="ghost"
 				size="sm"
@@ -206,7 +219,10 @@ export default function SprintPage() {
 								{sprint.name}
 							</h1>
 							<p className="text-sm text-muted mt-1">
-								{formatSprintRange(sprint.start_date, sprint.end_date)}
+								{formatSprintRange(
+									sprint.start_date,
+									sprint.end_date,
+								)}
 							</p>
 						</div>
 						<Badge
@@ -218,7 +234,9 @@ export default function SprintPage() {
 					</div>
 
 					<div className="flex items-center gap-2 mb-4">
-						<h2 className="text-sm font-semibold text-foreground">Tasks</h2>
+						<h2 className="text-sm font-semibold text-foreground">
+							Tasks
+						</h2>
 						<span className="text-xs font-medium text-muted bg-muted-subtle px-2 py-0.5 rounded-full">
 							{tasks.length}
 						</span>
