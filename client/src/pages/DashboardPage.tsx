@@ -34,6 +34,7 @@ import {
 	type DashboardTicket,
 } from "@/services/dashboard.service";
 import SkeletonLoader from "@/components/ui/skeleton-loader";
+import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
 import { useApiSWR } from "@/hooks/useApiSWR";
 
 const STATUS_DOT: Record<string, string> = {
@@ -141,98 +142,8 @@ export default function DashboardPage() {
 
 	const firstName = user?.full_name?.split(" ")[0] ?? "there";
 
-	if (loading)
-		return (
-			<div className="mx-auto max-w-[1280px] px-4 py-8 sm:px-6">
-				{/* Header */}
-				<div className="flex items-start justify-between mb-8">
-					<div>
-						<h1 className="text-3xl font-semibold text-foreground tracking-tight">
-							System Overview
-						</h1>
-						<p className="text-sm text-muted mt-1">
-							Hello {firstName}, here is what requires your
-							attention today.
-						</p>
-					</div>
-				</div>
-
-				{/* Stats Cards */}
-				<div className="mb-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-					{Array.from({ length: 6 }).map((_, index) => (
-						<div
-							key={index}
-							className="rounded-2xl border border-slate-200 bg-white p-5"
-						>
-							<div className="mb-6 flex items-center justify-between">
-								<SkeletonLoader className="h-4 w-24" />
-								<SkeletonLoader className="h-7 w-7 rounded-full" />
-							</div>
-
-							<SkeletonLoader className="h-9 w-14" />
-						</div>
-					))}
-				</div>
-
-				{/* Main Content */}
-				<div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_390px]">
-					<div className="space-y-6">
-						{/* Recent Tasks Card */}
-						<div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-							<div className="flex items-center justify-between border-b border-slate-200 p-6">
-								<SkeletonLoader className="h-6 w-36" />
-								<SkeletonLoader className="h-5 w-16" />
-							</div>
-
-							<div className="grid grid-cols-4 gap-4 border-b border-slate-200 px-6 py-4">
-								<SkeletonLoader className="h-4 w-32" />
-								<SkeletonLoader className="h-4 w-20" />
-								<SkeletonLoader className="h-4 w-16" />
-								<SkeletonLoader className="h-4 w-20" />
-							</div>
-
-							<div className="flex h-24 items-center justify-center">
-								<SkeletonLoader className="h-5 w-36" />
-							</div>
-						</div>
-
-						{/* Tasks by Status Card */}
-						<div className="rounded-2xl border border-slate-200 bg-white p-6">
-							<SkeletonLoader className="mb-8 h-6 w-40" />
-
-							<div className="space-y-6">
-								{Array.from({ length: 4 }).map((_, index) => (
-									<div key={index}>
-										<div className="mb-3 flex items-center justify-between">
-											<SkeletonLoader className="h-5 w-28" />
-											<SkeletonLoader className="h-5 w-5" />
-										</div>
-
-										<SkeletonLoader className="h-2 w-full rounded-full" />
-									</div>
-								))}
-							</div>
-						</div>
-					</div>
-
-					{/* Tickets Card */}
-					<div className="h-fit rounded-2xl border border-slate-200 bg-white p-6">
-						<div className="mb-10 flex items-center justify-between">
-							<SkeletonLoader className="h-6 w-20" />
-							<SkeletonLoader className="h-6 w-6 rounded-full" />
-						</div>
-
-						<div className="mb-10 flex justify-center">
-							<SkeletonLoader className="h-5 w-32" />
-						</div>
-
-						<SkeletonLoader className="h-11 w-full rounded-full" />
-					</div>
-				</div>
-			</div>
-		);
 	if (error) return <div className="p-8 text-sm text-danger">{error}</div>;
-	if (!data) return null;
+	if (loading || !data) return <DashboardSkeleton />;
 
 	const { stats, active_sprint, recent_tasks, recent_tickets } = data;
 
