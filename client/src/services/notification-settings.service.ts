@@ -26,3 +26,11 @@ export async function updateNotificationSettings(
 	}>("/notifications/settings", patch);
 	return res.data.settings;
 }
+
+export async function sendTestEmail(): Promise<string> {
+	const res = await api.post<{ success: boolean; message: string }>(
+		"/notifications/test-email",
+		{},
+	);
+	return res.message;
+}

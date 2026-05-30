@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Mail } from "lucide-react";
+import { Loader2, Mail, Send } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SectionBlock, Toggle } from "@/components/workspace-settings/SectionBlock";
@@ -8,6 +9,7 @@ import { useAuth } from "@/context/AuthContext";
 import {
 	getNotificationSettings,
 	updateNotificationSettings,
+	sendTestEmail,
 	type NotificationSettings,
 } from "@/services/notification-settings.service";
 
@@ -65,6 +67,7 @@ export function ProfileNotificationsSection() {
 	const [settings, setSettings] = useState<NotificationSettings | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(false);
+	const [sendingTest, setSendingTest] = useState(false);
 
 	useEffect(() => {
 		setLoading(true);
@@ -85,6 +88,18 @@ export function ProfileNotificationsSection() {
 		} catch {
 			setSettings(previous);
 			toast.error("Failed to save notification settings.");
+		}
+	}
+
+	async function handleSendTest() {
+		setSendingTest(true);
+		try {
+			const message = await sendTestEmail();
+			toast.success(message);
+		} catch {
+			toast.error("Failed to send test email.");
+		} finally {
+			setSendingTest(false);
 		}
 	}
 
@@ -149,14 +164,31 @@ export function ProfileNotificationsSection() {
 
 					{settings.email_enabled && (
 						<>
-							<div className="flex items-center gap-2 py-3 text-sm text-muted-foreground">
-								<Mail className="h-4 w-4 shrink-0" />
-								<span>
-									Emails are sent to{" "}
-									<span className="font-medium text-foreground break-all">
-										{user?.email}
+							<div className="flex flex-col gap-2 py-3">
+								<div className="flex items-center gap-2 text-sm text-muted-foreground">
+									<Mail className="h-4 w-4 shrink-0" />
+									<span>
+										Emails are sent to{" "}
+										<span className="font-medium text-foreground break-all">
+											{user?.email}
+										</span>
 									</span>
-								</span>
+								</div>
+								<Button
+									type="button"
+									variant="outline"
+									size="sm"
+									onClick={handleSendTest}
+									disabled={sendingTest}
+									className="self-start"
+								>
+									{sendingTest ? (
+										<Loader2 className="h-3.5 w-3.5 animate-spin" />
+									) : (
+										<Send className="h-3.5 w-3.5" />
+									)}
+									Send test email notification
+								</Button>
 							</div>
 
 							{EMAIL_OPTIONS.map(({ key, label, description }) => (

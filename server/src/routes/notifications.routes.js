@@ -8,6 +8,8 @@ import {
 	applySettingsPatch,
 	validateNotificationSettings,
 } from "../utils/notification-settings.js";
+import { env } from "../config/env.js";
+import { sendEmail } from "../utils/emailer-util.js";
 
 const router = Router();
 
@@ -90,6 +92,46 @@ router.patch("/settings", async (req, res, next) => {
 			success: true,
 			message: "Notification settings updated.",
 			data: { settings: mergeSettings(data?.notification_settings) },
+		});
+	} catch (err) {
+		next(err);
+	}
+});
+
+router.post("/test-email", async (req, res, next) => {
+	try {
+		if (!env.GMAIL_USER || !env.GMAIL_APP_PASSWORD) {
+			return res.status(503).json({
+				success: false,
+				message: "Email is not configured on the server.",
+			});
+		}
+
+		const to = req.profile.email;
+		if (!to) {
+			return res.status(400).json({
+				success: false,
+				message: "Your profile has no email address.",
+			});
+		}
+
+		await sendEmail({
+			to,
+			subject: "TaskHub test notification",
+			html: `
+				<h1>Test notification</h1>
+				<p>This is a test email from TaskHub. If you received this, your email
+				notifications are working.</p>
+				<div style="margin: 24px 0;">
+					<a href="${env.appUrl}" style="background-color:#2563eb;color:#fff;padding:12px 20px;text-decoration:none;border-radius:6px;display:inline-block;font-weight:bold;">Open TaskHub</a>
+				</div>
+				<p style="font-size:12px;color:#666;">You can manage email notifications under Profile &gt; Notifications.</p>
+			`,
+		});
+
+		res.status(200).json({
+			success: true,
+			message: `Test email sent to ${to}.`,
 		});
 	} catch (err) {
 		next(err);
